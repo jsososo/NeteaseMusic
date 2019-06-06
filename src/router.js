@@ -9,11 +9,23 @@ import Search from './views/Search';
 import PlayList from './views/PlayList';
 import PlayListDetail from './views/PlayListDetail';
 import User from './views/User';
+import Lyric from './views/Lyric';
+import Comment from './views/Comment';
 
 Vue.use(Router);
 
 const router = new Router({
   routes: [
+    {
+      path: '/comment',
+      name: 'comment',
+      component: Comment,
+    },
+    {
+      path: '/',
+      name: 'lyric',
+      component: Lyric,
+    },
     {
       path: '/user',
       name: 'user',
@@ -41,38 +53,6 @@ const router = new Router({
       component: Search,
       meta: {
         title: '搜索',
-      }
-    },
-    {
-      path: '/import',
-      name: 'import',
-      component: ImportPage,
-      meta: {
-        title: '导入',
-      }
-    },
-    {
-      path: '/version',
-      name: 'version',
-      component: Version,
-      meta: {
-        title: '更新记录',
-      }
-    },
-    {
-      path: '/download',
-      name: 'download',
-      component: Download,
-      meta: {
-        title: '下载中心',
-      }
-    },
-    {
-      path: '/m/d',
-      name: 'mobileDown',
-      component: MobileDown,
-      meta: {
-        title: '手机下载'
       }
     }
   ]

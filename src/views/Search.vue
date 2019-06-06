@@ -25,13 +25,17 @@
           :key="`${s}-${i}`"
           @click="playMusic(s)"
         >
-          <div class="play-icon-container">
+          <div class="playing-bg" v-if="playNow.id === s" :style="`width: ${playingPercent * 100}%`">
+            <div class="wave-bg"></div>
+            <div class="wave-bg2"></div>
+          </div>
+          <div v-if="playNow.id !== s" class="play-icon-container">
             <span class="play-icon">
             <i class="iconfont icon-play" />
           </span>
           </div>
           <span class="song-order">{{i+1}}</span>
-          <div class="song-album-img" :style="`background-image: url('${allSongs[s].al && allSongs[s].al.picUrl}')`"></div>
+          <div class="song-album-img" :style="`background-image: url('${allSongs[s].al && `${allSongs[s].al.picUrl}?param=50y50`}')`"></div>
           <span class="song-name">{{allSongs[s].name}}</span>
           <span class="artist-name">{{allSongs[s].ar}}</span>
         </div>
@@ -91,6 +95,8 @@
       ...mapGetters({
         searchQuery: 'getSearch',
         allSongs: 'getAllSongs',
+        playNow: 'getPlaying',
+        playingPercent: 'getPlayingPercent',
       })
     },
     watch: {
@@ -133,7 +139,6 @@
           this.search('pageNo', pageNo + 1);
         }
       }
-
     }
   }
 </script>
@@ -240,9 +245,46 @@
         height: 60px;
         line-height: 60px;
         position: relative;
+        overflow: hidden;
 
         >span, >div {
           vertical-align: top;
+        }
+
+        .playing-bg {
+          position: absolute;
+          height: 76px;
+          top: -3px;
+
+          .wave-bg {
+            width: 60vw;
+            height: 60vw;
+            border-radius: 35%;
+            position: absolute;
+            right: 0;
+            top: -30vw;
+            animation: waveBg 5s infinite linear;
+            background: -webkit-linear-gradient(left, #409EFF33, #409EFF99);
+          }
+          .wave-bg2 {
+            width: 80vw;
+            height: 80vw;
+            border-radius: 45%;
+            position: absolute;
+            right: 0;
+            top: -40vw;
+            animation: waveBg 8s infinite linear;
+            background: -webkit-linear-gradient(top, #fff1, #fff2);
+          }
+
+          @keyframes waveBg {
+            from {
+              transform: rotate(0);
+            }
+            to {
+              transform: rotate(360deg);
+            }
+          }
         }
 
 

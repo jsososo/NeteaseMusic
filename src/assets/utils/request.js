@@ -40,7 +40,8 @@ const request = (param) => {
 };
 
 export const getPlayList = async (id) => request({ api: 'LIST_DETAIL', data: { id }})
-  .then(async ({ playlist }) => {
+  .then(async (res) => {
+    const { playlist } = res;
     const VUE_APP = window.VUE_APP;
     const dispatch = VUE_APP.$store.dispatch;
     const allSongs = VUE_APP.$store.getters.getAllSongs;
@@ -89,7 +90,7 @@ export const getPlayList = async (id) => request({ api: 'LIST_DETAIL', data: { i
       dispatch('updatePlayingList', { list: allIds });
     }
 
-    return songs;
+    return res;
   });
 
 export const loginStatus = async () => {
@@ -97,7 +98,12 @@ export const loginStatus = async () => {
   const dispatch = VUE_APP.$store.dispatch;
 
   // 查询登陆情况
-  const res = await request('LOGIN_STATUS');
+  const res = await request({
+    api: 'LOGIN_STATUS',
+    data: {
+      t: new Date().getTime(),
+    }
+  });
   if (!res) {
     return;
   }

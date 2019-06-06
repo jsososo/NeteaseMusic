@@ -1,9 +1,24 @@
 <template>
   <div class="list-detail-container">
+    <div v-if="listInfo" class="list-info-detail">
+      <div>
+        <img class="list-info-cover" :src="`${listInfo.coverImgUrl}?param=100y100`">
+        <div class="list-info-txt">
+          <div class="list-info-name">{{listInfo.name}}</div>
+          <div class="list-info-creator">
+            By <span class="creator-name">{{listInfo.creator.nickname}}</span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <input v-model="search" class="search-input" type="text" placeholder="找呀找呀找歌曲">
+      </div>
+    </div>
     <div class="song-list" v-if="allList[id]">
       <div
         :class="`song-item ${playNow.id === s && 'played'} ${!allSongs[s].url && 'disabled'}`"
         v-for="(s, i) in list"
+        :key="`${s}-${i}`"
         @click="playMusic(s)"
       >
         <div class="playing-bg" v-if="playNow.id === s" :style="`width: ${playingPercent * 100}%`">
@@ -11,7 +26,7 @@
           <div class="wave-bg2"></div>
         </div>
         <span class="song-order">{{i+1}}</span>
-        <img class="song-cover" :src="allSongs[s].al.picUrl" alt="">
+        <img class="song-cover" :src="`${allSongs[s].al.picUrl}?param=50y50`" alt="">
         <span class="song-name">{{allSongs[s].name}}</span>
         <span class="song-artist">{{allSongs[s].ar}}</span>
       </div>
@@ -31,6 +46,7 @@
         id: getQueryFromUrl('id'),
         search: '',
         list: [],
+        listInfo: null,
       }
     },
     computed: {
@@ -51,7 +67,11 @@
       },
     },
     created() {
-      getPlayList(this.id);
+      getPlayList(this.id)
+        .then(({ playlist }) => {
+          const { name, creator, coverImgUrl, playCount } = playlist;
+          this.listInfo = { name, creator, coverImgUrl, playCount };
+        })
     },
     methods: {
       playMusic(id) {
@@ -67,11 +87,21 @@
       },
       searchList() {
         const { search, allList, id, allSongs } = this;
-        const rex = search.replace(/\/|\s|\t|,|，/g, '');
+        const rex = search.replace(/\/|\s|\t|,|，|-|/g, '').toLowerCase();
+        if (!rex) {
+          return this.list = allList[id];
+        }
         this.list = allList[id].filter((s) => (
-          allSongs[s].name.replace(/\s/g, '').match(rex) ||
-          allSongs[s].ar.replace(/\s/g, '').match(rex) ||
-          allSongs[s].al.name.replace(/\s/g, '').match(rex)
+          `${allSongs[s].name}
+          ${allSongs[s].ar}
+          ${allSongs[s].al.name}
+          ${allSongs[s].name}
+          ${allSongs[s].al.name}
+          ${allSongs[s].ar}
+          ${allSongs[s].name}`
+            .replace(/\s/g, '')
+            .toLowerCase()
+            .indexOf(rex) > -1
         ));
       },
     }
@@ -86,11 +116,72 @@
     height: calc(100% - 20px);
     top: 20px;
     overflow-y: auto;
+    background: #0001;
+    border-left: 1px solid #fff5;
 
     &::-webkit-scrollbar {
       width: 0;
       height:8px;
       background-color:rgba(0,0,0,0);
+    }
+
+    .list-info-detail {
+      padding: 15px 15px 0 15px;
+      color: #fff9;
+      background: #0003;
+      box-shadow: 0 2px 10px #0005;
+      margin-bottom: 10px;
+
+      .list-info-cover {
+        border-radius: 20px;
+        opacity: 0.6;
+        display: inline-block;
+        vertical-align: top;
+      }
+
+      .list-info-txt {
+        display: inline-block;
+        width: calc(100% - 140px);
+        vertical-align: top;
+        padding-left: 30px;
+
+        .list-info-name {
+          font-size: 24px;
+          font-weight: bold;
+        }
+
+        .list-info-creator {
+          margin-top: 5px;
+          opacity: 0.8;
+          transition: 0.3s;
+          cursor: pointer;
+
+          &:hover {
+            opacity: 1;
+
+            .creator-name {
+              text-decoration: underline;
+            }
+          }
+        }
+      }
+
+      .search-input {
+        margin-top: 15px;
+        background: transparent;
+        border: transparent;
+        color: white;
+        padding-bottom: 10px;
+        font-size: 20px;
+        outline: none !important;
+        border-bottom: 1px solid #0003;
+        width: 100%;
+        margin-left: 0;
+
+        &::-webkit-input-placeholder {
+          color: rgba(255,255,255,0.5);
+        }
+      }
     }
 
     .song-list {
@@ -167,7 +258,6 @@
           position: absolute;
           height: 76px;
           top: -3px;
-          /*background: #409EFF55;*/
 
           .wave-bg {
             width: 60vw;

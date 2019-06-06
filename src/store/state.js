@@ -1,6 +1,6 @@
 export default {
-  allSongs: {}, // 全部的歌曲信息
-  allList: {}, // 全部的歌单
+  allSongs: {}, // 全部的歌曲信息，其他地方除了 playNow 不再存储信息，一律通过 id 到 allSongs 中获取
+  allList: {}, // 全部的歌单信息，和 allSongs 类似
   user: {}, // 用户信息
   userList: {}, // 用户歌单信息
   search: { // 搜索的参数和结果
@@ -9,19 +9,19 @@ export default {
     pageNo: 1,
     keywords: '',
   },
-  playingList: { // 播放列表，里面有原列表、随机列表、历史列表、历史顺序
+  playingList: { // 播放列表，里面有原列表、随机列表、历史列表、历史顺序，这几个数组中一律存放歌曲id
     raw: [], // 原始的歌单
     trueList: [], // 筛选后有url的歌单
-    random: [],
-    history: [],
-    index: 0,
+    random: [], // 随机列表
+    history: [], // 播放历史
+    index: 0, // 当前播放对应播放历史的位置
   },
-  playNow: { // 正在波放的歌曲信息
+  playNow: { // 正在播放的歌曲信息
     al: {},
     ar: '',
   },
-  playingPercent: 0,
-  showCoverImg: true,
+  playingPercent: 0, // 当前播放进度
+  showCoverImg: true, // 是否显示专辑封面图片，有些页面是不显示的
 
   playing: false,
   playerInfo: { // 播放器信息

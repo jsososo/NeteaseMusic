@@ -11,6 +11,7 @@ const apiList = {
   'CAPTCH_SENT': '/api/captch/sent',
   'CAPTCH_VERIFY': '/api/captch/verify',
   'GET_USER_DETAIL': '/api/user/detail',
+  'MUSIC_COMMENTS': '/api/comment/music',
 
 
   '163': '//music.jsososo.com/neapi/index.php',

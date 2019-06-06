@@ -48,8 +48,8 @@
       <!-- 音量、播放顺序、列表等控制 -->
       <div class="other-control inline-block">
         <!-- 音量控制 -->
-        <div class="volume-control"  @mouseout="showVolume = false">
-          <div v-if="showVolume" class="volume-slider-container" @mouseout="showVolume = false" @mouseover="showVolume = true">
+        <div class="volume-control"  @mouseleave="showVolume = false">
+          <div v-if="showVolume" class="volume-slider-container" @mouseleave="showVolume = false" @mouseover="showVolume = true">
             <div class="volume-slider" >
               <el-slider
                 v-model="volume"
@@ -62,8 +62,8 @@
           <i class="iconfont icon-volume" @mouseover="showVolume = true" />
         </div>
         <!-- 播放顺序 -->
-        <div class="order-control"  @mouseout="showOrder = false">
-          <div v-if="showOrder" class="order-list-container" @mouseout="showOrder = false" @mouseover="showOrder = true">
+        <div class="order-control"  @mouseleave="showOrder = false">
+          <div v-if="showOrder" class="order-list-container" @mouseleave="showOrder = false" @mouseover="showOrder = true">
             <div class="order-list">
               <div v-for="key in orderList" v-if="orderType !== key" :key="`order-${key}`" @click="changeOrderType(key)">
                 <i :class="`iconfont icon-${key}`" />
@@ -112,6 +112,7 @@
           current: 0,
           duration: 0,
         },
+        playingId: 0,
       }
     },
     computed: {
@@ -127,29 +128,59 @@
     },
     watch: {
       async playNow(v) {
-        const { id, url, lyric } = v;
+        const { id, lyric, name, comments } = v;
+        if (id === this.playingId) {
+           // 如果是因为评论、歌词的更新，就不在走下面的步骤了
+          return;
+        }
         const dispatch = this.$store.dispatch;
-        document.title = v.name;
+        dispatch('updatePlayingPercent', 0);
+        document.title = name;
         this.currentTime = 0;
+        this.playingId = id;
 
         // 更新后面的背景
         document.getElementById('play-music-bg').src = (this.allSongs[v.id].al && this.allSongs[v.id].al.picUrl) || '';
 
-        // if (!url) {
-        //   request({ api: 'SONG_URL', data: { id }})
-        //     .then((res) => {
-        //       const { url, br } = res.data[0];
-        //       dispatch('updateSongDetail', { url, br, id });
-        //     });
-        // }
+        // 没有歌词的拿歌词
+        if (!lyric) {
+          request({ api: 'GET_LYRIC', data: { id }})
+            .then((res) => {
+              const { nolyric, lrc, tlyric } = res;
+              let lyric = {};
+              if (nolyric) {
+                lyric = {
+                  0: {
+                    str: '没有歌词哟，好好享受',
+                  },
+                }
+              } else {
+                handleLyric(lrc.lyric, 'str', lyric);
+                handleLyric(tlyric.lyric, 'trans', lyric);
+              }
+              dispatch('updateSongDetail', { id, lyric });
+            })
+        }
 
-        // if (!lyric) {
-        //   request({ api: 'GET_LYRIC', data: { id }})
-        //     .then((res) => {
-        //       const { lrc } = res;
-        //       // dispatch('updateSongDetail', { id })
-        //     })
-        // }
+        // 没有评论的拿评论
+        if (!comments) {
+          request({
+            api: 'MUSIC_COMMENTS',
+            data: {
+              offset: 0,
+              limit: 20,
+              id,
+            }
+          }).then((res) => {
+            const comments = {
+              hot: res.hotComments || [],
+              latest: res.comments || [],
+              total: res.total,
+              offset: 20,
+            };
+            dispatch('updateSongDetail', { id, comments });
+          })
+        }
       }
     },
     mounted() {
@@ -286,6 +317,7 @@
           padding-bottom: 40px;
           position: absolute;
           top: -76px;
+          z-index: 10;
         }
         
         &.hide-order {
@@ -335,6 +367,7 @@
           top: -125px;
           opacity: 1;
           transition: 0.4s opacity;
+          z-index: 10;
         }
 
         .iconfont {

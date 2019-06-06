@@ -54,26 +54,24 @@ export function shortString(str, length = 20) {
   return str.length > length ? `${str.substr(0, length - 3)}...` : str;
 }
 
-export function handleLyric(str) {
+export function handleLyric(str, type, obj) {
   const dom = document.createElement('div');
   dom.innerHTML = str;
   const arr = dom.innerHTML.split('\n');
-  const result = [];
   arr.forEach((item) => {
-    const time = item.match(/^\[(\d\d:\d\d.\d\d)\]/);
+    const time = item.match(/^\[(\d+:\d+.\d+)\]/);
     if (time) {
       const timeArr = time[1].split(':');
-      const s = item.replace(time[0], '').replace(/&amp;apos;/g, "'");
+      const s = item.replace(time[0], '');
       if (!s) {
         return;
       }
-      result.push({
-        time: Number(timeArr[0] * 6000) + Number(timeArr[1].replace('.', '')),
-        str: s,
-      })
+      const timeKey = Number(timeArr[0] * 60000) + Number(timeArr[1]) * 1000
+      obj[timeKey] = obj[timeKey] || {};
+      obj[timeKey][type] = s;
     }
   })
-  return result;
+  return obj;
 }
 
 export const formatMap = {

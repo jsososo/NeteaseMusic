@@ -7,8 +7,8 @@
         :key="`playlist-${item.id}`"
         @click="goTo(item.id)"
       >
-        <img :src="item.coverImgUrl" class="list-bg-img" />
-        <img :src="item.coverImgUrl" class="list-img" />
+        <img :src="`${item.coverImgUrl}?param=50y50`" class="list-bg-img" />
+        <img :src="`${item.coverImgUrl}?param=200y200`" class="list-img" />
         <span class="list-name">{{item.name}}</span>
         <span class="list-count">{{item.trackCount}}</span>
       </div>

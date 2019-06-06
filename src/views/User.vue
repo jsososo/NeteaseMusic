@@ -95,6 +95,7 @@
       if (this.user.userId && !this.user.listenSongs) {
         this.getuserDetail();
       }
+      this.$store.dispatch('updateShowCover', false);
     },
     methods: {
       changeType(t) {

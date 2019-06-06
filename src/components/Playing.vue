@@ -10,20 +10,28 @@
         style="opacity: 0.5;position: absolute;top: 10px;left: 10px;"
         :show-text="false"
       />
-      <img :class="`progress-cover playing-${!downloading && playing}`" :src="playNow.al.picUrl" alt="">
+      <img :class="`progress-cover playing-${!downloading && playing}`" :src="`${playNow.al.picUrl}?param=300y300`" alt="">
     </div>
     <div class="song-info" v-if="playNow.id">
       <div class="info-line">
-        <div class="info-label">Song</div>
+        <div class="info-label"><i class="iconfont icon-song" /></div>
         <div class="info-val">{{playNow.name}}</div>
       </div>
       <div class="info-line">
-        <div class="info-label">Singer</div>
+        <div class="info-label"><i class="iconfont icon-singer" /></div>
         <div class="info-val">{{playNow.ar}}</div>
       </div>
       <div class="info-line">
-        <div class="info-label">Album</div>
+        <div class="info-label"><i class="iconfont icon-album" /></div>
         <div class="info-val" v-if="playNow.al && playNow.al.name">{{playNow.al.name}}</div>
+      </div>
+
+      <div class="btn-group">
+        <a class="btn-group-href" href="#/"><i class="iconfont icon-lyric"></i></a>
+        <a class="btn-group-href" href="#/comment">
+          <i class="iconfont icon-comment"></i>
+          <span class="pl_10 ft_12" v-if="playNow.comments">{{numberHandle(playNow.comments.total)}}</span>
+        </a>
       </div>
     </div>
   </div>
@@ -40,6 +48,11 @@
         downloading: 'isDownloading',
         playing: 'isPlaying',
       })
+    },
+    methods: {
+      numberHandle(n) {
+        return n > 1000 ? `${Number(n / 1000).toFixed(1)}k` : n
+      }
     }
   }
 </script>
@@ -84,6 +97,7 @@
       top: 350px;
       left: 140px;
       width: calc(100% - 150px);
+      max-width: 500px;
       color: #fffa;
       font-size: 20px;
       cursor: default;
@@ -101,19 +115,19 @@
           font-weight: bold;
           text-shadow: 0 0 0;
           transition: 0.3s;
-          width: 100px;
+          width: 50px;
           text-align: right;
           opacity: 1;
           letter-spacing: 1px;
         }
 
         .info-val {
-          max-width: calc(100% - 125px);
+          max-width: calc(100% - 75px);
           display: inline-block;
           vertical-align: top;
           text-shadow: 0 0 0;
           position: absolute;
-          left: 125px;
+          left: 75px;
           transition: 0.3s;
           font-weight: bold;
         }
@@ -130,6 +144,32 @@
           .info-val {
             text-shadow: 0 0 1px #fff9;
             text-decoration: underline;
+          }
+        }
+      }
+
+      .btn-group {
+        height: 32px;
+        padding-left: 75px;
+
+        .btn-group-href {
+          color: #fff8;
+          transition: 0.3s;
+          line-height: 32px;
+          height: 32px;
+          display: inline-block;
+          margin-right: 15px;
+          min-width: 30px;
+
+          .iconfont {
+            font-size: 18px;
+            transition: 0.3s;
+            font-weight: bold;
+          }
+
+          &:hover .iconfont {
+            font-size: 22px;
+            color: #fff;
           }
         }
       }
