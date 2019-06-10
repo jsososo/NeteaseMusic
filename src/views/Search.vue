@@ -20,7 +20,7 @@
       </div>
       <div class="song-list result-list" v-if="searchQuery.songs && searchQuery.songs.length > 0">
         <div
-          :class="`song-item ${allSongs[s].url ? 'hasurl' : 'disabled'}`"
+          :class="`song-item ${(allSongs[s].url || allSongs[s].qqId) ? 'hasurl' : 'disabled'}`"
           v-for="(s, i) in searchQuery.songs"
           :key="`${s}-${i}`"
           @click="playMusic(s)"

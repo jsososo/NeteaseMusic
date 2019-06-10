@@ -39,6 +39,7 @@ const request = (param) => {
   })
 };
 
+// 获取播放列表
 export const getPlayList = async (id) => request({ api: 'LIST_DETAIL', data: { id }})
   .then(async (res) => {
     const { playlist } = res;
@@ -75,12 +76,7 @@ export const getPlayList = async (id) => request({ api: 'LIST_DETAIL', data: { i
       allIds.push(tracks[i].id);
       if ((i > 1 && !(i % 50)) || i === (tracks.length - 1)) {
         if (urls.length) {
-          request({ api: 'SONG_URL', data: { id: urls.join(',') }})
-            .then(({ data }) => {
-              const obj = {};
-              data.forEach((s) => obj[s.id] = { ...allSongs[s.id], br: s.br, url: s.url });
-              dispatch('updateAllSongs', obj);
-            });
+          querySongUrl(urls.join(','), i);
         }
         urls = [];
       }
@@ -93,6 +89,26 @@ export const getPlayList = async (id) => request({ api: 'LIST_DETAIL', data: { i
     return res;
   });
 
+const querySongUrl = (id) => request({
+  api: 'SONG_URL',
+  data: { id }
+}).then(({ data }) => {
+  const VUE_APP = window.VUE_APP;
+  const allSongs = VUE_APP.$store.getters.getAllSongs;
+  const dispatch = VUE_APP.$store.dispatch;
+
+  const obj = {};
+  data.forEach((s) => {
+    if (!s.url) {
+      const song = allSongs[s.id];
+      searchQQ(`${song.name} ${song.ar}`, s.id);
+    }
+    obj[s.id] = { ...allSongs[s.id], br: s.br, url: s.url }
+  });
+  dispatch('updateAllSongs', obj);
+});
+
+// 登陆状态
 export const loginStatus = async () => {
   const VUE_APP = window.VUE_APP;
   const dispatch = VUE_APP.$store.dispatch;
@@ -170,23 +186,7 @@ export const searchReq = async ({ keywords, type = 1, pageNo = 1 }) => {
     return;
   }
 
-  // 获取全部没有的url
-  request({
-    api: 'SONG_URL',
-    data: {
-      id: ids,
-    },
-  }).then(({ data }) => {
-    data.forEach((s) => {
-      obj[s.id] = {
-        ...allSongs[s.id],
-        br: s.br,
-        url: s.url,
-      };
-      allSongs[s.id] = obj[s.id];
-    });
-    dispatch('updateAllSongs', obj);
-  });
+
 
   // 获取歌曲的详细信息，搜索到的数据格式和这个接口里的一些字段不一样，而且没有专辑封面这种东西
   request({
@@ -203,8 +203,54 @@ export const searchReq = async ({ keywords, type = 1, pageNo = 1 }) => {
       allSongs[s.id] = obj[s.id];
     });
     dispatch('updateAllSongs', obj);
+  }).then(() => {
+    querySongUrl(ids);
   })
 };
 
+// jsonp 查询qq音乐
+const searchQQ = (val, id) => {
+  const url = '//c.y.qq.com/soso/fcgi-bin/client_search_cp';
+  const { murl, guid, vkey } = Storage.get(['murl', 'guid', 'vkey']);
+  window.QUERY_QQ_TIMES += 1;
+  const data = { p: 1, n: 1, w: val, cr: 1, aggr: 1, jsonpCallback: `SEARCH_QQ_MUSIC_${window.QUERY_QQ_TIMES}`};
+  const query = Object.keys(data).map((k) => `${k}=${data[k]}`).join('&');
+  const req = `${url}?${query}`;
+
+
+  window[`SEARCH_QQ_MUSIC_${window.QUERY_QQ_TIMES}`] = (res) => {
+    const song = res.data.song.list[0];
+    if (song.media_mid && song.size128) {
+      window.VUE_APP.$store.dispatch('updateSongDetail', { id, qqId: song.media_mid, br: 128000, url: `${murl}M500${song.media_mid}.mp3?guid=${guid}&vkey=${vkey}&fromtag=8&uin=0` });
+    }
+  };
+  JSONP(req);
+};
+
+export const getQQVkey = () => {
+  window.getQQMusicUrl = (res) => {
+    const mUrl = res.req_0.data.testfile2g;
+    const { guid, vkey } = getQueryFromUrl(null, mUrl);
+    Storage.set({
+      guid,
+      vkey,
+      vkey_expire: timer().from(90, 'm').str('YYYYMMDDHHmm'),
+      // 返回的url信息在播放非128k的音乐时都可能出现403，下面这个链接是从别人的qq音乐项目里找来的
+      // murl: res.req_0.data.sip[1] || res.req_0.data.sip[0],
+      murl: 'http://183.131.60.16/amobile.music.tc.qq.com/',
+    });
+  };
+  JSONP(apiList['GET_QQ_VKEY']);
+};
+
+const JSONP = (url) => {
+  const jsonp = document.createElement("script");
+  jsonp.type = "text/javascript";
+  jsonp.src = url;
+  document.getElementsByTagName("head")[0].appendChild(jsonp);
+  setTimeout(() => {
+    document.getElementsByTagName("head")[0].removeChild(jsonp)
+  },500)
+};
 
 export default request;

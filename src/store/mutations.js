@@ -53,7 +53,7 @@ export default {
       state.playNow = allSongs[playNow.id];
     }
     if (ArrHelper.hasDuplicate(Object.keys(data), playingList.raw.join(',').split(','))) {
-      playingList.trueList = playingList.raw.filter((id) => state.allSongs[id].url);
+      playingList.trueList = playingList.raw.filter((id) => state.allSongs[id].url || allSongs[id].qqId);
       window.VUE_APP.$store.dispatch('updateRandomList');
     }
   },
@@ -150,12 +150,13 @@ export default {
       ...(state.allSongs[id]),
       ...data,
     };
+    console.log({ ...state.allSongs[id] });
     if (id === state.playNow.id) {
       state.playNow = state.allSongs[id];
     }
     state.allSongs = { ...state.allSongs };
     if (state.playingList.raw.indexOf(data) > -1) {
-      state.playingList.trueList = state.raw.filter((id) => state.allSongs[id].url);
+      state.playingList.trueList = state.raw.filter((id) => (state.allSongs[id].url || state.allSongs[id].qqId));
       window.VUE_APP.$store.dispatch('updateRandomList');
     }
   },
@@ -183,7 +184,7 @@ export default {
       playingList.history = [];
       playingList.index = 0;
     }
-    playingList.trueList = playingList.raw.filter((id) => allSongs[id].url);
+    playingList.trueList = playingList.raw.filter((id) => allSongs[id].url || allSongs[id].qqId);
     window.VUE_APP.$store.dispatch('updateRandomList');
   },
   [types.UPDATE_RANDOM_LIST](state) {

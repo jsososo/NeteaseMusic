@@ -90,7 +90,7 @@
   import Num from '../assets/utils/num';
   import Storage from '../assets/utils/Storage';
   import { mapGetters } from 'vuex';
-  import request from '../assets/utils/request';
+  import request, { getQQVkey } from '../assets/utils/request';
   import { handleLyric, getSongUrl, download, getQueryFromUrl } from "../assets/utils/stringHelper";
   import timer from '../assets/utils/timer';
   import { Base64 } from 'js-base64';
@@ -128,12 +128,22 @@
     },
     watch: {
       async playNow(v) {
-        const { id, lyric, name, comments } = v;
+        const { id, lyric, name, comments, qqId, url } = v;
+        const { murl, guid, vkey, vkey_expire } = Storage.get(['murl', 'guid', 'vkey', 'vkey_expire']);
+        const dispatch = this.$store.dispatch;
         if (id === this.playingId) {
            // 如果是因为评论、歌词的更新，就不在走下面的步骤了
           return;
         }
-        const dispatch = this.$store.dispatch;
+        if (qqId) {
+          const newUrl = `${murl}M500${qqId}.mp3?guid=${guid}&vkey=${vkey}&fromtag=8&uin=0`;
+          if (url !== newUrl) {
+            dispatch('updateSongDetail', { id, url: newUrl });
+          }
+        }
+        if (timer().str('YYYYMMDDHHmm') > vkey_expire) {
+          getQQVkey();
+        }
         dispatch('updatePlayingPercent', 0);
         document.title = name;
         this.currentTime = 0;
