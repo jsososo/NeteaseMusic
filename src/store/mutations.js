@@ -150,7 +150,6 @@ export default {
       ...(state.allSongs[id]),
       ...data,
     };
-    console.log({ ...state.allSongs[id] });
     if (id === state.playNow.id) {
       state.playNow = state.allSongs[id];
     }

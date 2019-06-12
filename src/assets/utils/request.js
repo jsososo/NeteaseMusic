@@ -102,7 +102,7 @@ const querySongUrl = (id) => request({
   data.forEach((s) => {
     if (!s.url) {
       const song = allSongs[s.id];
-      searchQQ(`${song.name.replace(/\(|\)/g, ' ')} ${song.ar.replace(/\//g, ' ')}`, s.id);
+      searchQQ(`${song.name.replace(/\(|\)|（|）/g, ' ')} ${song.ar.replace(/\//g, ' ')}`, s.id);
     }
     obj[s.id] = { ...allSongs[s.id], br: s.br, url: s.url }
   });
@@ -213,6 +213,12 @@ export const searchReq = async ({ keywords, type = 1, pageNo = 1 }) => {
 const searchQQ = (val, id) => {
   const url = '//c.y.qq.com/soso/fcgi-bin/client_search_cp';
   const { murl, guid, vkey } = Storage.get(['murl', 'guid', 'vkey']);
+
+  if (idMap[id]) {
+    setTimeout(() => {
+      window.VUE_APP.$store.dispatch('updateSongDetail', { id, qqId: idMap[id], br: 128000, url: `${murl}M500${idMap[id]}.mp3?guid=${guid}&vkey=${vkey}&fromtag=8&uin=0` });
+    });
+  }
   window.QUERY_QQ_TIMES += 1;
   const data = { p: 1, n: 1, w: val, cr: 1, aggr: 1, jsonpCallback: `SEARCH_QQ_MUSIC_${window.QUERY_QQ_TIMES}`};
   const query = Object.keys(data).map((k) => `${k}=${data[k]}`).join('&');
@@ -220,10 +226,7 @@ const searchQQ = (val, id) => {
 
 
   window[`SEARCH_QQ_MUSIC_${window.QUERY_QQ_TIMES}`] = (res) => {
-    const song = res.data.song.list[0];
-    if (idMap[id]) {
-      song.media_mid = idMap[id]
-    }
+    const song = res.data.song.list[0] || {};
     if (song.media_mid && song.size128) {
       window.VUE_APP.$store.dispatch('updateSongDetail', { id, qqId: song.media_mid, br: 128000, url: `${murl}M500${song.media_mid}.mp3?guid=${guid}&vkey=${vkey}&fromtag=8&uin=0` });
     }
