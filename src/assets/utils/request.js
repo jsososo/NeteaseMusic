@@ -104,6 +104,15 @@ const querySongUrl = (id) => request({
       const song = allSongs[s.id];
       searchQQ(`${song.name.replace(/\(|\)|（|）/g, ' ')} ${song.ar.replace(/\//g, ' ')}`, s.id);
     }
+    if (idMap[s.id]) {
+      const { murl, guid, vkey } = Storage.get(['murl', 'guid', 'vkey']);
+      obj[s.id] = {
+        ...allSongs[s.id],
+        br: 128000,
+        qqId: idMap[s.id],
+        url: `${murl}M500${idMap[id]}.mp3?guid=${guid}&vkey=${vkey}&fromtag=8&uin=0`
+      };
+    }
     obj[s.id] = { ...allSongs[s.id], br: s.br, url: s.url }
   });
   dispatch('updateAllSongs', obj);
