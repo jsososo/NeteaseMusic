@@ -3,6 +3,7 @@ import Storage from './Storage';
 import { getQueryFromUrl } from './stringHelper';
 import timer from './timer';
 import axios from 'axios';
+import idMap from './idMap';
 
 axios.interceptors.response.use(data=> {
 //==============  所有请求完成后都要执行的操作  ==================
@@ -101,7 +102,7 @@ const querySongUrl = (id) => request({
   data.forEach((s) => {
     if (!s.url) {
       const song = allSongs[s.id];
-      searchQQ(`${song.name} ${song.ar}`, s.id);
+      searchQQ(`${song.name.replace(/\(|\)/g, ' ')} ${song.ar.replace(/\//g, ' ')}`, s.id);
     }
     obj[s.id] = { ...allSongs[s.id], br: s.br, url: s.url }
   });
@@ -220,6 +221,9 @@ const searchQQ = (val, id) => {
 
   window[`SEARCH_QQ_MUSIC_${window.QUERY_QQ_TIMES}`] = (res) => {
     const song = res.data.song.list[0];
+    if (idMap[id]) {
+      song.media_mid = idMap[id]
+    }
     if (song.media_mid && song.size128) {
       window.VUE_APP.$store.dispatch('updateSongDetail', { id, qqId: song.media_mid, br: 128000, url: `${murl}M500${song.media_mid}.mp3?guid=${guid}&vkey=${vkey}&fromtag=8&uin=0` });
     }
