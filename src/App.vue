@@ -17,7 +17,6 @@
 <script>
   import Storage from './assets/utils/Storage';
   import Player from './components/Player';
-  import AddToDir from './components/AddToDir';
   import PageLeft from './components/PageLeft';
   import Playing from './components/Playing';
   import request, { loginStatus, getQQVkey } from './assets/utils/request';
@@ -25,7 +24,7 @@
 
   export default {
     name: 'App',
-    components: { Player, AddToDir, PageLeft, Playing },
+    components: { Player, PageLeft, Playing },
     data() {
       return {
         defaultActive: '/',
@@ -86,11 +85,10 @@
     #play-music-bg {
       position: absolute;
       z-index: 0;
-      top: 0;
-      left: 0;
-      min-width: 100vw;
-      min-height: 100vh;
-      bottom: -25%;
+      left: -10vw;
+      min-width: 110vw;
+      min-height: 110vh;
+      bottom: -30%;
       -webkit-filter: blur(50px) brightness(60%);
       -moz-filter: blur(50px) brightness(60%);
       -o-filter: blur(50px) brightness(60%);

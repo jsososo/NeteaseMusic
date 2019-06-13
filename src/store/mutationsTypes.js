@@ -1,3 +1,5 @@
+export const SET_RECOMMEND_LIST = 'SET_RECOMMEND_LIST';
+
 // 更新列表
 export const QUERY_163_LIST = 'QUERY_163_LIST';
 

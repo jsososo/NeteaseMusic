@@ -15,7 +15,10 @@
     <div class="song-info" v-if="playNow.id">
       <div class="info-line">
         <div class="info-label"><i class="iconfont icon-song" /></div>
-        <div class="info-val">{{playNow.name}}</div>
+        <div class="info-val">
+          {{playNow.name}}
+          <span class="info-br" v-if="playNow.br">{{parseInt(playNow.br / 1000)}}k</span>
+        </div>
       </div>
       <div class="info-line">
         <div class="info-label"><i class="iconfont icon-singer" /></div>
@@ -130,6 +133,14 @@
           left: 75px;
           transition: 0.3s;
           font-weight: bold;
+
+          .info-br {
+            font-size: 12px;
+            border: 1px solid #fff8;
+            font-weight: normal;
+            padding: 0 3px;
+            margin-left: 10px;
+          }
         }
 
         &:hover {
@@ -144,6 +155,10 @@
           .info-val {
             text-shadow: 0 0 1px #fff9;
             text-decoration: underline;
+
+            .info-br {
+              text-decoration: none !important;
+            }
           }
         }
       }

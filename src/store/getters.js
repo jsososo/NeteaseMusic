@@ -13,6 +13,9 @@ export default {
   getAllList: (state) => {
     return state.allList;
   },
+  getRecommendList: (state) => {
+    return state.recommendList;
+  },
   getPlayingPercent: (state) => {
     return state.playingPercent;
   },

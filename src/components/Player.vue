@@ -1,6 +1,6 @@
 <template>
   <div class="player-container">
-    <div v-if="showControl">
+    <div v-if="showControl && playNow.id">
       <!-- 播放，上一首、下一首进度 -->
       <div class="control-btn">
         <div class="inline-block">
@@ -22,11 +22,12 @@
           <i class="el-icon-loading mr_10" v-if="loading || downloading" />
           <span class="player-song-title">{{playNow.name}}</span>
           <span class="player-song-singer pl_20">{{playNow.ar}}</span>
-          <!--<span-->
-            <!--@click="add2Dir({ dirid: favList.id, dissid: favList.disstid }, !Boolean(favList[playNow.songmid]), true)"-->
-            <!--style="margin-left: 25px; cursor: pointer;"-->
-            <!--:class="favList[playNow.songmid] ? 'iconfont icon-xihuan iconfont' : 'iconfont icon-weixihuan'">-->
-          <!--</span>-->
+          <span
+            v-if="allList[userList.favId]"
+            @click="likeMusic(playNow.id)"
+            style="margin-left: 25px; cursor: pointer;"
+            :class="allList[userList.favId].indexOf(playNow.id) > -1 ? 'iconfont icon-like iconfont' : 'iconfont icon-unlike'">
+          </span>
         </div>
         <!-- 歌曲播放进度 -->
         <div class="play-time">
@@ -90,10 +91,9 @@
   import Num from '../assets/utils/num';
   import Storage from '../assets/utils/Storage';
   import { mapGetters } from 'vuex';
-  import request, { getQQVkey } from '../assets/utils/request';
-  import { handleLyric, getSongUrl, download, getQueryFromUrl } from "../assets/utils/stringHelper";
+  import request, { getQQVkey, likeMusic } from '../assets/utils/request';
+  import { handleLyric, download, getQueryFromUrl } from "../assets/utils/stringHelper";
   import timer from '../assets/utils/timer';
-  import { Base64 } from 'js-base64';
 
   export default {
     name: "PlayerPage",
@@ -122,8 +122,9 @@
         downloading: 'isDownloading',
         loading: 'isLoading',
         allSongs: 'getAllSongs',
-        favList: 'getFavList',
         radioInfo: 'getRadioInfo',
+        userList: 'getUserList',
+        allList: 'getAllList',
       }),
     },
     watch: {
@@ -150,7 +151,7 @@
         this.playingId = id;
 
         // 更新后面的背景
-        document.getElementById('play-music-bg').src = (this.allSongs[v.id].al && this.allSongs[v.id].al.picUrl) || '';
+        document.getElementById('play-music-bg').src = (this.allSongs[v.id] && this.allSongs[v.id].al && this.allSongs[v.id].al.picUrl) || '';
 
         // 没有歌词的拿歌词
         if (!lyric) {
@@ -283,6 +284,7 @@
         this.$store.dispatch('updateAdd2DirInfo', { song: this.playNow, dir, add, fav })
       },
       down: download,
+      likeMusic,
     }
   }
 </script>

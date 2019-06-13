@@ -1,10 +1,5 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import Player from './views/PlayerPage'
-import ImportPage from './views/Import';
-import Version from './views/Version';
-import Download from './views/Download';
-import MobileDown from './views/MobileDown';
 import Search from './views/Search';
 import PlayList from './views/PlayList';
 import PlayListDetail from './views/PlayListDetail';
@@ -16,6 +11,11 @@ Vue.use(Router);
 
 const router = new Router({
   routes: [
+    {
+      path: '/recommend',
+      name: 'recommend',
+      component: PlayList,
+    },
     {
       path: '/comment',
       name: 'comment',

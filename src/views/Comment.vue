@@ -16,7 +16,7 @@
               ：{{item.beReplied[0].content}}
             </blockquote>
             <div class="mt_10">
-              <i :class="`iconfont icon-zan${item.liked ? '' : '-o'}`" />
+              <i @click="likeComment(item, t)" :class="`iconfont pointer ${item.newLike} icon-zan${item.liked ? '' : '-o'}`" />
               <span class="pl_10 ft_12">{{numberHandle(item.likedCount)}}</span>
             </div>
           </div>
@@ -48,6 +48,7 @@
     },
     watch: {
       playNow({ comments }) {
+        console.log(comments);
         this.comments = comments;
       }
     },
@@ -91,6 +92,28 @@
       },
       numberHandle(n) {
         return n > 1000 ? `${Number(n / 1000).toFixed(1)}k` : n
+      },
+      likeComment(c, type) {
+        const { playNow } = this;
+        const t = Number(!c.liked);
+        request({
+          api: 'LIKE_COMMENT',
+          data: {
+            t,
+            type: 0,
+            cid: c.commentId,
+            id: playNow.id,
+          }
+        }).then((res) => {
+          if (!res) {
+            return;
+          }
+          const comment = playNow.comments[type].find((cItem) => cItem.commentId === c.commentId);
+          comment.likedCount += t * 2 - 1;
+          comment.liked = !c.liked;
+          comment.newLike = !c.liked ? '' : 'new-like';
+          this.$store.dispatch('updateSongDetail', playNow);
+        })
       }
     }
   }
@@ -186,10 +209,22 @@
               opacity: 0.7;
             }
           }
+
+          .iconfont.new-like {
+            animation: likeAnimation 0.5s;
+
+            @keyframes likeAnimation {
+              from, to {
+                transform: rotate(0deg);
+              }
+              50% {
+                transform: rotate(-30deg);
+              }
+            }
+          }
         }
       }
     }
-    
 
   }
 </style>

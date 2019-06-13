@@ -18,6 +18,12 @@
         <div class="icon-text">歌单</div>
       </a>
     </div>
+    <div class="nav-line">
+      <a href="#/recommend">
+        <i class="iconfont icon-recommend"></i>
+        <div class="icon-text">推荐</div>
+      </a>
+    </div>
   </div>
 </template>
 

@@ -13,8 +13,11 @@ const apiList = {
   'GET_USER_DETAIL': '/api/user/detail',
   'MUSIC_COMMENTS': '/api/comment/music',
   'GET_QQ_VKEY': '//u.y.qq.com/cgi-bin/musicu.fcg?callback=jQuery331015138042840240584_1544498679284&data=%7B%22req_0%22%3A%7B%22module%22%3A%22vkey.GetVkeyServer%22%2C%22method%22%3A%22CgiGetVkey%22%2C%22param%22%3A%7B%22guid%22%3A%225339940689%22%2C%22songmid%22%3A%5B%220039MnYb0qxYhV%22%5D%2C%22songtype%22%3A%5B0%5D%2C%22uin%22%3A%22%22%2C%22platform%22%3A%2220%22%7D%7D%7D&jsonpCallback=getQQMusicUrl&callback=getQQMusicUrl&_=1544498679292',
-
-
+  'DAILY_RECOMMEND_SONGS': '/api/recommend/songs', // 日推
+  'DAILY_RECOMMEND_LIST': '/api/recommend/resource', // 日推歌单
+  'RECOMMEND_LIST': '/api/personalized', // 未登陆用户的推荐歌单
+  'LIKE_MUSIC': '/api/like', // 喜欢音乐
+  'LIKE_COMMENT': '/api/comment/like', // 评论点赞
 
   '163': '//music.jsososo.com/neapi/index.php',
   'QQ_SEARCH': '//c.y.qq.com/soso/fcgi-bin/client_search_cp',

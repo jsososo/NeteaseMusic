@@ -67,6 +67,9 @@
       },
     },
     created() {
+      if (this.id === 'daily') {
+        return this.list = this.allList.daily || [];
+      }
       getPlayList(this.id)
         .then(({ playlist }) => {
           const { name, creator, coverImgUrl, playCount } = playlist;

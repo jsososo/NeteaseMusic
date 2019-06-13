@@ -13,7 +13,7 @@ axios.interceptors.response.use(data=> {
   return data;
 }, err=> {
   return Promise.reject(err.response.data);
-})
+});
 
 const request = (param) => {
   let obj = param;
@@ -21,6 +21,7 @@ const request = (param) => {
     obj = { api: param };
   }
   const { method = 'get', api, data = {} } = obj;
+  data._t = param.cache ? 0 : new Date().getTime();
   let url =  apiList[api];
   if (method === 'get') {
     url += `?${Object.keys(data).map((k) => `${k}=${data[k]}`).join('&')}`
@@ -49,7 +50,6 @@ export const getPlayList = async (id) => request({ api: 'LIST_DETAIL', data: { i
     const allSongs = VUE_APP.$store.getters.getAllSongs;
     const { tracks } = playlist;
     const ids = [];
-    const playing = Boolean(VUE_APP.$store.getters.getPlaying.id);
     const newSongObj = {};
 
     // 请求的太多的话返回的会不详细
@@ -64,7 +64,7 @@ export const getPlayList = async (id) => request({ api: 'LIST_DETAIL', data: { i
     });
 
     // 先显示了，不然可能要等太久了
-    dispatch('query163List', { songs, songCount: tracks.length, listId: id });
+    dispatch('query163List', { songs, listId: id });
     dispatch('updateAllSongs', newSongObj);
 
     let urls = [];
@@ -82,17 +82,15 @@ export const getPlayList = async (id) => request({ api: 'LIST_DETAIL', data: { i
         urls = [];
       }
     }
-    if (!playing) {
-      dispatch('updatePlayNow', allSongs[songs[0]]);
-      dispatch('updatePlayingList', { list: allIds });
-    }
 
     return res;
   });
 
+// 批量获取歌曲的url
 const querySongUrl = (id) => request({
   api: 'SONG_URL',
-  data: { id }
+  data: { id },
+  cache: true,
 }).then(({ data }) => {
   const VUE_APP = window.VUE_APP;
   const allSongs = VUE_APP.$store.getters.getAllSongs;
@@ -124,20 +122,63 @@ export const loginStatus = async () => {
   const dispatch = VUE_APP.$store.dispatch;
 
   // 查询登陆情况
-  const res = await request({
-    api: 'LOGIN_STATUS',
-    data: {
-      t: new Date().getTime(),
-    }
-  });
+  const res = await request('LOGIN_STATUS');
   if (!res) {
+    // 没有登陆的情况
+    request('RECOMMEND_LIST')
+      .then(({ result }) => {
+        const listObj = {};
+        const list = result.map((item) => {
+          const { id, name = '', picUrl, trackCount } = item;
+          listObj[item.id] = { id, name, trackCount, coverImgUrl: picUrl };
+          return listObj[item.id];
+        });
+        dispatch('setRecommendList', { list, obj: listObj });
+        getPlayList(list[0].id)
+          .then(({ privileges }) => {
+            const allSongs = VUE_APP.$store.getters.getAllSongs;
+            // 默认播放
+            dispatch('updatePlayNow', allSongs[privileges[0].id]);
+            dispatch('updatePlayingList', { list: privileges.map((s) => s.id) });
+          })
+      });
     return;
   }
   dispatch('setUser', res.profile);
   const uid = res.profile.userId;
   Storage.set('uid', uid);
 
+  // 获取日推
+  request('DAILY_RECOMMEND_SONGS')
+    .then(({ recommend }) => {
+      handleSongs(recommend);
+      const songs = recommend.map((item) => item.id);
+      dispatch('query163List', { songs, listId: 'daily' });
+
+      const allSongs = VUE_APP.$store.getters.getAllSongs;
+      // 默认播放日推
+      dispatch('updatePlayNow', allSongs[songs[0]]);
+      dispatch('updatePlayingList', { list: songs });
+    });
+
+  // 日推歌单
+  request('DAILY_RECOMMEND_LIST')
+    .then(({ recommend }) => {
+      const listObj = {};
+      const list = recommend.map((item) => {
+        const { id, name = '', picUrl, trackCount } = item;
+        listObj[item.id] = { id, name, trackCount, coverImgUrl: picUrl };
+        return listObj[item.id];
+      });
+      dispatch('setRecommendList', { list, obj: listObj });
+    });
+
   // 获取歌单列表
+  getMyList(uid, true);
+};
+
+// 获取我的歌单列表
+export const getMyList = async (uid, getFav, id) => {
   const { playlist } = await request({ api: 'USER_LIST', data: { uid }});
   const listObj = {};
   const list = playlist.map((item) => {
@@ -145,10 +186,11 @@ export const loginStatus = async () => {
     listObj[item.id] = { id, name, trackCount, coverImgUrl };
     return listObj[item.id];
   });
-  dispatch('setUserList', { list, obj: listObj });
+  window.VUE_APP.$store.dispatch('setUserList', { list, obj: listObj, favId: list[0].id });
 
-  // 获取第一张歌单的详细歌曲
-  getPlayList(playlist[0].id, true);
+  // 获取我喜欢的歌单
+  getFav && getPlayList(playlist[0].id);
+  id && getPlayList(id);
 };
 
 // 搜索请求
@@ -168,7 +210,8 @@ export const searchReq = async ({ keywords, type = 1, pageNo = 1 }) => {
       keywords,
       offset: (pageNo - 1)   * 30,
       type,
-    }
+    },
+    cache: true,
   });
   const obj = {};
   const search = VUE_APP.$store.getters.getSearch;
@@ -196,25 +239,62 @@ export const searchReq = async ({ keywords, type = 1, pageNo = 1 }) => {
     return;
   }
 
-
-
   // 获取歌曲的详细信息，搜索到的数据格式和这个接口里的一些字段不一样，而且没有专辑封面这种东西
   request({
     api: 'SONG_DETAIL',
     data: { ids },
-  }).then(({ songs }) => {
-    songs.forEach((s) => {
-      obj[s.id] = {
-        ...allSongs[s.id],
-        al: s.al,
-        ar: s.ar.map((a) => a.name).join('/'),
-        name: s.name,
-      };
-      allSongs[s.id] = obj[s.id];
-    });
-    dispatch('updateAllSongs', obj);
-  }).then(() => {
-    querySongUrl(ids);
+    cache: true,
+  }).then(({ songs }) => handleSongs(songs));
+};
+
+// 处理获取到的歌曲，把他们存到 allSongs 并获取链接
+export const handleSongs = (songs) => {
+  const VUE_APP = window.VUE_APP;
+  const obj = {};
+  const allSongs = VUE_APP.$store.getters.getAllSongs;
+  const ids = [];
+  songs.forEach((s) => {
+    obj[s.id] = {
+      ...(allSongs[s.id] || {}),
+      al: (s.al || s.album),
+      ar: (s.ar || s.artists).map((a) => a.name).join('/'),
+      name: s.name,
+      id: s.id,
+    };
+    allSongs[s.id] = obj[s.id];
+    ids.push(s.id);
+  });
+  VUE_APP.$store.dispatch('updateAllSongs', obj);
+  querySongUrl(ids.join(','));
+};
+
+// 喜欢音乐
+export const likeMusic = (id) => {
+  const VUE_APP = window.VUE_APP;
+  const message = VUE_APP.$message;
+  const store= VUE_APP.$store;
+  const allList = store.getters.getAllList;
+  const userList = store.getters.getUserList;
+  const like = allList[userList.favId].indexOf(id) === -1;
+  request({
+    api: 'LIKE_MUSIC',
+    data: { id, like },
+  }).then((res) => {
+    if (res.code === 200) {
+      const songs = allList[userList.favId];
+      if (like) {
+        message.success('爱上！');
+        songs.unshift(id);
+        store.dispatch('query163List', { songs, listId: userList.favId });
+      } else {
+        message.success('爱过～');
+        store.dispatch('query163List', { songs: songs.filter((s) => s !== id), listId: userList.favId });
+      }
+      getMyList(Storage.get('uid'), true);
+
+    } else {
+      message.error('喜欢失败')
+    }
   })
 };
 

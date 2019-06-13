@@ -32,6 +32,9 @@ export default {
   [types.SET_USER_LIST](state, data) {
     state.userList = { ...state.userList, ...data };
   },
+  [types.SET_RECOMMEND_LIST](state, data) {
+    state.recommendList = { ...state.recommendList, ...data };
+  },
   [types.CHANGE_SEARCH_QUERY](state, data) {
     state.searchQuery = { ...state.searchQuery, ...data };
   },

@@ -1,9 +1,23 @@
 <template>
   <div :class="`playlist-container ${show && 'show'}`">
     <div class="playlist-list">
+      <!-- 日推-->
       <div
+        v-if="allList.daily && (hash === 'playlist' || hash === 'recommend')"
         class="playlist-item"
-        v-for="item in userList.list"
+        @click="goTo('daily')"
+      >
+        <div class="list-img" style="border: 1px solid #fff5;text-align: center;">
+          {{new Date().getDate()}}
+        </div>
+        <span class="list-name">每日推荐</span>
+        <span class="list-count">{{allList.daily.length}}</span>
+      </div>
+      <!-- 歌单列表 -->
+      <div
+        v-if="hash === 'playlist' || hash === 'recommend'"
+        class="playlist-item"
+        v-for="item in (hash === 'playlist' ? userList.list : recommendList.list)"
         :key="`playlist-${item.id}`"
         @click="goTo(item.id)"
       >
@@ -23,20 +37,32 @@
     data() {
       return {
         show: false,
+        hash: '',
       };
     },
     computed: {
       ...mapGetters({
         userList: 'getUserList',
+        allList: 'getAllList',
+        recommendList: 'getRecommendList',
       })
     },
     created() {
-      setTimeout(() => this.show = true, 1)
+      this.hashChange();
+      setTimeout(() => {
+        this.show = true;
+        window.onhashchange = this.hashChange;
+      });
     },
     destroyed() {
       this.show = false;
+      window.onhashchange = null;
     },
     methods: {
+      hashChange() {
+        const hashs = ['playlist', 'recommend'];
+        this.hash = hashs.find((h) => document.location.hash.indexOf(h) > -1);
+      },
       goTo(id) {
         window.location = `#/playlist/detail?id=${id}`;
       }
@@ -101,6 +127,10 @@
           left: 10px;
           width: 70px;
           height: 70px;
+          line-height: 70px;
+          font-weight: bold;
+          color: #fff5;
+          font-size: 40px;
         }
         .list-name {
           display: inline-block;
@@ -112,11 +142,12 @@
           padding-left: 70px;
         }
         .list-count {
+          position: absolute;
+          right: 10px;
           font-weight: bold;
           font-size: 44px;
           color: #fff4;
           padding-top: 30px;
-          float: right;
           transform: rotate(0);
           transition: 0.3s;
         }
@@ -140,6 +171,8 @@
             left: -40px;
             width: 120px;
             height: 120px;
+            line-height: 120px;
+            font-size: 70px;
           }
         }
       }
