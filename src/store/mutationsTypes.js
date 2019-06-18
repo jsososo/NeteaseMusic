@@ -1,3 +1,6 @@
+// 设置操作内容
+export const SET_OPERATION = 'SET_OPERATION';
+// 设置推荐列表
 export const SET_RECOMMEND_LIST = 'SET_RECOMMEND_LIST';
 
 // 更新列表

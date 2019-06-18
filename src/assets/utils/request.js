@@ -12,6 +12,11 @@ axios.interceptors.response.use(data=> {
   }
   return data;
 }, err=> {
+  if (err.config.url.indexOf('/api/playlist/tracks') > -1) {
+    if (err.response.data.code === 502) {
+      window.VUE_APP.$message.warning('歌曲已存在');
+    }
+  }
   return Promise.reject(err.response.data);
 });
 
@@ -36,9 +41,11 @@ const request = (param) => {
     } else {
       throw({ data: res.data });
     }
-  }).catch((err) => {
-    window.VUE_APP.$message.error(err.msg || err.message);
-  })
+  }, (err) => {
+    if (err.msg || err.message) {
+      window.VUE_APP.$message.error(err.msg || err.message);
+    }
+  });
 };
 
 // 获取播放列表
@@ -178,12 +185,12 @@ export const loginStatus = async () => {
 };
 
 // 获取我的歌单列表
-export const getMyList = async (uid, getFav, id) => {
+export const getMyList = async (uid = Storage.get('uid'), getFav, id) => {
   const { playlist } = await request({ api: 'USER_LIST', data: { uid }});
   const listObj = {};
   const list = playlist.map((item) => {
-    const { id, name = '', coverImgUrl, trackCount } = item;
-    listObj[item.id] = { id, name, trackCount, coverImgUrl };
+    const { id, name = '', coverImgUrl, trackCount, subscribed } = item;
+    listObj[item.id] = { id, name, trackCount, coverImgUrl, subscribed };
     return listObj[item.id];
   });
   window.VUE_APP.$store.dispatch('setUserList', { list, obj: listObj, favId: list[0].id });
@@ -270,6 +277,7 @@ export const handleSongs = (songs) => {
 
 // 喜欢音乐
 export const likeMusic = (id) => {
+  window.event.stopPropagation();
   const VUE_APP = window.VUE_APP;
   const message = VUE_APP.$message;
   const store= VUE_APP.$store;

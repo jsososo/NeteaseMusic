@@ -6,10 +6,10 @@
       <div style="display: inline-block;width: 60%;" v-if="showCover">
         <Playing />
       </div>
-      <router-view/>
+      <router-view />
       <PageLeft />
       <Player />
-      <AddToDir />
+      <Operation />
     </div>
   </div>
 </template>
@@ -19,12 +19,13 @@
   import Player from './components/Player';
   import PageLeft from './components/PageLeft';
   import Playing from './components/Playing';
+  import Operation from './components/Operation';
   import request, { loginStatus, getQQVkey } from './assets/utils/request';
   import { mapGetters } from 'vuex';
 
   export default {
     name: 'App',
-    components: { Player, PageLeft, Playing },
+    components: { Player, PageLeft, Playing, Operation },
     data() {
       return {
         defaultActive: '/',
@@ -85,7 +86,7 @@
     #play-music-bg {
       position: absolute;
       z-index: 0;
-      left: -10vw;
+      left: -5vw;
       min-width: 110vw;
       min-height: 110vh;
       bottom: -30%;

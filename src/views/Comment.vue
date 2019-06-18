@@ -28,7 +28,6 @@
 
 <script>
   import { mapGetters } from 'vuex';
-  import $ from 'jquery';
   import request from '../assets/utils/request';
   import timer from '../assets/utils/timer';
   export default {
@@ -48,7 +47,6 @@
     },
     watch: {
       playNow({ comments }) {
-        console.log(comments);
         this.comments = comments;
       }
     },
@@ -59,9 +57,9 @@
     methods: {
       getComments() {
         const { comments, id } = this.playNow;
-        const { offset, total, loading } = comments;
+        const { offset, total } = comments;
         const limit = 20;
-        if (((offset + limit) > total) || loading) {
+        if (((offset + limit) > total) || this.loading) {
           return;
         }
         this.loading = true;

@@ -3,6 +3,9 @@ import Storage from "../assets/utils/Storage";
 import ArrHelper from '../assets/utils/arrayHelper';
 
 export default {
+  [types.SET_OPERATION](state, data) {
+    state.operation = data;
+  },
   [types.SET_USER](state, data) {
     state.user = data;
   },

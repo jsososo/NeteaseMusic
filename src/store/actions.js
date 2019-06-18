@@ -2,6 +2,9 @@ import * as types from './mutationsTypes';
 import Num from '../assets/utils/num';
 
 export default {
+  setOperation: ({ commit }, data) => {
+    commit(types.SET_OPERATION, data);
+  },
   setRecommendList: ({ commit }, data) => {
     commit(types.SET_RECOMMEND_LIST, data);
   },

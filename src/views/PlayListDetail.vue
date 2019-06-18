@@ -29,6 +29,23 @@
         <img class="song-cover" :src="`${allSongs[s].al.picUrl}?param=50y50`" alt="">
         <span class="song-name">{{allSongs[s].name}}</span>
         <span class="song-artist">{{allSongs[s].ar}}</span>
+        <i
+          v-if="allList[userList.favId] && (id != userList.favId)"
+          @click="likeMusic(s)"
+          style="font-size: 18px !important;"
+          :class="`operation-icon operation-icon-1 iconfont icon-${allList[userList.favId].indexOf(s) > -1 ? 'like' : 'unlike'}`"
+        />
+        <i
+          @click="playlistTracks(s, id, 'add', 'ADD_SONG_2_LIST')"
+          style="font-size: 15px !important;"
+          class="operation-icon operation-icon-2 iconfont icon-add"
+        />
+        <i
+          @click="playlistTracks(s, id, 'del', 'DEL_SONG')"
+          style="font-size: 18px !important;"
+          v-if="userList.obj[id] && !userList.obj[id].subscribed && (id !== userList.favId)"
+          class="operation-icon operation-icon-3 iconfont icon-delete"
+        />
       </div>
     </div>
   </div>
@@ -36,7 +53,7 @@
 
 <script>
   import { getQueryFromUrl } from "../assets/utils/stringHelper";
-  import { getPlayList } from "../assets/utils/request";
+  import { getPlayList, likeMusic } from "../assets/utils/request";
   import { mapGetters } from 'vuex';
 
   export default {
@@ -106,6 +123,11 @@
             .toLowerCase()
             .indexOf(rex) > -1
         ));
+      },
+      likeMusic: likeMusic,
+      playlistTracks(tracks, pid, op, type) {
+        window.event.stopPropagation();
+        this.$store.dispatch('setOperation', { data: { tracks, pid, op }, type });
       },
     }
   }
@@ -232,6 +254,10 @@
 
           .song-artist {
             left: 100px;
+            width: 250px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
           }
           
           .song-order {
@@ -254,6 +280,11 @@
             margin-left: 100px;
             font-size: 22px;
             color: #fff;
+          }
+
+          .operation-icon {
+            bottom: 5px;
+            opacity: 0.8;
           }
         }
 
@@ -340,6 +371,18 @@
           vertical-align: top;
           padding-top: 20px;
           transition: 0.3s;
+        }
+
+        @for $i from 1 through 3 {
+          .operation-icon-#{$i} {
+            position: absolute;
+            bottom: -30px;
+            left: #{350 + $i * 28}px;
+            transition: 0.3s #{($i - 1) * 0.1}s;
+            text-shadow: 0 2px 5px #0008;
+            cursor: pointer;
+            opacity: 0;
+          }
         }
       }
     }

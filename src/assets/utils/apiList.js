@@ -18,6 +18,7 @@ const apiList = {
   'RECOMMEND_LIST': '/api/personalized', // 未登陆用户的推荐歌单
   'LIKE_MUSIC': '/api/like', // 喜欢音乐
   'LIKE_COMMENT': '/api/comment/like', // 评论点赞
+  'PLAYLIST_TRACKS': '/api/playlist/tracks', // 歌单的增减操作
 
   '163': '//music.jsososo.com/neapi/index.php',
   'QQ_SEARCH': '//c.y.qq.com/soso/fcgi-bin/client_search_cp',

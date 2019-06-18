@@ -38,6 +38,24 @@
           <div class="song-album-img" :style="`background-image: url('${allSongs[s].al && `${allSongs[s].al.picUrl}?param=50y50`}')`"></div>
           <span class="song-name">{{allSongs[s].name}}</span>
           <span class="artist-name">{{allSongs[s].ar}}</span>
+          <span class="operation-btns">
+            <i
+              v-if="allList[userList.favId]"
+              @click="likeMusic(s)"
+              style="font-size: 18px !important;"
+              :class="`operation-icon operation-icon-1 iconfont icon-${allList[userList.favId].indexOf(s) > -1 ? 'like' : 'unlike'}`"
+            />
+            <i
+              v-if="allList[userList.favId]"
+              @click="playlistTracks(s, 'add', 'ADD_SONG_2_LIST')"
+              style="font-size: 15px !important;"
+              class="operation-icon operation-icon-2 iconfont icon-add"
+            />
+          </span>
+          <i
+            v-if="allList[userList.favId] && (allList[userList.favId].indexOf(s) > -1)"
+            class="iconfont icon-like like-bg"
+          />
         </div>
       </div>
     </div>
@@ -59,7 +77,7 @@
 </template>
 
 <script>
-  import { searchReq } from "../assets/utils/request";
+  import { searchReq, likeMusic } from "../assets/utils/request";
   import { mapGetters } from 'vuex';
   import $ from 'jquery';
 
@@ -88,7 +106,8 @@
             icon: 'singer',
             text: '歌手',
           },
-        ]
+        ],
+        loading: false,
       }
     },
     computed: {
@@ -97,6 +116,8 @@
         allSongs: 'getAllSongs',
         playNow: 'getPlaying',
         playingPercent: 'getPlayingPercent',
+        allList: 'getAllList',
+        userList: 'getUserList',
       })
     },
     watch: {
@@ -111,11 +132,16 @@
       this.show = false;
     },
     methods: {
-      search(key, val) {
-        const { searchQuery } = this;
+      async search(key, val) {
+        const { searchQuery, loading } = this;
+        if (loading) {
+          return;
+        }
+        this.loading = true;
         searchQuery.pageNo = 1;
         searchQuery[key] = val;
-        searchReq(searchQuery);
+        await searchReq(searchQuery);
+        this.loading = false;
       },
       playMusic(id) {
         const { dispatch } = this.$store;
@@ -138,7 +164,12 @@
         if (contentH - viewH - scrollTop < 150 && pageNo * 30 < total && !loading) {
           this.search('pageNo', pageNo + 1);
         }
-      }
+      },
+      likeMusic: likeMusic,
+      playlistTracks(tracks, op, type) {
+        window.event.stopPropagation();
+        this.$store.dispatch('setOperation', { data: { tracks, op }, type });
+      },
     }
   }
 </script>
@@ -310,6 +341,24 @@
               padding-left: -40px;
             }
 
+            .artist-name {
+              opacity: 0;
+              width: 0;
+            }
+
+            .operation-btns {
+              opacity: 1;
+
+              .iconfont {
+                letter-spacing: 20px;
+              }
+            }
+
+            .like-bg {
+              transform: rotate(-10deg);
+              font-size: 160px !important;
+            }
+
             .play-icon-container {
               left: -10px;
 
@@ -361,6 +410,32 @@
           overflow: hidden;
           white-space: nowrap;
           text-overflow: ellipsis;
+          opacity: 1;
+          transition: 0.3s;
+        }
+
+        .operation-btns {
+          display: inline-block;
+          transition: 0.4s 0.1s;
+          opacity: 0;
+
+          .iconfont {
+            letter-spacing: 70px;
+            transition: 0.3s 0.2s;
+          }
+        }
+
+        .like-bg {
+          position: absolute;
+          top: 20px;
+          right: 20px;
+          transform: rotate(-30deg);
+          opacity: 0.3;
+          filter: blur(5px);
+          transition: 0.5s;
+          font-size: 140px !important;
+          color: #F56C6C;
+          z-index: -1;
         }
 
         .play-icon-container {

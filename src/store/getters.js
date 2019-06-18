@@ -1,4 +1,7 @@
 export default {
+  getOperation: (state) => {
+    return state.operation;
+  },
   // 获取网易用户
   getUser: (state) => {
     return state.user;
@@ -13,15 +16,13 @@ export default {
   getAllList: (state) => {
     return state.allList;
   },
+  // 推荐列表
   getRecommendList: (state) => {
     return state.recommendList;
   },
+  // 播放进度
   getPlayingPercent: (state) => {
     return state.playingPercent;
-  },
-  // 获取搜索参数
-  getSearchQuery: (state) => {
-    return state.searchQuery;
   },
   // 是否显示评论
   getShowComment: (state) => {
@@ -31,10 +32,6 @@ export default {
   getRadioInfo: (state) => {
     return state.radioInfo;
   },
-  // 是否显示下载配置弹窗
-  getDownSettingDialog: (state) => {
-    return state.downSettingDialog;
-  },
   // 获取下载列表信息
   getDownList: (state) => {
     return state.downloadList;
@@ -43,22 +40,6 @@ export default {
   getSelectedSongs: (state) => {
     return state.selectedSongs;
   },
-  // 获取我喜欢的列表
-  getFavList: (state) => {
-    return state.favList;
-  },
-  // 添加到歌单的一些信息
-  add2DirInfo: (state) => {
-    return state.add2Dir;
-  },
-  // 获取系统的tag列表
-  getTagList: (state) => {
-    return state.sysTags;
-  },
-  // 获取tag的状态信息
-  getTagInfo(state) {
-    return state.tagInfo;
-  },
   // 获取全部的歌曲
   getAllSongs(state) {
     return state.allSongs;
@@ -66,10 +47,6 @@ export default {
   // 获取展示列表
   getShowList(state) {
     return state.showList;
-  },
-  // 获取播放器状态信息
-  getPlayerInfo(state) {
-    return state.playerInfo;
   },
   // 是否正在下载歌曲
   isDownloading(state) {
