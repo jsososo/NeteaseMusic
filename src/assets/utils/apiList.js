@@ -19,6 +19,9 @@ const apiList = {
   'LIKE_MUSIC': '/api/like', // 喜欢音乐
   'LIKE_COMMENT': '/api/comment/like', // 评论点赞
   'PLAYLIST_TRACKS': '/api/playlist/tracks', // 歌单的增减操作
+  'GET_SINGER_DESC': '/api/artist/desc', // 获取歌手描述
+  'GET_SINGER_SONGS': '/api/artists', // 获取歌手的热门歌曲
+  'GET_SINGER_ALBUMS': '/api/artist/album', // 获取歌手的转接
 
   '163': '//music.jsososo.com/neapi/index.php',
   'QQ_SEARCH': '//c.y.qq.com/soso/fcgi-bin/client_search_cp',

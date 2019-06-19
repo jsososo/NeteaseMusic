@@ -20,8 +20,8 @@
         <!-- 歌曲信息 -->
         <div class="song-info">
           <i class="el-icon-loading mr_10" v-if="loading || downloading" />
-          <span class="player-song-title">{{playNow.name}}</span>
-          <span class="player-song-singer pl_20">{{playNow.ar}}</span>
+          <span class="player-song-title pointer" @click="goTo('#/')">{{playNow.name}}</span>
+          <span class="player-song-singer pl_20 pointer" @click="goTo(`#/singer?id=${playNow.arId.split('/')[0]}`)">{{playNow.ar}}</span>
           <span
             v-if="allList[userList.favId]"
             @click="likeMusic(playNow.id)"
@@ -285,6 +285,10 @@
       },
       down: download,
       likeMusic,
+      goTo(url) {
+        console.log(url);
+        window.location = url;
+      },
     }
   }
 </script>

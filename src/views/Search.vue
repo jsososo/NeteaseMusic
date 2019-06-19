@@ -42,13 +42,11 @@
             <i
               v-if="allList[userList.favId]"
               @click="likeMusic(s)"
-              style="font-size: 18px !important;"
               :class="`operation-icon operation-icon-1 iconfont icon-${allList[userList.favId].indexOf(s) > -1 ? 'like' : 'unlike'}`"
             />
             <i
               v-if="allList[userList.favId]"
               @click="playlistTracks(s, 'add', 'ADD_SONG_2_LIST')"
-              style="font-size: 15px !important;"
               class="operation-icon operation-icon-2 iconfont icon-add"
             />
           </span>
@@ -69,7 +67,13 @@
 
     <!-- 歌手 -->
     <div v-if="searchQuery.type === 100">
-      <div class="empty-status">
+      <div class="singer-list result-list" v-if="searchQuery.artists && searchQuery.artists.length > 0">
+        <div v-for="s in searchQuery.artists" class="singer-item" @click="goTo(`#/singer?id=${s.id}`)">
+          <img class="singer-img" :src="`${String(s.picUrl) === 'null' ? 'http://p3.music.126.net/VnZiScyynLG7atLIZ2YPkw==/18686200114669622.jpg' : s.picUrl}?param=120y120`"  />
+          <div class="singer-name">{{s.name}}</div>
+        </div>
+      </div>
+      <div class="empty-status" v-if="!searchQuery.artists || searchQuery.artists.length > 0">
         开发中哟
       </div>
     </div>
@@ -170,6 +174,9 @@
         window.event.stopPropagation();
         this.$store.dispatch('setOperation', { data: { tracks, op }, type });
       },
+      goTo(url) {
+        window.location = url;
+      }
     }
   }
 </script>
@@ -464,6 +471,36 @@
             padding-left: 20px;
             line-height: 100px;
           }
+        }
+      }
+    }
+
+    .singer-list {
+      .singer-item {
+        position: relative;
+        width: 25%;
+        box-sizing: border-box;
+        display: inline-block;
+        vertical-align: top;
+        margin-bottom: 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: 0.3s;
+        opacity: 0.7;
+
+        &:hover {
+          opacity: 1;
+        }
+
+        .singer-img {
+          width: 60%;
+          border-radius: 50%;
+          margin-top: 20px;
+        }
+
+        .singer-name {
+          padding-top: 10px;
+          color: #fff8;
         }
       }
     }

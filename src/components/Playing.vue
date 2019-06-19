@@ -20,7 +20,7 @@
           <span class="info-br" v-if="playNow.br">{{parseInt(playNow.br / 1000)}}k</span>
         </div>
       </div>
-      <div class="info-line">
+      <div class="info-line" @click="goTo('singer')">
         <div class="info-label"><i class="iconfont icon-singer" /></div>
         <div class="info-val">{{playNow.ar}}</div>
       </div>
@@ -55,6 +55,17 @@
     methods: {
       numberHandle(n) {
         return n > 1000 ? `${Number(n / 1000).toFixed(1)}k` : n
+      },
+      goTo(type) {
+        switch (type) {
+          case 'singer':
+            console.log(this.playNow);
+            if (this.playNow.arId.indexOf(',') > 0) {
+              return;
+            } else {
+              return window.location = `#/singer?id=${this.playNow.arId}`;
+            }
+        }
       }
     }
   }

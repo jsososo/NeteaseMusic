@@ -63,7 +63,7 @@ export const getPlayList = async (id) => request({ api: 'LIST_DETAIL', data: { i
     const songs = tracks.map((s) => {
       if (!allSongs[s.id]) {
         const { al = {}, ar = [], id, name } = s;
-        newSongObj[s.id] = { al, ar: ar.map((a) => a.name).join('/'), id, name };
+        newSongObj[s.id] = { al, ar: ar.map((a) => a.name).join('/'), id, name, arId: ar.map((a) => a.id).join('/') };
         allSongs[s.id] = newSongObj[s.id];
         ids.push(s.id);
       }
@@ -232,11 +232,13 @@ export const searchReq = async ({ keywords, type = 1, pageNo = 1 }) => {
     }
     return s.id;
   });
+
   if (pageNo > 1) {
     res.result.songs = [ ...search.songs, ...res.result.songs ];
+    res.result.artists = [ ...search.artists, ...res.result.artists ];
   }
   if (search.keywords === keywords) {
-    dispatch('updateSearch', { ...res.result, loading: false, total: res.result.songCount });
+    dispatch('updateSearch', { ...res.result, loading: false, total: res.result.songCount || res.result.artistCount });
   }
   dispatch('updateAllSongs', obj);
 
@@ -265,6 +267,7 @@ export const handleSongs = (songs) => {
       ...(allSongs[s.id] || {}),
       al: (s.al || s.album),
       ar: (s.ar || s.artists).map((a) => a.name).join('/'),
+      arId: (s.ar || s.artists).map((a) => a.id).join('/'),
       name: s.name,
       id: s.id,
     };

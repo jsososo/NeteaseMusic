@@ -141,5 +141,41 @@
         background-color:rgba(255,255,255,0.5);
       }
     }
+
+    .playing-bg {
+      position: absolute;
+      height: 76px;
+      top: -3px;
+
+      .wave-bg {
+        width: 60vw;
+        height: 60vw;
+        border-radius: 35%;
+        position: absolute;
+        right: 0;
+        top: -30vw;
+        animation: waveBg 5s infinite linear;
+        background: -webkit-linear-gradient(left, #409EFF33, #409EFF99);
+      }
+      .wave-bg2 {
+        width: 80vw;
+        height: 80vw;
+        border-radius: 45%;
+        position: absolute;
+        right: 0;
+        top: -40vw;
+        animation: waveBg 8s infinite linear;
+        background: -webkit-linear-gradient(top, #fff1, #fff2);
+      }
+
+      @keyframes waveBg {
+        from {
+          transform: rotate(0);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    }
   }
 </style>

@@ -5,7 +5,7 @@
         <img class="list-info-cover" :src="`${listInfo.coverImgUrl}?param=100y100`">
         <div class="list-info-txt">
           <div class="list-info-name">{{listInfo.name}}</div>
-          <div class="list-info-creator">
+          <div class="list-info-creator" v-if="listInfo.creator">
             By <span class="creator-name">{{listInfo.creator.nickname}}</span>
           </div>
         </div>
@@ -32,17 +32,14 @@
         <i
           v-if="allList[userList.favId] && (id != userList.favId)"
           @click="likeMusic(s)"
-          style="font-size: 18px !important;"
           :class="`operation-icon operation-icon-1 iconfont icon-${allList[userList.favId].indexOf(s) > -1 ? 'like' : 'unlike'}`"
         />
         <i
           @click="playlistTracks(s, id, 'add', 'ADD_SONG_2_LIST')"
-          style="font-size: 15px !important;"
           class="operation-icon operation-icon-2 iconfont icon-add"
         />
         <i
           @click="playlistTracks(s, id, 'del', 'DEL_SONG')"
-          style="font-size: 18px !important;"
           v-if="userList.obj[id] && !userList.obj[id].subscribed && (id !== userList.favId)"
           class="operation-icon operation-icon-3 iconfont icon-delete"
         />
@@ -82,18 +79,25 @@
       search() {
         this.searchList();
       },
+      $route(){
+        this.id = this.$route.query.id;
+        this.init()
+      }
     },
     created() {
-      if (this.id === 'daily') {
-        return this.list = this.allList.daily || [];
-      }
-      getPlayList(this.id)
-        .then(({ playlist }) => {
-          const { name, creator, coverImgUrl, playCount } = playlist;
-          this.listInfo = { name, creator, coverImgUrl, playCount };
-        })
+      this.init();
     },
     methods: {
+      init() {
+        if (this.id === 'daily') {
+          return this.list = this.allList.daily || [];
+        }
+        getPlayList(this.id)
+          .then(({ playlist }) => {
+            const { name, creator, coverImgUrl, playCount } = playlist;
+            this.listInfo = { name, creator, coverImgUrl, playCount };
+          })
+      },
       playMusic(id) {
         const { allSongs, allList } = this;
         const { dispatch } = this.$store;
@@ -285,42 +289,6 @@
           .operation-icon {
             bottom: 5px;
             opacity: 0.8;
-          }
-        }
-
-        .playing-bg {
-          position: absolute;
-          height: 76px;
-          top: -3px;
-
-          .wave-bg {
-            width: 60vw;
-            height: 60vw;
-            border-radius: 35%;
-            position: absolute;
-            right: 0;
-            top: -30vw;
-            animation: waveBg 5s infinite linear;
-            background: -webkit-linear-gradient(left, #409EFF33, #409EFF99);
-          }
-          .wave-bg2 {
-            width: 80vw;
-            height: 80vw;
-            border-radius: 45%;
-            position: absolute;
-            right: 0;
-            top: -40vw;
-            animation: waveBg 8s infinite linear;
-            background: -webkit-linear-gradient(top, #fff1, #fff2);
-          }
-
-          @keyframes waveBg {
-            from {
-              transform: rotate(0);
-            }
-            to {
-              transform: rotate(360deg);
-            }
           }
         }
 

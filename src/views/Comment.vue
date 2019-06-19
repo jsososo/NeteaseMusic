@@ -30,6 +30,7 @@
   import { mapGetters } from 'vuex';
   import request from '../assets/utils/request';
   import timer from '../assets/utils/timer';
+  import $ from 'jquery';
   export default {
     name: "Comment",
     data() {

@@ -1,16 +1,23 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import Search from './views/Search';
-import PlayList from './views/PlayList';
-import PlayListDetail from './views/PlayListDetail';
-import User from './views/User';
-import Lyric from './views/Lyric';
-import Comment from './views/Comment';
+
+const User = () => import('./views/User');
+const Search = () => import('./views/Search');
+const PlayList = () => import('./views/PlayList');
+const PlayListDetail = () => import('./views/PlayListDetail');
+const Singer = () => import('./views/Singer');
+const Comment = () => import('./views/Comment');
+const Lyric = () => import('./views/Lyric');
 
 Vue.use(Router);
 
 const router = new Router({
   routes: [
+    {
+      path: '/singer',
+      name: 'singer',
+      component: Singer,
+    },
     {
       path: '/recommend',
       name: 'recommend',
