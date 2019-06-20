@@ -40,7 +40,7 @@
         />
         <i
           @click="playlistTracks(s, id, 'del', 'DEL_SONG')"
-          v-if="userList.obj[id] && !userList.obj[id].subscribed && (id !== userList.favId)"
+          v-if="userList.obj && userList.obj[id] && !userList.obj[id].subscribed && (id !== userList.favId)"
           class="operation-icon operation-icon-3 iconfont icon-delete"
         />
       </div>
@@ -117,7 +117,7 @@
         if (!rex) {
           return this.list = allList[id];
         }
-        this.list = allList[id].filter((s) => (
+        this.list = (allList[id] || []).filter((s) => (
           `${allSongs[s].name}
           ${allSongs[s].ar.map((a) => a.name)}
           ${allSongs[s].al.name}

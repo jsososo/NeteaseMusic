@@ -1,6 +1,10 @@
 <template>
   <div :class="`playlist-container ${show && 'show'}`">
     <div class="playlist-list">
+      <div v-if="!user.userId && hash === 'playlist'" class="text-center fc_fff ft_20" style="padding-top: 100px;opacity: 0.8;letter-spacing: 2px;">
+        登陆后可以查看个人歌单
+      </div>
+
       <!-- 日推-->
       <div
         v-if="allList.daily && (hash === 'playlist' || hash === 'recommend')"
@@ -45,6 +49,7 @@
         userList: 'getUserList',
         allList: 'getAllList',
         recommendList: 'getRecommendList',
+        user: 'getUser',
       })
     },
     created() {
@@ -97,6 +102,7 @@
       background: #0003;
       border-left: 1px solid #fffc;
       padding-left: 20px;
+      height: 100%;
 
       .playlist-item {
         position: relative;

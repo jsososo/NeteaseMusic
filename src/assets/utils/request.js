@@ -20,6 +20,9 @@ axios.interceptors.response.use(data=> {
       window.VUE_APP.$message.warning('歌曲已存在');
     }
   }
+  if (err.config.url.indexOf('/api/login/status') > -1) {
+    return Promise.reject({});
+  }
   return Promise.reject(err.response.data);
 });
 
@@ -133,6 +136,7 @@ export const loginStatus = async () => {
 
   // 查询登陆情况
   const res = await request('LOGIN_STATUS');
+  console.log(res);
   if (!res) {
     // 没有登陆的情况
     request('RECOMMEND_LIST')
