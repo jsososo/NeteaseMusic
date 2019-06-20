@@ -28,7 +28,7 @@
         <span class="song-order">{{i+1}}</span>
         <img class="song-cover" :src="`${allSongs[s].al.picUrl}?param=50y50`" alt="">
         <span class="song-name">{{allSongs[s].name}}</span>
-        <span class="song-artist">{{allSongs[s].ar}}</span>
+        <span class="song-artist">{{allSongs[s].ar.map((a) => a.name).join('/')}}</span>
         <i
           v-if="allList[userList.favId] && (id != userList.favId)"
           @click="likeMusic(s)"
@@ -86,7 +86,7 @@
     },
     created() {
       this.list = this.allList[this.id] || [];
-      this.listInfo = this.userList.obj[this.id] || null;
+      this.listInfo = (this.userList && this.userList.obj && this.userList.obj[this.id]) || null;
       this.init();
     },
     methods: {
@@ -119,11 +119,11 @@
         }
         this.list = allList[id].filter((s) => (
           `${allSongs[s].name}
-          ${allSongs[s].ar}
+          ${allSongs[s].ar.map((a) => a.name)}
           ${allSongs[s].al.name}
           ${allSongs[s].name}
           ${allSongs[s].al.name}
-          ${allSongs[s].ar}
+          ${allSongs[s].ar.map((a) => a.name)}
           ${allSongs[s].name}`
             .replace(/\s/g, '')
             .toLowerCase()

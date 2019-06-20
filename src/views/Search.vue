@@ -37,7 +37,7 @@
           <span class="song-order">{{i+1}}</span>
           <div class="song-album-img" :style="`background-image: url('${allSongs[s].al && `${allSongs[s].al.picUrl}?param=50y50`}')`"></div>
           <span class="song-name">{{allSongs[s].name}}</span>
-          <span class="artist-name">{{allSongs[s].ar}}</span>
+          <span class="artist-name">{{allSongs[s].ar.map((a) => a.name).join('/')}}</span>
           <span class="operation-btns">
             <i
               v-if="allList[userList.favId]"

@@ -79,6 +79,9 @@
   body {
     overflow: hidden;
   }
+  a {
+    color: #fffc;
+  }
   #app {
     height: 100vh;
     min-width: 1200px;

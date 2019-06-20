@@ -19,7 +19,7 @@ export default {
   },
   playNow: { // 正在播放的歌曲信息
     al: {},
-    ar: '',
+    ar: [],
   },
   playingPercent: 0, // 当前播放进度
   showCoverImg: true, // 是否显示专辑封面图片，有些页面是不显示的

@@ -1,6 +1,6 @@
 <template>
   <div class="player-container">
-    <div v-if="showControl && playNow.id">
+    <div v-if="showControl && playNow.id && allSongs[playNow.id]">
       <!-- 播放，上一首、下一首进度 -->
       <div class="control-btn">
         <div class="inline-block">
@@ -21,7 +21,9 @@
         <div class="song-info">
           <i class="el-icon-loading mr_10" v-if="loading || downloading" />
           <span class="player-song-title pointer" @click="goTo('#/')">{{playNow.name}}</span>
-          <span class="player-song-singer pl_20 pointer" @click="goTo(`#/singer?id=${playNow.arId.split('/')[0]}`)">{{playNow.ar}}</span>
+          <span class="player-song-singer pl_20 pointer">
+            <a v-for="a in allSongs[playNow.id].ar" :key="a.id" :href="`#/singer?id=${a.id}`">{{a.name}} </a>
+          </span>
           <span
             v-if="allList[userList.favId]"
             @click="likeMusic(playNow.id)"

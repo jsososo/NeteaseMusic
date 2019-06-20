@@ -1,5 +1,5 @@
 <template>
-  <div class="playnow-container">
+  <div class="playnow-container" v-if="playNow.id && allSongs[playNow.id]">
     <div class="progress-container" v-if="playNow.al && playNow.al.picUrl">
       <el-progress
         :width="280"
@@ -12,7 +12,7 @@
       />
       <img :class="`progress-cover playing-${!downloading && playing}`" :src="`${playNow.al.picUrl}?param=300y300`" alt="">
     </div>
-    <div class="song-info" v-if="playNow.id">
+    <div class="song-info">
       <div class="info-line">
         <div class="info-label"><i class="iconfont icon-song" /></div>
         <div class="info-val">
@@ -20,9 +20,11 @@
           <span class="info-br" v-if="playNow.br">{{parseInt(playNow.br / 1000)}}k</span>
         </div>
       </div>
-      <div class="info-line" @click="goTo('singer')">
+      <div class="info-line">
         <div class="info-label"><i class="iconfont icon-singer" /></div>
-        <div class="info-val">{{playNow.ar}}</div>
+        <div class="info-val">
+          <a v-for="a in allSongs[playNow.id].ar" :key="a.id" :href="`#/singer?id=${a.id}`">{{a.name}} </a>
+        </div>
       </div>
       <div class="info-line">
         <div class="info-label"><i class="iconfont icon-album" /></div>
@@ -50,6 +52,7 @@
         percent: 'getPlayingPercent',
         downloading: 'isDownloading',
         playing: 'isPlaying',
+        allSongs: 'getAllSongs',
       })
     },
     methods: {
@@ -59,7 +62,6 @@
       goTo(type) {
         switch (type) {
           case 'singer':
-            console.log(this.playNow);
             if (this.playNow.arId.indexOf(',') > 0) {
               return;
             } else {

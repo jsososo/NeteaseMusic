@@ -66,7 +66,7 @@ export const getPlayList = async (id) => request({ api: 'LIST_DETAIL', data: { i
     const songs = tracks.map((s) => {
       if (!allSongs[s.id]) {
         const { al = {}, ar = [], id, name } = s;
-        newSongObj[s.id] = { al, ar: ar.map((a) => a.name).join('/'), id, name, arId: ar.map((a) => a.id).join('/') };
+        newSongObj[s.id] = { al, ar: ar, id, name };
         allSongs[s.id] = newSongObj[s.id];
         ids.push(s.id);
       }
@@ -110,7 +110,7 @@ const querySongUrl = (id) => request({
   data.forEach((s) => {
     if (!s.url) {
       const song = allSongs[s.id];
-      searchQQ(`${song.name.replace(/\(|\)|（|）/g, ' ')} ${song.ar.replace(/\//g, ' ')}`, s.id);
+      searchQQ(`${song.name.replace(/\(|\)|（|）/g, ' ')} ${song.ar.map((a) => a.name).join(' ')}`, s.id);
     }
     if (idMap[s.id]) {
       const { murl, guid, vkey } = Storage.get(['murl', 'guid', 'vkey']);
@@ -230,7 +230,7 @@ export const searchReq = async ({ keywords, type = 1, pageNo = 1 }) => {
       obj[s.id] = {
         id: s.id,
         name: s.name,
-        ar: s.artists.map((a) => a.name).join('/'),
+        ar: s.artists || s.ar,
       };
     }
     return s.id;
@@ -269,8 +269,7 @@ export const handleSongs = (songs) => {
     obj[s.id] = {
       ...(allSongs[s.id] || {}),
       al: (s.al || s.album),
-      ar: (s.ar || s.artists).map((a) => a.name).join('/'),
-      arId: (s.ar || s.artists).map((a) => a.id).join('/'),
+      ar: s.ar || s.artists,
       name: s.name,
       id: s.id,
     };

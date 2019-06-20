@@ -37,7 +37,7 @@
           </div>
           <div class="song-name">{{allSongs[s].name}}</div>
           <div>
-            <div class="song-ar">{{allSongs[s].ar}}</div>
+            <div class="song-ar">{{allSongs[s].ar.map((a) => a.name).join('/')}}</div>
             <div class="song-operation">
               <i
                 v-if="allList[userList.favId]"
