@@ -1,4 +1,10 @@
 export default {
+  isHearMode: (state) => {
+    return state.heartMode;
+  },
+  getPlayingListId: (state) => {
+    return state.playingListId;
+  },
   getOperation: (state) => {
     return state.operation;
   },
@@ -35,10 +41,6 @@ export default {
   // 获取下载列表信息
   getDownList: (state) => {
     return state.downloadList;
-  },
-  // 获取选中的歌曲
-  getSelectedSongs: (state) => {
-    return state.selectedSongs;
   },
   // 获取全部的歌曲
   getAllSongs(state) {

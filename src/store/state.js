@@ -23,6 +23,8 @@ export default {
   },
   playingPercent: 0, // 当前播放进度
   showCoverImg: true, // 是否显示专辑封面图片，有些页面是不显示的
+  playingListId: '', // 正在播放的歌单id
+  heartMode: false, // 是否是心动模式
   operation: {},
   playing: false,
   playerInfo: { // 播放器信息

@@ -108,7 +108,7 @@
           return;
         }
         dispatch('updatePlayNow', song);
-        dispatch('updatePlayingList', { list: allList[this.id]});
+        dispatch('updatePlayingList', { list: allList[this.id], id: this.id });
         dispatch('updatePlayingStatus', true);
       },
       searchList() {

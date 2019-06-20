@@ -39,17 +39,8 @@ export const UPDATE_RADIO_INFO = 'UPDATE_RADIO_INFO';
 // 显示下载设置弹窗
 export const SHOW_DOWN_SETTING = 'SHOW_DOWN_SETTING';
 
-// 电台的下一曲
-export const RADIO_PLAY_NEXT = 'RADIO_PLAY_NEXT';
-
 // 更新下载的列表
 export const UPDATE_DOWNLOAD_LIST = 'UPDATE_DOWNLOAD_LIST';
-
-// 选择歌曲
-export const SELECT_SONGS = 'SELECT_SONGS';
-
-// 我喜欢的歌曲
-export const SET_FAV_LIST = 'SET_FAV_LIST';
 
 // 更显展示列表
 export const UPDATE_SHOW_LIST = 'UPDATE_SHOW_LIST';
@@ -59,9 +50,6 @@ export const UPDATE_ALL_SONGS = 'UPDATE_ALL_SONGS';
 
 // 搜索
 export const SEARCH_MUSIC = 'SEARCH_MUSIC';
-
-// 更新选中tag的状态
-export const UPDATE_SELECTED_TAG = 'UPDATE_SELECTED_TAG';
 
 // 更新随机播放历史
 export const UPDATE_RANDOM_HISTORY = 'UPDATE_RANDOM_HISTORY';
@@ -84,21 +72,5 @@ export const PLAY_PREV = 'PLAY_PREV';
 // 更新播放、暂停转台
 export const UPDATE_PLAYING_STATUS = 'UPDATE_PLAYING_STATUS';
 
-// 更新展示列表
-export const CHANGE_SHOW_LIST = 'CHANGE_SHOW_LIST';
-
-
-// 更新全部的歌曲列表
-export const SET_ALL_SONGS = 'SET_ALL_SONGS';
-
 // 更新正在播放的音乐
 export const UPDATE_PLAY_NOW = 'UPDATE_PLAY_NOW';
-
-// 切换右侧现实内容
-export const CHANGE_LIST_CONTENT = 'CHANGE_LIST_CONTENT';
-
-// 选择是列表內搜索还是qq音乐搜索
-export const CHANGE_SEARCH_KEY = 'CHANGE_SEARCH_KEY';
-
-// 更新增删歌曲的信息
-export const UPDATE_ADD_DIR_INFO = 'UPDATE_ADD_DIR_INFO';

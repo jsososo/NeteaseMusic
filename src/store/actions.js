@@ -32,29 +32,11 @@ export default {
   updateShowCover: ({ commit }, data) => {
     commit(types.UPDATE_SHOW_COVER, data);
   },
-  changeSearchQuery: ({ commit }, data) => {
-    commit(types.CHANGE_SEARCH_QUERY, data);
-  },
-  changeShowComment: ({ commit }) => {
-    commit(types.CHANGE_SHOW_COMMENT);
-  },
-  updateRadioInfo: ({ commit }, data) => {
-    commit(types.UPDATE_RADIO_INFO, data);
-  },
   updateDownSettingDialog: ({ commit }, data) => {
     commit(types.SHOW_DOWN_SETTING, data);
   },
   updateDownloadList: ({ commit }, data) => {
     commit(types.UPDATE_DOWNLOAD_LIST, data);
-  },
-  updateSelectedSongs: ({ commit }, data) => {
-    commit(types.SELECT_SONGS, data);
-  },
-  updateShowList: ({ commit }, data) => {
-    commit(types.UPDATE_SHOW_LIST, data);
-  },
-  searchMusic: ({ commit }, data) => {
-    commit(types.SEARCH_MUSIC, data);
   },
   updateRandomHistory: ({ commit }, data) => {
     commit(types.UPDATE_RANDOM_HISTORY, data);
@@ -81,7 +63,4 @@ export default {
   updatePlayingStatus: ({ commit }, data) => {
     commit(types.UPDATE_PLAYING_STATUS, data);
   },
-  updateAdd2DirInfo: ({ commit }, data) => {
-    commit(types.UPDATE_ADD_DIR_INFO, data);
-  }
 }

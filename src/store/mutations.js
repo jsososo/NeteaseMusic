@@ -178,7 +178,7 @@ export default {
     state.playNow = data;
     window.VUE_APP.$store.dispatch('updateRandomList');
   },
-  [types.UPDATE_PLAYING_LIST](state, { list, more }) {
+  [types.UPDATE_PLAYING_LIST](state, { list, more, id, heart = false }) {
     const { playingList, allSongs } = state;
     if (more) {
       // 增量
@@ -189,7 +189,9 @@ export default {
       playingList.history = [];
       playingList.index = 0;
     }
-    playingList.trueList = playingList.raw.filter((id) => allSongs[id].url || allSongs[id].qqId);
+    state.playingListId = id;
+    state.heartMode = heart;
+    playingList.trueList = playingList.raw.filter((v) => allSongs[v].url || allSongs[v].qqId);
     window.VUE_APP.$store.dispatch('updateRandomList');
   },
   [types.UPDATE_RANDOM_LIST](state) {

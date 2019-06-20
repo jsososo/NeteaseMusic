@@ -127,6 +127,10 @@ const querySongUrl = (id) => request({
     obj[s.id] = { ...allSongs[s.id], br: s.br, url: s.url }
   });
   dispatch('updateAllSongs', obj);
+  return {
+    songs: obj,
+    id,
+  }
 });
 
 // 登陆状态
@@ -136,7 +140,6 @@ export const loginStatus = async () => {
 
   // 查询登陆情况
   const res = await request('LOGIN_STATUS');
-  console.log(res);
   if (!res) {
     // 没有登陆的情况
     request('RECOMMEND_LIST')
@@ -153,7 +156,7 @@ export const loginStatus = async () => {
             const allSongs = VUE_APP.$store.getters.getAllSongs;
             // 默认播放
             dispatch('updatePlayNow', allSongs[privileges[0].id]);
-            dispatch('updatePlayingList', { list: privileges.map((s) => s.id) });
+            dispatch('updatePlayingList', { list: privileges.map((s) => s.id), id: list[0].id });
           })
       });
     return;
@@ -172,7 +175,7 @@ export const loginStatus = async () => {
       const allSongs = VUE_APP.$store.getters.getAllSongs;
       // 默认播放日推
       dispatch('updatePlayNow', allSongs[songs[0]]);
-      dispatch('updatePlayingList', { list: songs });
+      dispatch('updatePlayingList', { list: songs, id: 'daily' });
     });
 
   // 日推歌单

@@ -166,7 +166,7 @@
 
         // 没有歌词的拿歌词
         if (!lyric) {
-          request({ api: 'GET_LYRIC', data: { id }})
+          request({ api: 'GET_LYRIC', data: { id }, cache: true })
             .then((res) => {
               const { nolyric, lrc, tlyric } = res;
               let lyric = {};
@@ -289,10 +289,6 @@
       // 切歌。包括上一首。下一首
       cutSong(type) {
         this.$store.dispatch(type);
-      },
-      // 添加到歌单
-      add2Dir(dir, add, fav) {
-        this.$store.dispatch('updateAdd2DirInfo', { song: this.playNow, dir, add, fav })
       },
       down: download,
       likeMusic,
