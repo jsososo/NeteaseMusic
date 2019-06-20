@@ -25,7 +25,7 @@
           :class="`list-item ${add2ListId === item.id && 'selected'}`"
           v-for="item in userList.list"
           v-if="!item.subscribed"
-          :key="list-`${item.id}`"
+          :key="`list-${item.id}`"
         >
           {{item.name}}
         </div>
@@ -54,16 +54,22 @@
       ...mapGetters({
         operation: 'getOperation',
         userList: 'getUserList',
+        user: 'getUser',
       })
     },
     watch: {
       operation(v = {}) {
+        const { user } = this;
         switch (v.type) {
           case 'DEL_SONG':
             this.showDelSong = true;
             break;
           case 'ADD_SONG_2_LIST':
-            this.showAddSong = true;
+            if (user && user.userId) {
+              this.showAddSong = true;
+            } else {
+              this.$message.warning('请先登录');
+            }
             break;
         }
       },
@@ -83,6 +89,7 @@
           });
           res && getMyList(undefined, undefined, this.operation.data.pid);
           res && this.$message.success('操作成功～');
+          !res && this.$message.error('操作失败：可能是歌曲下架了');
         }
         this.showDelSong = false;
         this.showAddSong = false;
@@ -99,6 +106,10 @@
       overflow-y: auto;
       width: 387px;
       border: 1px solid #f8f8f8;
+
+      &::-webkit-input-placeholder {
+        color: rgba(255,255,255,0.5);
+      }
 
       .list-item {
         white-space: nowrap;

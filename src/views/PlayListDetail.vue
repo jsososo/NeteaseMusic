@@ -81,10 +81,12 @@
       },
       $route(){
         this.id = this.$route.query.id;
-        this.init()
+        this.init();
       }
     },
     created() {
+      this.list = this.allList[this.id] || [];
+      this.listInfo = this.userList.obj[this.id] || null;
       this.init();
     },
     methods: {

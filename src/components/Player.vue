@@ -75,12 +75,20 @@
             <i :class="`iconfont icon-${orderType}`" />
           </div>
         </div>
+
         <!-- 下载 -->
         <!--<div class="inline-block ml_5">-->
           <!--<span @click="down(playNow)">-->
             <!--<i class="iconfont icon-xiazai" />-->
           <!--</span>-->
         <!--</div>-->
+        <!-- 下载 -->
+        <div class="inline-block ml_5 pd_5">
+          <span @click="playlistTracks(playNow.id, 'add', 'ADD_SONG_2_LIST')">
+            <i class="iconfont icon-add ft_16 pointer" />
+          </span>
+        </div>
+
       </div>
     </div>
     <audio id="m-player" :src="playNow.url || '/error'" controls></audio>
@@ -125,6 +133,7 @@
         radioInfo: 'getRadioInfo',
         userList: 'getUserList',
         allList: 'getAllList',
+        user: 'getUser',
       }),
     },
     watch: {
@@ -286,8 +295,11 @@
       down: download,
       likeMusic,
       goTo(url) {
-        console.log(url);
         window.location = url;
+      },
+      playlistTracks(tracks, op, type) {
+        window.event.stopPropagation();
+        this.$store.dispatch('setOperation', { data: { tracks, op }, type });
       },
     }
   }

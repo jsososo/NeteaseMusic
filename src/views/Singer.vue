@@ -24,7 +24,13 @@
       </div>
       <!-- 热门歌曲 -->
       <div class="song-list" v-if="selected === 'songs'">
-        <div v-for="s in info.songs" :key="s" class="song-item" @click="playMusic(s)">
+        <div
+          v-for="s in info.songs"
+          :key="s"
+          class="song-item"
+          @click="playMusic(s)"
+        >
+          <div v-if="(allList[userList.favId] && allList[userList.favId].indexOf(s) > -1)" class="liked-item"></div>
           <div class="playing-bg" v-if="playNow.id === s" :style="`width: ${playingPercent * 100}%`">
             <div class="wave-bg"></div>
             <div class="wave-bg2"></div>
@@ -34,7 +40,7 @@
             <div class="song-ar">{{allSongs[s].ar}}</div>
             <div class="song-operation">
               <i
-                v-if="allList[userList.favId] && (id != userList.favId)"
+                v-if="allList[userList.favId]"
                 @click="likeMusic(s)"
                 :class="`operation-icon operation-icon-1 iconfont icon-${allList[userList.favId].indexOf(s) > -1 ? 'like' : 'unlike'}`"
               />
@@ -330,7 +336,7 @@
         }
       }
 
-      .descs-lit, .song-list, .album-list {
+      .descs-list, .song-list, .album-list {
         height: calc(100vh - 120px);
         box-sizing: border-box;
         overflow-y: auto;
@@ -367,6 +373,16 @@
           border-bottom: 1px solid #fff3;
           overflow: hidden;
           transition: 0.3s;
+          box-sizing: border-box;
+
+          .liked-item {
+            position: absolute;
+            height: 100%;
+            width: 1px;
+            left: 0;
+            top: 0;
+            box-shadow: 0 0 10px 4px #F56C6C;
+          }
 
           &:hover {
             background: #0003;

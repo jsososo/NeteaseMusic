@@ -12,6 +12,9 @@ axios.interceptors.response.use(data=> {
   }
   return data;
 }, err=> {
+  if (!err.config.url) {
+    return { code: 500 };
+  }
   if (err.config.url.indexOf('/api/playlist/tracks') > -1) {
     if (err.response.data.code === 502) {
       window.VUE_APP.$message.warning('歌曲已存在');
@@ -206,7 +209,7 @@ export const searchReq = async ({ keywords, type = 1, pageNo = 1 }) => {
   const dispatch = VUE_APP.$store.dispatch;
 
   if (!keywords) {
-    return dispatch('updateSearch', { keywords, type, pageNo, loading: false, songs: [], total: 0 });
+    return dispatch('updateSearch', { keywords, type, pageNo, loading: false, songs: [], artists: [], total: 0 });
   }
 
   const allSongs = VUE_APP.$store.getters.getAllSongs;
@@ -291,7 +294,7 @@ export const likeMusic = (id) => {
     api: 'LIKE_MUSIC',
     data: { id, like },
   }).then((res) => {
-    if (res.code === 200) {
+    if (res && res.code === 200) {
       const songs = allList[userList.favId];
       if (like) {
         message.success('爱上！');
@@ -304,7 +307,8 @@ export const likeMusic = (id) => {
       getMyList(Storage.get('uid'), true);
 
     } else {
-      message.error('喜欢失败')
+      console.log(res);
+      message.error('喜欢失败，可能是被下架了')
     }
   })
 };

@@ -45,14 +45,13 @@
               :class="`operation-icon operation-icon-1 iconfont icon-${allList[userList.favId].indexOf(s) > -1 ? 'like' : 'unlike'}`"
             />
             <i
-              v-if="allList[userList.favId]"
               @click="playlistTracks(s, 'add', 'ADD_SONG_2_LIST')"
               class="operation-icon operation-icon-2 iconfont icon-add"
             />
           </span>
-          <i
+          <div
             v-if="allList[userList.favId] && (allList[userList.favId].indexOf(s) > -1)"
-            class="iconfont icon-like like-bg"
+            class="liked-item"
           />
         </div>
       </div>
@@ -73,8 +72,8 @@
           <div class="singer-name">{{s.name}}</div>
         </div>
       </div>
-      <div class="empty-status" v-if="!searchQuery.artists || searchQuery.artists.length > 0">
-        开发中哟
+      <div class="empty-status" v-if="!searchQuery.artists || searchQuery.artists.length === 0">
+        空空如也！
       </div>
     </div>
   </div>
@@ -432,17 +431,13 @@
           }
         }
 
-        .like-bg {
+        .liked-item {
           position: absolute;
-          top: 20px;
-          right: 20px;
-          transform: rotate(-30deg);
-          opacity: 0.3;
-          filter: blur(5px);
-          transition: 0.5s;
-          font-size: 140px !important;
-          color: #F56C6C;
-          z-index: -1;
+          right: 0;
+          top: 0;
+          height: 100%;
+          width: 1px;
+          box-shadow: -5px 0 10px 2px #F56C6C;
         }
 
         .play-icon-container {
