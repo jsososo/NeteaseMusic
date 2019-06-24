@@ -12,15 +12,20 @@ axios.interceptors.response.use(data=> {
   }
   return data;
 }, err=> {
-  if (!err.config.url) {
+  const url = err.config && err.config.url;
+  if (!url) {
     return { code: 500 };
   }
-  if (err.config.url.indexOf('/api/playlist/tracks') > -1) {
-    if (err.response.data.code === 502) {
-      window.VUE_APP.$message.warning('歌曲已存在');
+  if (url.indexOf('/api/playlist/tracks') > -1 || url.indexOf('/api/like' > -1)) {
+    switch (err.response.data.code) {
+      case 502:
+        return window.VUE_APP.$message.warning('歌曲已存在');
+      case 401:
+      case 512:
+        return window.VUE_APP.$message.error('大概是歌曲下线了');
     }
   }
-  if (err.config.url.indexOf('/api/login/status') > -1) {
+  if (url.indexOf('/api/login/status') > -1) {
     return Promise.reject({});
   }
   return Promise.reject(err.response.data);
@@ -35,7 +40,7 @@ const request = (param) => {
   data._t = param.cache ? 0 : new Date().getTime();
   let url =  apiList[api];
   if (method === 'get') {
-    url += `?${Object.keys(data).map((k) => `${k}=${data[k]}`).join('&')}`
+    url += `?${Object.keys(data).map((k) => `${k}=${encodeURI(data[k])}`).join('&')}`
   }
   return axios({
     method,
@@ -76,25 +81,9 @@ export const getPlayList = async (id) => request({ api: 'LIST_DETAIL', data: { i
       return s.id;
     });
 
-    // 先显示了，不然可能要等太久了
+    querySongUrl(ids.join(','));
     dispatch('query163List', { songs, listId: id });
     dispatch('updateAllSongs', newSongObj);
-
-    let urls = [];
-    const allIds = [];
-    for (let i = 0; i < tracks.length; i++) {
-      // 查过的就不查了
-      if (allSongs[tracks[i].id].url === undefined) {
-        urls.push(tracks[i].id);
-      }
-      allIds.push(tracks[i].id);
-      if ((i > 1 && !(i % 50)) || i === (tracks.length - 1)) {
-        if (urls.length) {
-          querySongUrl(urls.join(','), i);
-        }
-        urls = [];
-      }
-    }
 
     return res;
   });
@@ -111,7 +100,7 @@ const querySongUrl = (id) => request({
 
   const obj = {};
   data.forEach((s) => {
-    if (!s.url) {
+    if (!s.url || s.fee === 1) {
       const song = allSongs[s.id];
       searchQQ(`${song.name.replace(/\(|\)|（|）/g, ' ')} ${song.ar.map((a) => a.name).join(' ')}`, s.id);
     }
@@ -311,11 +300,11 @@ export const likeMusic = (id) => {
         store.dispatch('query163List', { songs: songs.filter((s) => s !== id), listId: userList.favId });
       }
       getMyList(Storage.get('uid'), true);
-
     } else {
-      console.log(res);
-      message.error('喜欢失败，可能是被下架了')
+      window.VUE_APP.$message.error('大概是歌曲下线了')
     }
+  }, (err) => {
+    window.VUE_APP.$message.error('大概是歌曲下线了')
   })
 };
 

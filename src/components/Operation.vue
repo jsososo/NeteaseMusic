@@ -19,7 +19,7 @@
       :visible.sync="showAddSong"
       width="30%"
     >
-      <div class="add-2-list">
+      <div class="add-2-list hide-scroll">
         <div
           @click="add2ListId = item.id"
           :class="`list-item ${add2ListId === item.id && 'selected'}`"
@@ -102,9 +102,8 @@
 <style lang="scss" scoped>
   .operation-dialog-container {
     .add-2-list {
-      max-height: 300px;
       overflow-y: auto;
-      width: 387px;
+      width: 100%;
       border: 1px solid #f8f8f8;
 
       &::-webkit-input-placeholder {

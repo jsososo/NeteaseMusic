@@ -82,6 +82,15 @@
   a {
     color: #fffc;
   }
+  .hide-scroll {
+    overflow-y: auto;
+
+    &::-webkit-scrollbar {
+      width: 0;
+      height:8px;
+      background-color:rgba(0,0,0,0);
+    }
+  }
   #app {
     height: 100vh;
     min-width: 1200px;

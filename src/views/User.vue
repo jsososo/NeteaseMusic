@@ -124,10 +124,12 @@
           } else {
             params.phone = username;
           }
-          request({ api, data: params, methods: 'post' })
+          request({ api, data: params, method: 'post' })
             .then((res) => {
               if (res) {
                 loginStatus();
+              } else {
+                this.$message.error('账号密码错误');
               }
             }, () => this.$message.error('账号密码错误'))
 

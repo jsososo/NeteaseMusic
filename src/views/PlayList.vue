@@ -1,6 +1,6 @@
 <template>
   <div :class="`playlist-container ${show && 'show'}`">
-    <div class="playlist-list">
+    <div class="playlist-list hide-scroll">
       <div v-if="!user.userId && hash === 'playlist'" class="text-center fc_fff ft_20" style="padding-top: 100px;opacity: 0.8;letter-spacing: 2px;">
         登陆后可以查看个人歌单
       </div>
@@ -89,7 +89,10 @@
       },
       toHeartMode(pid) {
         window.event.stopPropagation();
-        const { userList, allList, allSongs } = this;
+        const { userList, allList, allSongs, user } = this;
+        if (!user.userId) {
+          return this.$message.warning('登陆后才可以开启心动模式');
+        }
         const favList = allList[userList.favId].length > 0 ? allList[userList.favId] : allList.daily;
         const randomId = favList[Math.floor(Math.random(favList.length))];
         request({
@@ -133,17 +136,12 @@
       opacity: 1;
     }
 
-    &::-webkit-scrollbar {
-      width: 0;
-      height:8px;
-      background-color:rgba(0,0,0,0);
-    }
-
     .playlist-list {
       background: #0003;
       border-left: 1px solid #fffc;
       padding-left: 20px;
       height: 100%;
+      overflow-y: auto;
 
       .playlist-item {
         position: relative;
@@ -159,7 +157,7 @@
             $r4: random(2);
 
             .playing-bg-#{$i} {
-              width: 1%;
+              width: 0.8%;
               position: absolute;
               bottom: 0;
               left: percentage($i / 100);
@@ -172,7 +170,7 @@
               .bg-item-inside {
                 height: 60px;
                 width: 100%;
-                background: linear-gradient(bottom, #409EFF, #409eff00);
+                background: linear-gradient(to top, #409EFF, #67C23A88, #E6A23C33, #E6A23C00);
                 position: absolute;
                 bottom: 0;
               }
