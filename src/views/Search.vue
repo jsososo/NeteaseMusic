@@ -59,8 +59,18 @@
 
     <!-- 专辑 -->
     <div v-if="searchQuery.type === 10">
-      <div class="empty-status">
-        开发中哟
+      <div class="album-list result-list" v-if="searchQuery.albums && searchQuery.albums.length > 0">
+        <div
+          v-for="a in searchQuery.albums" :key="a.id" class="album-item"
+        >
+          <div class="album-img-container pointer" @click="goTo(`#/album?id=${a.id}`)">
+            <img :src="`${a.picUrl}?param=200y200`">
+          </div>
+          <div class="album-name pointer" @click="goTo(`#/album?id=${a.id}`)">{{a.name}}</div>
+        </div>
+      </div>
+      <div class="empty-status" v-if="!searchQuery.albums || searchQuery.albums.length === 0">
+        空空如也！
       </div>
     </div>
 
@@ -288,43 +298,6 @@
           vertical-align: top;
         }
 
-        .playing-bg {
-          position: absolute;
-          height: 76px;
-          top: -3px;
-
-          .wave-bg {
-            width: 60vw;
-            height: 60vw;
-            border-radius: 35%;
-            position: absolute;
-            right: 0;
-            top: -30vw;
-            animation: waveBg 5s infinite linear;
-            background: -webkit-linear-gradient(left, #409EFF33, #409EFF99);
-          }
-          .wave-bg2 {
-            width: 80vw;
-            height: 80vw;
-            border-radius: 45%;
-            position: absolute;
-            right: 0;
-            top: -40vw;
-            animation: waveBg 8s infinite linear;
-            background: -webkit-linear-gradient(top, #fff1, #fff2);
-          }
-
-          @keyframes waveBg {
-            from {
-              transform: rotate(0);
-            }
-            to {
-              transform: rotate(360deg);
-            }
-          }
-        }
-
-
         &.disabled {
           opacity: 0.4;
         }
@@ -496,6 +469,63 @@
         .singer-name {
           padding-top: 10px;
           color: #fff8;
+        }
+      }
+    }
+
+    .album-list {
+      .album-item {
+        display: inline-block;
+        width: 50%;
+        box-sizing: border-box;
+        text-align: center;
+        margin: 20px 0;
+        transition: 0.3s;
+        opacity: 0.7;
+        box-shadow: 0 0 0 transparent;
+        color: #fffc;
+
+        &:hover {
+          opacity: 0.9;
+
+          .album-img-container {
+            border-radius: 20px;
+            box-shadow: 0 0 30px #333333;
+
+            img {
+              width: 170px;
+              height: 170px;
+              top: -10px;
+              left: -10px;
+            }
+          }
+        }
+
+        .album-img-container {
+          display: inline-block;
+          width: 150px;
+          height: 150px;
+          position: relative;
+          overflow: hidden;
+          border-radius: 30px;
+          transition: 0.4s;
+
+          img {
+            width: 150px;
+            height: 150px;
+            left: 0;
+            top: 0;
+            position: absolute;
+            transition: 0.3s linear;
+          }
+        }
+        .album-name {
+          margin-top: 5px;
+          padding: 0 20px;
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+          box-sizing: border-box;
         }
       }
     }

@@ -235,6 +235,7 @@ export const searchReq = async ({ keywords, type = 1, pageNo = 1 }) => {
   if (pageNo > 1) {
     res.result.songs = [ ...search.songs, ...res.result.songs ];
     res.result.artists = [ ...search.artists, ...res.result.artists ];
+    res.result.albums = [ ...search.albums, ...res.result.albums ];
   }
   if (search.keywords === keywords) {
     dispatch('updateSearch', { ...res.result, loading: false, total: res.result.songCount || res.result.artistCount });

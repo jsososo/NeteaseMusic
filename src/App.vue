@@ -190,4 +190,64 @@
       }
     }
   }
+
+  /* 部分页面的右侧导航 */
+  .right-select-tab-list {
+    position: absolute;
+    left: -120px;
+
+    @for $i from 0 to 3 {
+      .tab-item-#{$i} {
+        position: absolute;
+        white-space: nowrap;
+        overflow: hidden;
+        right: -120px;
+        top: #{$i * 45 + 15}px;
+        width: 40px;
+        padding: 5px;
+        float: right;
+        transition: 0.3s linear;
+        box-sizing: border-box;
+        box-shadow: -5px 5px 5px #0003;
+
+        .iconfont {
+          margin-right: 10px;
+          transition: 0.3s linear;
+        }
+      }
+    }
+
+    $color: (
+      red: #F56C6C,
+      blue: #409EFF,
+      green: #67C23A,
+    );
+
+    @each $c in red,blue,green {
+      .c-#{$c} {
+        background: #0001;
+        border-left: 5px solid #{map_get($color, $c)}33;
+
+        &:hover {
+          background: #0001;
+          width: 120px;
+          cursor: pointer;
+          color: #{map_get($color, $c)}cc;
+
+          &.selected {
+            .iconfont {
+              color: #{map_get($color, $c)}cc;
+            }
+          }
+          .iconfont {
+            color: #{map_get($color, $c)}cc;
+          }
+        }
+
+        &.selected {
+          background: #{map_get($color, $c)}33;
+        }
+      }
+    }
+  }
 </style>

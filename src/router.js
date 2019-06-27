@@ -8,6 +8,7 @@ const PlayListDetail = () => import('./views/PlayListDetail');
 const Singer = () => import('./views/Singer');
 const Comment = () => import('./views/Comment');
 const Lyric = () => import('./views/Lyric');
+const Album = () => import('./views/Album');
 
 Vue.use(Router);
 
@@ -61,6 +62,11 @@ const router = new Router({
       meta: {
         title: '搜索',
       }
+    },
+    {
+      path: '/album',
+      name: 'album',
+      component: Album,
     }
   ]
 });

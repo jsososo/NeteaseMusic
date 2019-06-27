@@ -1,16 +1,21 @@
 <template>
-  <div class="singer-page-container">
-    <div class="singer-main-info">
+  <div class="album-page-container">
+    <div class="album-main-info">
       <div>
-        <img class="singer-img" :src="baseInfo.img1v1Url">
-        <div class="singer-name">
+        <img class="album-img" :src="baseInfo.picUrl">
+        <div class="album-name">
           {{baseInfo.name}}
-          <div class="singer-name-alia">{{(baseInfo.alias || []).join('、')}}</div>
+          <div class="album-name-alia">{{(baseInfo.alias || []).join('、')}}</div>
+          <div class="album-artist">
+            <a v-for="a in baseInfo.artists" :key="a.id" :href="`#/singer?id=${a.id}`">{{a.name}} </a>
+          </div>
+          <div class="album-company">发行：{{baseInfo.company}}</div>
+          <div class="album-pb-time">{{baseInfo.publishTime}}</div>
         </div>
-        <div class="base-desc">{{baseInfo.briefDesc}}</div>
+        <div class="base-desc" v-if="baseInfo.description">{{baseInfo.description}}</div>
       </div>
     </div>
-    <div class="singer-detail-info">
+    <div class="album-right-list">
       <div class="right-select-tab-list">
         <div
           :class="`tab-item-${i} c-${t.color} ${selected === t.key && 'selected'}`"
@@ -22,6 +27,7 @@
           {{t.val}}
         </div>
       </div>
+
       <!-- 热门歌曲 -->
       <div class="song-list" v-if="selected === 'songs'">
         <div
@@ -53,31 +59,6 @@
         </div>
         <div v-if="info.songs.length === 0" class="text-center mt_40">没啥歌曲哟</div>
       </div>
-
-      <!-- 专辑 -->
-      <div class="album-list" v-if="selected === 'albums'" @scroll="onScroll('.singer-page-container .album-list')">
-        <div
-          v-for="a in info.albums"
-          :key="a.id"
-          class="album-item"
-        >
-          <div class="album-img-container pointer" @click="goTo(`#/album?id=${a.id}`)">
-            <img :src="`${a.picUrl}?param=200y200`" alt="">
-          </div>
-          <div class="album-name pointer" @click="goTo(`#/album?id=${a.id}`)">{{a.name}}</div>
-        </div>
-        <div v-if="info.albums.length === 0" class="text-center mt_40">没啥专辑哟</div>
-      </div>
-
-      <!-- 信息 -->
-      <div class="descs-list" v-if="selected === 'descs'">
-        <div v-for="d in info.descs" :key="d.ti">
-          <div class="desc-title">{{d.ti}}</div>
-          <div class="desc-txt">{{d.txt}}</div>
-        </div>
-        <div v-if="info.descs.length === 0" class="text-center mt_40">没啥消息哟</div>
-      </div>
-
     </div>
   </div>
 </template>
@@ -85,44 +66,25 @@
 <script>
   import { mapGetters } from 'vuex';
   import request, { handleSongs, likeMusic } from '../assets/utils/request';
-  import $ from 'jquery';
-
+  import timer from '../assets/utils/timer';
   export default {
-    name: "Singer",
+    name: "Album",
     data() {
       return {
-        id: this.$route.query.id,
-        baseInfo: {},
-        info: {
-          songs: [],
-          descs: [],
-          albums: [],
-        },
         selected: 'songs',
         tabs: [
           {
-          icon: 'song',
-          key: 'songs',
-          color: 'red',
-          val: '热门歌曲'
+            icon: 'song',
+            key: 'songs',
+            color: 'red',
+            val: '歌曲'
           },
-          {
-            icon: 'album',
-            color: 'blue',
-            key: 'albums',
-            val: '专辑',
-          },
-          {
-            icon: 'info',
-            color: 'green',
-            key: 'descs',
-            val: '详细信息',
-          }
         ],
-        albumQ: {
-          limit: 30,
-          offset: 0,
-        }
+        info: {
+          songs: [],
+        },
+        id: this.$route.query.id,
+        baseInfo: {},
       }
     },
     computed: {
@@ -137,70 +99,25 @@
     watch: {
       $route(v) {
         this.id = v.query.id;
-        this.querySinger();
+        this.queryAlbum();
       }
     },
     created() {
-      this.querySinger();
+      this.queryAlbum();
     },
     methods: {
-      querySinger() {
+      queryAlbum() {
         this.$store.dispatch('updateShowCover', false);
-        // 信息
         request({
-          api: 'GET_SINGER_DESC',
+          api: 'GET_ALBUM',
           data: { id: this.id },
           cache: true,
         }).then((res) => {
-          this.info.descs = res.introduction || [];
-        });
-
-        // 热门歌曲
-        request({
-          api: 'GET_SINGER_SONGS',
-          data: { id: this.id },
-          cache: true,
-        }).then((res) => {
-          this.baseInfo = res.artist;
-          handleSongs(res.hotSongs);
-          this.info.songs = (res.hotSongs || []).map((item) => item.id);
-        });
-
-        // 专辑
-        this.queryAlbum();
-      },
-      queryAlbum(offset = 0) {
-        if (offset !== 0 && this.albumQ.loading) {
-          return;
-        }
-        if (offset > 0 && offset > this.info.albums.length) {
-          return;
-        }
-        this.albumQ.loading = true;
-        request({
-          api: 'GET_SINGER_ALBUMS',
-          data: { offset, limit: 30, id: this.id }
-        }).then((res) => {
-          if (offset === 0) {
-            this.info.albums = [];
-          }
-          this.info.albums = [ ...this.info.albums, ...(res.hotAlbums || [])];
-          this.albumQ = {
-            offset: offset + 30,
-            loading: false,
-          }
+          this.baseInfo = res.album;
+          this.baseInfo.publishTime = timer(this.baseInfo.publishTime).str('YYYY-MM-DD');
+          handleSongs(res.songs);
+          this.info.songs = (res.songs || []).map((item) => item.id);
         })
-      },
-      onScroll(cls) {
-        const el = $(cls);
-        const viewH = el.height(); // 可见高度
-        const contentH = el.get(0).scrollHeight; // 内容高度
-        const scrollTop = el.scrollTop(); // 滚动高度
-        if (contentH - viewH - scrollTop < 150) {
-          if (this.selected === 'albums') {
-            this.queryAlbum(this.albumQ.offset);
-          }
-        }
       },
       likeMusic: likeMusic,
       playlistTracks(tracks, op, type) {
@@ -218,30 +135,29 @@
         dispatch('updatePlayingList', { list: this.info.songs });
         dispatch('updatePlayingStatus', true);
       },
-      goTo(url) { window.location = url },
-    },
+    }
   }
 </script>
 
 <style lang="scss" scoped>
-  .singer-page-container {
+  .album-page-container {
     color: #fffc;
 
-    .singer-main-info {
+    .album-main-info {
       display: inline-block;
       width: 60%;
       padding-left: 150px;
       padding-top: 30px;
       box-sizing: border-box;
 
-      .singer-img {
-        width: 200px;
-        height: 200px;
+      .album-img {
+        max-width: 200px;
+        max-height: 200px;
         opacity: 0.8;
         border-radius: 30px;
       }
 
-      .singer-name {
+      .album-name {
         display: inline-block;
         vertical-align: top;
         font-size: 24px;
@@ -249,15 +165,20 @@
         width: calc(100% - 380px);
         padding-left: 20px;
         padding-top: 20px;
-        
-        .singer-name-alia {
+
+        .album-name-alia {
           font-size: 12px;
           font-weight: normal;
           color: #fff5;
           margin-top: 5px;
+          margin-bottom: 30px;
+        }
+        .album-company, .album-pb-time, .album-artist {
+          margin-top: 5px;
+          font-size: 14px;
+          color: #fff8;
         }
       }
-
       .base-desc {
         font-size: 14px;
         font-weight: normal;
@@ -275,8 +196,7 @@
         }
       }
     }
-
-    .singer-detail-info {
+    .album-right-list {
       width: 40%;
       background: #0003;
       border-left: 1px solid #fff8;
@@ -286,7 +206,7 @@
       position: relative;
       height: calc(100vh - 120px);
 
-      .descs-list, .song-list, .album-list {
+      .song-list {
         height: calc(100vh - 120px);
         box-sizing: border-box;
         overflow-y: auto;
@@ -295,23 +215,6 @@
           width: 0;
           height:8px;
           background-color:rgba(0,0,0,0);
-        }
-      }
-
-      .descs-list {
-        padding: 20px;
-
-        .desc-title {
-          font-weight: bold;
-          font-size: 16px;
-          margin-bottom: 15px;
-        }
-
-        .desc-txt {
-          font-size: 14px;
-          text-indent: 2em;
-          margin-bottom: 30px;
-          opacity: 0.7;
         }
       }
 
@@ -391,62 +294,6 @@
             cursor: pointer;
             font-size: 14px !important;
             transition: 0.3s;
-          }
-        }
-      }
-
-      .album-list {
-        .album-item {
-          display: inline-block;
-          width: 50%;
-          box-sizing: border-box;
-          text-align: center;
-          margin: 20px 0;
-          transition: 0.3s;
-          opacity: 0.7;
-          box-shadow: 0 0 0 transparent;
-
-          &:hover {
-            opacity: 0.9;
-
-            .album-img-container {
-              border-radius: 20px;
-              box-shadow: 0 0 30px #333333;
-
-              img {
-                width: 170px;
-                height: 170px;
-                top: -10px;
-                left: -10px;
-              }
-            }
-          }
-
-          .album-img-container {
-            display: inline-block;
-            width: 150px;
-            height: 150px;
-            position: relative;
-            overflow: hidden;
-            border-radius: 30px;
-            transition: 0.4s;
-
-            img {
-              width: 150px;
-              height: 150px;
-              left: 0;
-              top: 0;
-              position: absolute;
-              transition: 0.3s linear;
-            }
-          }
-          .album-name {
-            margin-top: 5px;
-            padding: 0 20px;
-            overflow: hidden;
-            white-space: nowrap;
-            text-overflow: ellipsis;
-            box-sizing: border-box;
           }
         }
       }
