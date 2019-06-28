@@ -32,5 +32,12 @@ export default {
     current: 0,
     paused: true,
   },
+  commentInfo: { // 自己写评论时的评论信息
+    type: 0,
+    id: 0,
+    val: '',
+    title: '',
+    open: false,
+  },
   loading: false,
 };

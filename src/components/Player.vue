@@ -143,7 +143,7 @@
         const { id, lyric, name, comments, qqId, url } = v;
         const { murl, guid, vkey, vkey_expire } = Storage.get(['murl', 'guid', 'vkey', 'vkey_expire']);
         const dispatch = this.$store.dispatch;
-        if (id === this.playingId) {
+        if (id == this.playingId) {
            // 如果是因为评论、歌词的更新，就不在走下面的步骤了
           return;
         }
@@ -162,13 +162,13 @@
         this.playingId = id;
 
         // 更新后面的背景
-        document.getElementById('play-music-bg').src = (this.allSongs[v.id] && this.allSongs[v.id].al && this.allSongs[v.id].al.picUrl) || '';
+        document.getElementById('play-music-bg').src = (this.allSongs[v.id] && this.allSongs[v.id].al && (`${this.allSongs[v.id].al.picUrl}?param=1440y1440`)) || '';
 
         // 没有歌词的拿歌词
         if (!lyric) {
           request({ api: 'GET_LYRIC', data: { id }, cache: true })
             .then((res) => {
-              const { nolyric, lrc, tlyric } = res;
+              const { nolyric, lrc = {}, tlyric = {} } = res;
               let lyric = {};
               if (nolyric) {
                 lyric = {

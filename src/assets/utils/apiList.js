@@ -24,6 +24,7 @@ const apiList = {
   'GET_SINGER_ALBUMS': '/api/artist/album', // 获取歌手的转接
   'GET_HEART_MODE': '/api/playmode/intelligence/list', // 心动模式
   'GET_ALBUM': '/api/album', // 获取专辑信息
+  'COMMENT': '/api/comment', // 发送、删除 评论
 
   '163': '//music.jsososo.com/neapi/index.php',
   'QQ_SEARCH': '//c.y.qq.com/soso/fcgi-bin/client_search_cp',

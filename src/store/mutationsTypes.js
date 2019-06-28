@@ -74,3 +74,6 @@ export const UPDATE_PLAYING_STATUS = 'UPDATE_PLAYING_STATUS';
 
 // 更新正在播放的音乐
 export const UPDATE_PLAY_NOW = 'UPDATE_PLAY_NOW';
+
+// 更新评论信息
+export const UPDATE_COMMENT_INFO = 'UPDATE_COMMENT_INFO';

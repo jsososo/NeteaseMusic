@@ -63,4 +63,8 @@ export default {
   updatePlayingStatus: ({ commit }, data) => {
     commit(types.UPDATE_PLAYING_STATUS, data);
   },
+  // 更新评论信息
+  updateCommentInfo: ({ commit }, data) => {
+    commit(types.UPDATE_COMMENT_INFO, data);
+  }
 }

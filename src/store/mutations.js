@@ -210,5 +210,13 @@ export default {
   },
   [types.UPDATE_SHOW_COVER](state, data) {
     state.showCoverImg = data;
+  },
+
+  // 更新评论信息
+  [types.UPDATE_COMMENT_INFO](state, data) {
+    state.commentInfo = {
+      ...state.commentInfo,
+      ...data,
+    }
   }
 }

@@ -76,5 +76,8 @@ export default {
   },
   isShowCoverImg(state) {
     return state.showCoverImg;
+  },
+  getCommentInfo(state) {
+    return state.commentInfo;
   }
 }

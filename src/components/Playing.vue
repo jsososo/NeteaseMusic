@@ -28,7 +28,9 @@
       </div>
       <div class="info-line">
         <div class="info-label"><i class="iconfont icon-album" /></div>
-        <div class="info-val" v-if="playNow.al && playNow.al.name">{{playNow.al.name}}</div>
+        <div class="info-val" v-if="playNow.al && playNow.al.name">
+          <a :href="`#/album?id=${playNow.al.id}`">{{playNow.al.name}}</a>
+        </div>
       </div>
 
       <div class="btn-group">

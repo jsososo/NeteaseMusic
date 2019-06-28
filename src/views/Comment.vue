@@ -18,11 +18,13 @@
             <div class="mt_10">
               <i @click="likeComment(item, t)" :class="`iconfont pointer ${item.newLike} icon-zan${item.liked ? '' : '-o'}`" />
               <span class="pl_10 ft_12">{{numberHandle(item.likedCount)}}</span>
+              <i class="iconfont icon-delete ml_20 pointer" @click="delComment(item.commentId)" v-if="item.user.userId === user.userId" />
             </div>
           </div>
         </div>
       </div>
     </div>
+    <SendComment :success-cb="initComments" />
   </div>
 </template>
 
@@ -30,9 +32,11 @@
   import { mapGetters } from 'vuex';
   import request from '../assets/utils/request';
   import timer from '../assets/utils/timer';
+  import SendComment from '../components/SendComment';
   import $ from 'jquery';
   export default {
     name: "Comment",
+    components: { SendComment },
     data() {
       return {
         comments: null,
@@ -44,6 +48,7 @@
     computed: {
       ...mapGetters({
         playNow: 'getPlaying',
+        user: 'getUser',
       })
     },
     watch: {
@@ -54,10 +59,61 @@
     created() {
       setTimeout(() => this.show = true);
       this.comments = this.playNow.comments;
+      this.$store.dispatch('updateCommentInfo', { type: 0, id: 0, val: '', title: '', open: false });
     },
     methods: {
+      async delComment(commentId) {
+        const { id, comments } = this.playNow;
+        try {
+          const confirm = await this.$confirm('确认删除？');
+          if (confirm !== 'confirm') {
+            return;
+          }
+          const res = await request({
+            api: 'COMMENT',
+            data: {
+              t: 0,
+              type: 0,
+              id,
+              commentId,
+            },
+            cache: true,
+          });
+          if (res.code === 200) {
+            comments.hot = comments.hot.filter((item) => item.commentId !== commentId);
+            comments.latest = comments.latest.filter((item) => item.commentId !== commentId);
+            comments.total -= 1;
+            this.$store.dispatch('updateSongDetail', { id, comments });
+            this.$message.success('删除成功');
+          } else {
+            this.$message.error('删除失败');
+          }
+        } catch (err) {
+          console.log(err);
+        }
+      },
+      initComments() {
+        const { id, comments } = this.playNow;
+        this.$store.dispatch('updateSongDetail', {
+          id,
+          comments: {
+            offset: 0,
+            limit: 20,
+            total: 20,
+            latest: [],
+            hot: comments.hot,
+          }
+        });
+        this.loading = false;
+        this.getComments();
+        this.$message.success('发送成功~');
+        this.$store.dispatch('updateCommentInfo', { type: 0, id: 0, val: '', title: '', open: false });
+      },
       getComments() {
         const { comments, id } = this.playNow;
+        if (!comments) {
+          return false;
+        }
         const { offset, total } = comments;
         const limit = 20;
         if (((offset + limit) > total) || this.loading) {
@@ -113,7 +169,16 @@
           comment.newLike = !c.liked ? '' : 'new-like';
           this.$store.dispatch('updateSongDetail', playNow);
         })
-      }
+      },
+      clickPlane() {
+        const { commentInfo, playNow } = this;
+        if (!commentInfo.id) {
+          this.commentInfo = {
+            id: playNow.id,
+            name: playNow.name,
+          }
+        }
+      },
     }
   }
 </script>
@@ -224,6 +289,5 @@
         }
       }
     }
-
   }
 </style>
