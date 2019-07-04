@@ -80,10 +80,12 @@ export const getPlayList = async (id) => request({ api: 'LIST_DETAIL', data: { i
       }
       return s.id;
     });
-
-    querySongUrl(ids.join(','));
     dispatch('query163List', { songs, listId: id });
     dispatch('updateAllSongs', newSongObj);
+
+    while (ids.length > 0) {
+      querySongUrl(ids.splice(-500).join(','));
+    }
 
     return res;
   });
@@ -271,10 +273,14 @@ export const handleSongs = (songs) => {
       id: s.id,
     };
     allSongs[s.id] = obj[s.id];
-    ids.push(s.id);
+    if (!allSongs[s.id].url) {
+      ids.push(s.id);
+    }
   });
   VUE_APP.$store.dispatch('updateAllSongs', obj);
-  querySongUrl(ids.join(','));
+  while (ids.length > 0) {
+    querySongUrl(ids.splice(-500).join(','));
+  }
 };
 
 // 喜欢音乐

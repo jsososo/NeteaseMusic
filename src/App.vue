@@ -196,7 +196,7 @@
     position: absolute;
     left: -120px;
 
-    @for $i from 0 to 3 {
+    @for $i from 0 to 5 {
       .tab-item-#{$i} {
         position: absolute;
         white-space: nowrap;
@@ -221,9 +221,10 @@
       red: #F56C6C,
       blue: #409EFF,
       green: #67C23A,
+      yellow: #E6A23C,
     );
 
-    @each $c in red,blue,green {
+    @each $c in red,blue,green,yellow {
       .c-#{$c} {
         background: #0001;
         border-left: 5px solid #{map_get($color, $c)}33;

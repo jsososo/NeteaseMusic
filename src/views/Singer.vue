@@ -78,6 +78,13 @@
         <div v-if="info.descs.length === 0" class="text-center mt_40">没啥消息哟</div>
       </div>
 
+      <!-- 相似歌手 -->
+      <div class="simi-list" v-if="selected === 'simis'">
+        <div v-for="s in info.simis" class="singer-item" @click="goTo(`#/singer?id=${s.id}`)">
+          <img class="singer-img" :src="`${String(s.img1v1Url) === 'null' ? 'http://p3.music.126.net/VnZiScyynLG7atLIZ2YPkw==/18686200114669622.jpg' : s.img1v1Url}?param=120y120`"  />
+          <div class="singer-name">{{s.name}}</div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -117,6 +124,12 @@
             color: 'green',
             key: 'descs',
             val: '详细信息',
+          },
+          {
+            icon: 'link',
+            color: 'yellow',
+            key: 'simis',
+            val: '相似歌手',
           }
         ],
         albumQ: {
@@ -145,11 +158,12 @@
     },
     methods: {
       querySinger() {
+        const { id } = this;
         this.$store.dispatch('updateShowCover', false);
         // 信息
         request({
           api: 'GET_SINGER_DESC',
-          data: { id: this.id },
+          data: { id },
           cache: true,
         }).then((res) => {
           this.info.descs = res.introduction || [];
@@ -158,7 +172,7 @@
         // 热门歌曲
         request({
           api: 'GET_SINGER_SONGS',
-          data: { id: this.id },
+          data: { id },
           cache: true,
         }).then((res) => {
           this.baseInfo = res.artist;
@@ -168,6 +182,13 @@
 
         // 专辑
         this.queryAlbum();
+
+        // 相似歌手
+        request({
+          api: 'SIMI_ARTIST',
+          data: { id },
+          cache: true,
+        }).then((res) => this.info.simis = res.artists);
       },
       queryAlbum(offset = 0) {
         if (offset !== 0 && this.albumQ.loading) {
@@ -286,7 +307,7 @@
       position: relative;
       height: calc(100vh - 120px);
 
-      .descs-list, .song-list, .album-list {
+      .descs-list, .song-list, .album-list, .simi-list {
         height: calc(100vh - 120px);
         box-sizing: border-box;
         overflow-y: auto;
@@ -447,6 +468,36 @@
             white-space: nowrap;
             text-overflow: ellipsis;
             box-sizing: border-box;
+          }
+        }
+      }
+
+      .simi-list {
+        .singer-item {
+          position: relative;
+          width: 25%;
+          box-sizing: border-box;
+          display: inline-block;
+          vertical-align: top;
+          margin-bottom: 20px;
+          text-align: center;
+          cursor: pointer;
+          transition: 0.3s;
+          opacity: 0.7;
+
+          &:hover {
+            opacity: 1;
+          }
+
+          .singer-img {
+            width: 60%;
+            border-radius: 50%;
+            margin-top: 20px;
+          }
+
+          .singer-name {
+            padding-top: 10px;
+            color: #fff8;
           }
         }
       }

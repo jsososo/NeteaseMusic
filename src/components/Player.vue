@@ -123,6 +123,7 @@
           duration: 0,
         },
         playingId: 0,
+        listId: 0,
       }
     },
     computed: {
@@ -136,17 +137,36 @@
         userList: 'getUserList',
         allList: 'getAllList',
         user: 'getUser',
+        playingListId: 'getPlayingListId',
       }),
     },
     watch: {
       async playNow(v) {
+        const { listId, playingId, playerInfo } = this;
         const { id, lyric, name, comments, qqId, url } = v;
         const { murl, guid, vkey, vkey_expire } = Storage.get(['murl', 'guid', 'vkey', 'vkey_expire']);
         const dispatch = this.$store.dispatch;
-        if (id == this.playingId) {
+        if (id == playingId) {
            // 如果是因为评论、歌词的更新，就不在走下面的步骤了
           return;
         }
+
+        if (playerInfo.current > 0) {
+          let sourceid = (listId === 'daily' ? '' : listId) || '';
+          if (!sourceid) {
+            sourceid = this.allSongs[playingId].al.id;
+          }
+          // 听歌打卡
+          request({
+            api: 'SCROBBLE',
+            data: {
+              id: playingId,
+              sourceid,
+              time: Num(playerInfo.current),
+            }
+          })
+        }
+
         if (qqId) {
           const newUrl = `${murl}M500${qqId}.mp3?guid=${guid}&vkey=${vkey}&fromtag=8&uin=0`;
           if (url !== newUrl) {
@@ -160,6 +180,7 @@
         document.title = name;
         this.currentTime = 0;
         this.playingId = id;
+        this.listId = this.playingListId;
 
         // 更新后面的背景
         document.getElementById('play-music-bg').src = (this.allSongs[v.id] && this.allSongs[v.id].al && (`${this.allSongs[v.id].al.picUrl}?param=1440y1440`)) || '';
@@ -203,7 +224,7 @@
             dispatch('updateSongDetail', { id, comments });
           })
         }
-      }
+      },
     },
     mounted() {
       this.playerDom = document.getElementById('m-player');

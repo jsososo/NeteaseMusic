@@ -25,6 +25,8 @@ const apiList = {
   'GET_HEART_MODE': '/api/playmode/intelligence/list', // 心动模式
   'GET_ALBUM': '/api/album', // 获取专辑信息
   'COMMENT': '/api/comment', // 发送、删除 评论
+  'SIMI_ARTIST': '/api/simi/artist', // 相似歌手
+  'SCROBBLE': '/api/scrobble', // 听歌打卡
 
   '163': '//music.jsososo.com/neapi/index.php',
   'QQ_SEARCH': '//c.y.qq.com/soso/fcgi-bin/client_search_cp',
