@@ -57,9 +57,9 @@
                 content: commentInfo.val,
               },
               cache: true,
-            }).then(() => {
+            }).then((res) => {
               this.loading = false;
-              this.successCb();
+              this.successCb(res.comment);
             }, () => this.$message.error('评论失败了'));
           }
         } else {

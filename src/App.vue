@@ -53,6 +53,7 @@
         listen_size: 'size320',
         down_size: 'high',
         down_high: 'sizeflac',
+        volume: 1,
       });
 
       // 初始化一下下载记录

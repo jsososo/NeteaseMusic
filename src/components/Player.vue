@@ -124,6 +124,7 @@
         },
         playingId: 0,
         listId: 0,
+        keys: [],
       }
     },
     computed: {
@@ -286,6 +287,37 @@
       };
       // 当点击进度条的滑块时需要停止进度的判断，否则松开鼠标后onchange事件无法返回正确的value
       sDom && (sDom.onmousedown = () => this.stopUpdateCurrent = true);
+      // 键盘事件绑定
+      window.onkeydown = ({ keyCode, path }) => {
+        // 输入框内的操作，忽略掉
+        if (['textarea', 'input'].indexOf(path[0].nodeName.toLowerCase()) > -1) {
+          return;
+        }
+        if (this.keys.indexOf(keyCode) === -1) {
+          this.keys.push(keyCode);
+        }
+        this.keys = this.keys.sort();
+        const keys = this.keys.join(',');
+
+        switch (keys) {
+          case '38':
+          case '40':
+            let val = Storage.get('volume') * 100 + { 38: 10, 40: -10 }[keys];
+            val = Math.max(val, 0);
+            val = Math.min(val, 100);
+            this.changeVolume(val);
+            this.$message.info(`音量调至${Num(val, 0)}%`);
+            return false;
+          case '37':
+          case '39':
+            this.cutSong({ 37: 'playPrev', 39: 'playNext' }[keys]);
+            return false;
+        }
+      };
+      window.onkeypress = window.onkeydown;
+      window.onkeyup = ({ keyCode }) => {
+        this.keys = this.keys.filter((c) => c !== keyCode);
+      };
     },
     methods: {
       formatTooltip(v) {
@@ -294,6 +326,7 @@
       // 音量控制，写入缓存
       changeVolume(v) {
         this.playerDom.volume = v / 100;
+        this.volume = Num(v, 0);
         Storage.set('volume', v / 100);
       },
       // 切换播放顺序

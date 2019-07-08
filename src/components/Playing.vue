@@ -6,7 +6,7 @@
         color="#409EFFCC"
         :stroke-width="10"
         type="circle"
-        :percentage="percent * 100"
+        :percentage="(percent || 0) * 100"
         style="opacity: 0.5;position: absolute;top: 10px;left: 10px;"
         :show-text="false"
       />
