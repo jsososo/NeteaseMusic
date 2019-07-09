@@ -312,6 +312,9 @@
           case '39':
             this.cutSong({ 37: 'playPrev', 39: 'playNext' }[keys]);
             return false;
+          case '32':
+            this.updatePlayingStatus(!this.playing);
+            return false;
         }
       };
       window.onkeypress = window.onkeydown;
