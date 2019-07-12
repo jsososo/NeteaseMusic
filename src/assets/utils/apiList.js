@@ -27,6 +27,8 @@ const apiList = {
   'COMMENT': '/api/comment', // 发送、删除 评论
   'SIMI_ARTIST': '/api/simi/artist', // 相似歌手
   'SCROBBLE': '/api/scrobble', // 听歌打卡
+  'GET_USER_RECORD': '/api/user/record', // 获取听歌记录
+  'GET_FOLLOWS': '/api/user/follows', // 获取关注列表
 
   '163': '//music.jsososo.com/neapi/index.php',
   'QQ_SEARCH': '//c.y.qq.com/soso/fcgi-bin/client_search_cp',

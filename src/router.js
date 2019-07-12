@@ -9,6 +9,7 @@ const Singer = () => import('./views/Singer');
 const Comment = () => import('./views/Comment');
 const Lyric = () => import('./views/Lyric');
 const Album = () => import('./views/Album');
+const About = () => import('./views/About');
 
 Vue.use(Router);
 
@@ -67,7 +68,12 @@ const router = new Router({
       path: '/album',
       name: 'album',
       component: Album,
-    }
+    },
+    {
+      path: '/about',
+      name: 'About',
+      component: About,
+    },
   ]
 });
 

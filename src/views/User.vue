@@ -46,8 +46,56 @@
           <span class="inline-block">关注 {{user.follows}}</span>
           <span class="inline-block ml_20">粉丝 {{user.followeds}}</span>
         </div>
-        <div class="user-info-txt user-info-listen">听过 {{user.listenSongs}}</div>
+        <div class="user-info-txt user-info-listen pointer" @click="selected = 'history'">听过 {{user.listenSongs}}</div>
         <div class="user-info-txt user-info-level">Lv {{user.level}}</div>
+      </div>
+
+      <div class="user-right-list">
+        <div class="right-select-tab-list">
+          <div
+            :class="`tab-item-${i} c-${t.color} ${selected === t.key && 'selected'}`"
+            v-for="(t, i) in tabs"
+            :key="t.icon"
+            @click="selected = t.key"
+          >
+            <i :class="`iconfont icon-${t.icon}`" />
+            {{t.val}}
+          </div>
+        </div>
+
+        <!-- 听歌记录 -->
+        <div class="song-list" v-if="selected === 'week' || selected === 'history'">
+          <div
+            v-for="(s, i) in info[selected]"
+            :key="s"
+            class="song-item"
+            @click="playMusic(s)"
+          >
+            <div class="playing-bg" v-if="playNow.id === s" :style="`width: ${playingPercent * 100}%`">
+              <div class="wave-bg"></div>
+              <div class="wave-bg2"></div>
+            </div>
+            <div class="song-index">{{i+1}}</div>
+            <div class="count-bg" :style="`width: ${countMap[selected][s] / countMap[`${selected}Max`] * 100}%`"></div>
+            <div class="song-name">{{allSongs[s].name}}</div>
+            <div>
+              <div class="song-ar">{{allSongs[s].ar.map((a) => a.name).join('/')}}</div>
+              <div class="song-operation">
+                <i
+                  v-if="allList[userList.favId]"
+                  @click="likeMusic(s)"
+                  :class="`operation-icon operation-icon-1 iconfont icon-${allList[userList.favId].indexOf(s) > -1 ? 'like' : 'unlike'}`"
+                />
+                <i
+                  @click="playlistTracks(s, 'add', 'ADD_SONG_2_LIST')"
+                  class="operation-icon operation-icon-2 iconfont icon-add"
+                />
+                <span class="played-count-num">{{getNum(countMap[selected][s])}}次</span>
+              </div>
+            </div>
+          </div>
+          <div v-if="info.week.length === 0" class="text-center mt_40">没听过没听过</div>
+        </div>
       </div>
     </div>
   </div>
@@ -55,7 +103,8 @@
 
 <script>
   import { mapGetters } from 'vuex';
-  import request, { loginStatus } from '../assets/utils/request';
+  import request, { loginStatus, likeMusic, handleSongs } from '../assets/utils/request';
+  import Num from '../assets/utils/num';
   export default {
     name: "User",
     data() {
@@ -65,11 +114,52 @@
         code: '',
         type: 'password',
         time: 0,
+        tabs: [
+          {
+            icon: 'week',
+            key: 'week',
+            color: 'red',
+            val: '最近常听'
+          },
+          {
+            icon: 'history',
+            key: 'history',
+            color: 'blue',
+            val: '历史排行',
+          },
+          // {
+          //   icon: 'flow',
+          //   key: 'flow',
+          //   color: 'yellow',
+          //   val: '关注',
+          // },
+          // {
+          //   icon: 'fans',
+          //   key: 'fans',
+          //   color: 'green',
+          //   val: '粉丝',
+          // }
+        ],
+        info: {
+          week: [],
+          history: [],
+        },
+        countMap: {
+          history: {},
+          week: {},
+          weekMax: 0,
+          historyMax: 0,
+        },
+        selected: 'week',
       }
     },
     computed: {
       ...(mapGetters({
         user: 'getUser',
+        allList: 'getAllList',
+        userList: 'getUserList',
+        allSongs: 'getAllSongs',
+        playNow: 'getPlaying',
       }))
     },
     watch: {
@@ -87,21 +177,33 @@
       },
       user(v) {
         if (v.userId && !v.listenSongs) {
-          this.getuserDetail();
+          this.getUserDetail();
         }
+        this.getRecord(1);
       },
+      selected(v) {
+        switch (v) {
+          case 'week':
+            return this.getRecord(1);
+          case 'history':
+            return this.getRecord();
+          case 'flow':
+            return this.getFollows();
+        }
+      }
     },
     created() {
       if (this.user.userId && !this.user.listenSongs) {
-        this.getuserDetail();
+        this.getUserDetail();
       }
+      this.getRecord(1);
       this.$store.dispatch('updateShowCover', false);
     },
     methods: {
       changeType(t) {
         this.type = t;
       },
-      async getuserDetail() {
+      async getUserDetail() {
         const { level, listenSongs, profile } = await request({ api: 'GET_USER_DETAIL', data: { uid: this.user.userId }});
         this.$store.dispatch('setUser', { ...profile, listenSongs, level});
       },
@@ -140,7 +242,77 @@
             loginStatus();
           }
         }
-      }
+      },
+
+      async getRecord(type = 0) {
+        if (!this.user.userId) {
+          return;
+        }
+        const res = await request({
+          api: 'GET_USER_RECORD',
+          data: {
+            uid: this.user.userId,
+            type,
+          }
+        });
+        const list = res[['allData', 'weekData'][type]];
+        const key = ['history', 'week'][type];
+        const ids = [];
+        const songs = list.map((item) => {
+          const id = item.song.id;
+          this.countMap[key][id] = item.playCount;
+          ids.push(id);
+          return item.song;
+        });
+        this.countMap[`${key}Max`] = (list[0] || { count: 0 }).playCount;
+        console.log(this.countMap);
+
+        await handleSongs(songs);
+
+        this.info[key] = ids;
+      },
+
+      getNum(v) {
+        if (v > 10000) {
+          return `${Num(v / 10000, 2)}w`;
+        }
+        if (v > 1000) {
+          return `${Num(v / 1000, 2)}k`;
+        }
+        return v;
+      },
+
+      getFollows() {
+        if (!this.user.userId) {
+          return;
+        }
+        request({
+          api: 'GET_FOLLOWS',
+          data: {
+            uid: this.user.userId,
+            limit: 30,
+          }
+        }).then((res) => {
+          console.log(res);
+        })
+      },
+
+      likeMusic: likeMusic,
+      playlistTracks(tracks, op, type) {
+        window.event.stopPropagation();
+        this.$store.dispatch('setOperation', { data: { tracks, op }, type });
+      },
+      playMusic(id) {
+        const { dispatch } = this.$store;
+        const { allSongs, info, selected } = this;
+        const song = allSongs[id];
+        if (!song.url) {
+          return;
+        }
+        dispatch('updatePlayNow', song);
+        dispatch('updatePlayingList', { list: info[selected] });
+        dispatch('updatePlayingStatus', true);
+      },
     },
   }
 </script>
@@ -310,6 +482,128 @@
       .user-info-level {
         font-size: 24px;
         padding-left: 45px;
+      }
+    }
+
+    .user-right-list {
+      width: 40%;
+      background: #0003;
+      border-left: 1px solid #fff8;
+      box-sizing: border-box;
+      display: inline-block;
+      vertical-align: top;
+      position: absolute;
+      right: 20px;
+      top: 20px;
+      color: #fffc;
+      height: calc(100vh - 120px);
+
+      .song-list {
+        height: calc(100vh - 120px);
+        box-sizing: border-box;
+        overflow-y: auto;
+
+        &::-webkit-scrollbar {
+          width: 0;
+          height:8px;
+          background-color:rgba(0,0,0,0);
+        }
+      }
+
+      .song-list {
+
+        .song-item {
+          height: 55px;
+          position: relative;
+          border-bottom: 1px solid #fff3;
+          overflow: hidden;
+          transition: 0.3s;
+          box-sizing: border-box;
+
+          .count-bg {
+            height: 100%;
+            position: absolute;
+            background: #67C23A33;
+            left: 0;
+            top: 0;
+            z-index: 0;
+          }
+
+          &:hover {
+            background: #0003;
+
+            .song-name {
+              font-weight: bold;
+              font-size: 20px;
+            }
+
+            .song-ar {
+              opacity: 0.3;
+            }
+
+            .operation-icon {
+              font-size: 16px;
+            }
+          }
+
+          div {
+            box-sizing: border-box;
+          }
+
+          .song-index {
+            position: absolute;
+            font-size: 60px;
+            line-height: 80px;
+            font-weight: bold;
+            color: #fff2;
+          }
+
+          .song-name {
+            display: inline-block;
+            width: 55%;
+            vertical-align: top;
+            position: absolute;
+            top: 10px;
+            left: 40px;
+            transition: 0.3s;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+          }
+          .song-ar {
+            vertical-align: top;
+            display: inline-block;
+            width: 30%;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+            position: absolute;
+            bottom: 5px;
+            opacity: 0.6;
+            left: 40px;
+            font-size: 12px;
+            transition: 0.3s;
+          }
+        }
+
+        @for $i from 1 to 3 {
+          .operation-icon-#{$i} {
+            position: absolute;
+            bottom: 20px;
+            left: calc(60% + #{$i * 30}px);
+            cursor: pointer;
+            font-size: 14px !important;
+            transition: 0.3s;
+          }
+        }
+
+        .played-count-num {
+          position: absolute;
+          bottom: 15px;
+          font-weight: bold;
+          right: 30px;
+          color: #fff8;
+        }
       }
     }
   }

@@ -24,6 +24,12 @@
         <div class="icon-text">推荐</div>
       </a>
     </div>
+    <div class="nav-line">
+      <a href="#/about">
+        <i class="iconfont icon-version"></i>
+        <div class="icon-text">关于</div>
+      </a>
+    </div>
   </div>
 </template>
 
