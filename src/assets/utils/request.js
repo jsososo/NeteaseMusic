@@ -28,6 +28,12 @@ axios.interceptors.response.use(data=> {
   if (url.indexOf('/api/login/status') > -1) {
     return Promise.reject({});
   }
+  if (url.indexOf('/api/user/record') > -1) {
+    return window.VUE_APP.$message.warning('ta 不公开听歌排行哟');
+  }
+  if (url.indexOf('/api/simi/artist') > -1) {
+    return window.VUE_APP.$message.warning('登陆后可查看相似歌手');
+  }
   return Promise.reject(err.response.data);
 });
 
@@ -190,8 +196,8 @@ export const getMyList = async (uid = Storage.get('uid'), getFav, id) => {
   const { playlist } = await request({ api: 'USER_LIST', data: { uid }});
   const listObj = {};
   const list = playlist.map((item) => {
-    const { id, name = '', coverImgUrl, trackCount, subscribed } = item;
-    listObj[item.id] = { id, name, trackCount, coverImgUrl, subscribed };
+    const { id, name = '', coverImgUrl, trackCount, subscribed, creator } = item;
+    listObj[item.id] = { id, name, trackCount, coverImgUrl, subscribed, creator };
     return listObj[item.id];
   });
   window.VUE_APP.$store.dispatch('setUserList', { list, obj: listObj, favId: list[0].id });
@@ -235,9 +241,9 @@ export const searchReq = async ({ keywords, type = 1, pageNo = 1 }) => {
   });
 
   if (pageNo > 1) {
-    res.result.songs = [ ...search.songs, ...res.result.songs ];
-    res.result.artists = [ ...search.artists, ...res.result.artists ];
-    res.result.albums = [ ...search.albums, ...res.result.albums ];
+    res.result.songs = [ ...(search.songs || []), ...(res.result.songs || []) ];
+    res.result.artists = [ ...(search.artists || []), ...(res.result.artists || []) ];
+    res.result.albums = [ ...(search.albums || []), ...(res.result.albums || []) ];
   }
   if (search.keywords === keywords) {
     dispatch('updateSearch', { ...res.result, loading: false, total: res.result.songCount || res.result.artistCount });

@@ -29,6 +29,7 @@ const apiList = {
   'SCROBBLE': '/api/scrobble', // 听歌打卡
   'GET_USER_RECORD': '/api/user/record', // 获取听歌记录
   'GET_FOLLOWS': '/api/user/follows', // 获取关注列表
+  'GET_FOLLOWEDS': '/api/user/followeds', // 获取粉丝列表
 
   '163': '//music.jsososo.com/neapi/index.php',
   'QQ_SEARCH': '//c.y.qq.com/soso/fcgi-bin/client_search_cp',

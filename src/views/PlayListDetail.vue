@@ -6,7 +6,7 @@
         <div class="list-info-txt">
           <div class="list-info-name">{{listInfo.name}}</div>
           <div class="list-info-creator" v-if="listInfo.creator">
-            By <span class="creator-name">{{listInfo.creator.nickname}}</span>
+            By <a :href="`#/user?id=${listInfo.creator.userId}`"><span class="creator-name">{{listInfo.creator.nickname}}</span></a>
           </div>
         </div>
       </div>

@@ -1,13 +1,13 @@
 <template>
   <div :class="`playlist-container ${show && 'show'}`">
     <div class="playlist-list hide-scroll">
-      <div v-if="!user.userId && hash === 'playlist'" class="text-center fc_fff ft_20" style="padding-top: 100px;opacity: 0.8;letter-spacing: 2px;">
+      <div v-if="!user.userId && hash === 'playlist' && !$route.query.id" class="text-center fc_fff ft_20" style="padding-top: 100px;opacity: 0.8;letter-spacing: 2px;">
         登陆后可以查看个人歌单
       </div>
 
       <!-- 日推-->
       <div
-        v-if="allList.daily && (hash === 'playlist' || hash === 'recommend')"
+        v-if="allList.daily && (hash === 'playlist' || hash === 'recommend') && !$route.query.id"
         :class="`playlist-item ${playingListId === 'daily' && 'playing'}`"
         @click="goTo('daily')"
       >
@@ -26,7 +26,7 @@
       <div
         v-if="hash === 'playlist' || hash === 'recommend'"
         :class="`playlist-item ${playingListId == item.id && 'playing'}`"
-        v-for="item in (hash === 'playlist' ? userList.list : recommendList.list)"
+        v-for="item in pagePlayList"
         :key="`playlist-${item.id}`"
         @click="goTo(item.id)"
       >
@@ -40,6 +40,7 @@
         <span class="list-name">{{item.name}}</span>
         <span class="list-count">{{item.trackCount}}</span>
         <i @click="toHeartMode(item.id)" :class="`iconfont icon-heart heart-btn ${heartMode && playingListId === item.id && 'hearting'}`" />
+        <span class="list-creator" v-if="item.creator">By: <a :href="`#/user?id=${item.creator.userId}`">{{item.creator.nickname}}</a></span>
       </div>
     </div>
   </div>
@@ -54,6 +55,7 @@
       return {
         show: false,
         hash: '',
+        pagePlayList: [],
       };
     },
     computed: {
@@ -68,21 +70,39 @@
         isPlaying: 'isPlaying',
       })
     },
+    watch: {
+      $route() {
+        this.hashChange();
+      }
+    },
     created() {
       this.hashChange();
-      setTimeout(() => {
-        this.show = true;
-        window.onhashchange = this.hashChange;
-      });
+      setTimeout(() => this.show = true);
     },
     destroyed() {
       this.show = false;
-      window.onhashchange = null;
     },
     methods: {
       hashChange() {
         const hashs = ['playlist', 'recommend'];
         this.hash = hashs.find((h) => document.location.hash.indexOf(h) > -1);
+        switch (this.hash) {
+          case 'recommend':
+            return this.pagePlayList = this.recommendList.list;
+          case 'playlist':
+            return (this.$route.query.id ? this.queryPlayList() : (this.pagePlayList = this.userList.list));
+        }
+      },
+      queryPlayList() {
+        const { id } = this.$route.query;
+        request({
+          api: 'USER_LIST',
+          data: {
+            uid: id
+          },
+        }).then((res) => {
+          this.pagePlayList = res.playlist;
+        })
       },
       goTo(id) {
         window.location = `#/playlist/detail?id=${id}`;
@@ -230,6 +250,21 @@
             }
           }
         }
+        .list-creator {
+          position: absolute;
+          left: 145px;
+          bottom: 20px;
+          font-weight: bold;
+          font-size: 14px;
+          color: #fff5;
+          transition: 0.3s;
+
+          a {
+            color: #fff5;
+            text-decoration: underline;
+            transition: 0.3s;
+          }
+        }
         .list-img {
           border-radius: 3px;
           display: inline-block;
@@ -282,6 +317,15 @@
 
             &.hearting {
               color: #F56C6C;
+            }
+          }
+          
+          .list-creator {
+            left: 155px;
+            color: #fffc;
+            
+            a {
+              color: #fffc;
             }
           }
 

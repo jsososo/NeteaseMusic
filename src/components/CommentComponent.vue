@@ -7,7 +7,7 @@
           <img class="user-avatar" :src="`${item.user.avatarUrl}?param=50y50`">
           <div class="comment-content">
             <div class="user-name-block">
-              <b class="user-name">{{item.user.nickname}}</b>
+              <a :href="`#/user?id=${item.user.userId}`"><b class="user-name">{{item.user.nickname}}</b></a>
               <span class="pl_20 comment-time">{{getTime(item.time)}}</span>
             </div>
             <div class="content">{{item.content}}</div>
@@ -50,6 +50,7 @@
       ...mapGetters({
         playNow: 'getPlaying',
         user: 'getUser',
+        playingPercent: 'getPlayingPercent',
       })
     },
     created() {

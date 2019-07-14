@@ -1,6 +1,6 @@
 <template>
   <div class="user-page-container">
-    <div class="login-container" v-if="!user.userId">
+    <div class="login-container" v-if="!uid">
       <!--<div class="login-tab">-->
         <!--<div @click="changeType('password')" :class="`login-type ${type === 'password' && 'selected'}`">-->
           <!--账号密码<span style="left: -15px"></span>-->
@@ -36,18 +36,19 @@
       </div>
     </div>
 
-    <div class="user-info-content" v-if="user.userId">
+    <div class="user-info-content" v-if="uInfo.userId">
+      <img class="user-avatar" :src="uInfo.avatarUrl" alt="">
       <div class="user-info-list">
-        <img class="user-avatar" :src="user.avatarUrl" alt="">
         <div class="user-info-txt user-info-name">
-          {{user.nickname}} <span class="ft_18 pl_20">{{user.signature}}</span>
+          <span class="vat">{{uInfo.nickname}}</span> <span class="user-signature">{{uInfo.signature}}</span>
         </div>
         <div class="user-info-txt user-info-follow">
-          <span class="inline-block">关注 {{user.follows}}</span>
-          <span class="inline-block ml_20">粉丝 {{user.followeds}}</span>
+          <span class="inline-block pointer" @click="selected = 'flow'">关注 {{uInfo.follows}}</span>
+          <span class="inline-block ml_20 pointer" @click="selected = 'fans'">粉丝 {{uInfo.followeds}}</span>
         </div>
-        <div class="user-info-txt user-info-listen pointer" @click="selected = 'history'">听过 {{user.listenSongs}}</div>
-        <div class="user-info-txt user-info-level">Lv {{user.level}}</div>
+        <div class="user-info-txt user-info-listen pointer" @click="selected = 'history'">听过 {{uInfo.listenSongs}}</div>
+        <div class="user-info-txt user-info-playlist"><a :href="`#/playlist?id=${uInfo.userId}`">歌单 {{uInfo.playlistCount}} 个</a></div>
+        <div class="user-info-txt user-info-level">Lv {{uInfo.level}}</div>
       </div>
 
       <div class="user-right-list">
@@ -67,7 +68,7 @@
         <div class="song-list" v-if="selected === 'week' || selected === 'history'">
           <div
             v-for="(s, i) in info[selected]"
-            :key="s"
+            :key="`${s}-${i}`"
             class="song-item"
             @click="playMusic(s)"
           >
@@ -76,7 +77,7 @@
               <div class="wave-bg2"></div>
             </div>
             <div class="song-index">{{i+1}}</div>
-            <div class="count-bg" :style="`width: ${countMap[selected][s] / countMap[`${selected}Max`] * 100}%`"></div>
+            <div class="count-bg" :style="`width: ${(countMap[selected][s].count / countMap[`${selected}Max`] * 100) || countMap[selected][s].score}%`"></div>
             <div class="song-name">{{allSongs[s].name}}</div>
             <div>
               <div class="song-ar">{{allSongs[s].ar.map((a) => a.name).join('/')}}</div>
@@ -90,11 +91,22 @@
                   @click="playlistTracks(s, 'add', 'ADD_SONG_2_LIST')"
                   class="operation-icon operation-icon-2 iconfont icon-add"
                 />
-                <span class="played-count-num">{{getNum(countMap[selected][s])}}次</span>
+                <span class="played-count-num" v-if="getNum(countMap[selected][s].count) > 0">{{getNum(countMap[selected][s].count)}}次</span>
               </div>
             </div>
           </div>
           <div v-if="info.week.length === 0" class="text-center mt_40">没听过没听过</div>
+        </div>
+
+        <!-- 关注、粉丝 -->
+        <div class="member-list" @scroll="onScroll('.user-page-container .member-list')" v-if="selected === 'flow' || selected === 'fans'">
+          <div v-for="(u, i) in uInfo[`${selected}List`]" :key="`${u.userId}-${i}`" class="member-item" >
+            <a :href="`#/user?id=${u.userId}`">
+              <img class="member-img" :src="`${String(u.avatarUrl) === 'null' ? 'http://p3.music.126.net/VnZiScyynLG7atLIZ2YPkw==/18686200114669622.jpg' : u.avatarUrl}?param=120y120`"  />
+              <div class="member-name">{{u.nickname}}</div>
+            </a>
+          </div>
+          <div class="text-center mt_40" v-if="uInfo[`${selected}List`] && uInfo[`${selected}List`].length === 0">空空如也～</div>
         </div>
       </div>
     </div>
@@ -105,6 +117,7 @@
   import { mapGetters } from 'vuex';
   import request, { loginStatus, likeMusic, handleSongs } from '../assets/utils/request';
   import Num from '../assets/utils/num';
+  import $ from 'jquery';
   export default {
     name: "User",
     data() {
@@ -127,18 +140,18 @@
             color: 'blue',
             val: '历史排行',
           },
-          // {
-          //   icon: 'flow',
-          //   key: 'flow',
-          //   color: 'yellow',
-          //   val: '关注',
-          // },
-          // {
-          //   icon: 'fans',
-          //   key: 'fans',
-          //   color: 'green',
-          //   val: '粉丝',
-          // }
+          {
+            icon: 'flow',
+            key: 'flow',
+            color: 'yellow',
+            val: '关注',
+          },
+          {
+            icon: 'fans',
+            key: 'fans',
+            color: 'green',
+            val: '粉丝',
+          }
         ],
         info: {
           week: [],
@@ -150,6 +163,7 @@
           weekMax: 0,
           historyMax: 0,
         },
+        uInfo: {},
         selected: 'week',
       }
     },
@@ -176,10 +190,13 @@
         this.time = 0;
       },
       user(v) {
-        if (v.userId && !v.listenSongs) {
-          this.getUserDetail();
+        if (v.userId && (!v.listenSongs || !v.nickname)) {
+          if (!this.$route.query.id) {
+            this.uid = v.userId;
+            this.getUserDetail();
+            this.getRecord(1);
+          }
         }
-        this.getRecord(1);
       },
       selected(v) {
         switch (v) {
@@ -188,15 +205,33 @@
           case 'history':
             return this.getRecord();
           case 'flow':
-            return this.getFollows();
+          case 'fans':
+            return this.getMemberList(v);
         }
-      }
+      },
+      $route(){
+        this.uid = this.$route.query.id;
+        if (!this.uid) {
+          this.uid = this.user.userId;
+        }
+        if (this.uid) {
+          this.getUserDetail(this.uid);
+          this.getRecord(1);
+        }
+      },
     },
     created() {
-      if (this.user.userId && !this.user.listenSongs) {
-        this.getUserDetail();
+      if (this.user.userId) {
+        this.uid = this.user.userId;
       }
-      this.getRecord(1);
+      if (this.$route.query.id) {
+        this.uid = this.$route.query.id;
+      }
+      if (this.uid !== this.uInfo.userId) {
+        this.getUserDetail();
+        this.getRecord(1);
+      }
+
       this.$store.dispatch('updateShowCover', false);
     },
     methods: {
@@ -204,8 +239,15 @@
         this.type = t;
       },
       async getUserDetail() {
-        const { level, listenSongs, profile } = await request({ api: 'GET_USER_DETAIL', data: { uid: this.user.userId }});
-        this.$store.dispatch('setUser', { ...profile, listenSongs, level});
+        const { uid } = this;
+        const { level, listenSongs, profile } = await request({ api: 'GET_USER_DETAIL', data: { uid }});
+        if (uid === this.user.userId) {
+          this.$store.dispatch('setUser', { ...profile, listenSongs, level});
+        }
+        this.uInfo = { ...profile, listenSongs, level };
+        if (['flow', 'fans'].indexOf(this.selected) > -1) {
+          this.getMemberList(this.selected);
+        }
       },
       async sendCaptcha() {
         const res = await request({ api: 'CAPTCH_SENT', data: { phone: this.username }});
@@ -244,28 +286,33 @@
         }
       },
 
-      async getRecord(type = 0) {
-        if (!this.user.userId) {
+      async getRecord(type = 0, uid = this.uid) {
+        if (!uid) {
           return;
         }
         const res = await request({
           api: 'GET_USER_RECORD',
           data: {
-            uid: this.user.userId,
+            uid,
             type,
           }
         });
+        if (!res) {
+          return;
+        }
         const list = res[['allData', 'weekData'][type]];
         const key = ['history', 'week'][type];
         const ids = [];
         const songs = list.map((item) => {
           const id = item.song.id;
-          this.countMap[key][id] = item.playCount;
+          this.countMap[key][id] = {
+            count: item.playCount,
+            score: item.score,
+          };
           ids.push(id);
           return item.song;
         });
         this.countMap[`${key}Max`] = (list[0] || { count: 0 }).playCount;
-        console.log(this.countMap);
 
         await handleSongs(songs);
 
@@ -282,19 +329,48 @@
         return v;
       },
 
-      getFollows() {
-        if (!this.user.userId) {
+      // 获取关注或粉丝列表
+      getMemberList(type) {
+        const { uid } = this;
+        if (!uid) {
           return;
         }
+        const key = `${type}List`;
+        if (!this.uInfo[`${type}More`] && this.uInfo[key]) {
+          return;
+        }
+        const oldList = this.uInfo[key] || [];
         request({
-          api: 'GET_FOLLOWS',
+          api: {
+            flow: 'GET_FOLLOWS',
+            fans: 'GET_FOLLOWEDS',
+          }[type],
           data: {
-            uid: this.user.userId,
+            uid,
             limit: 30,
+            offset: oldList.length,
           }
         }).then((res) => {
-          console.log(res);
+          const keyMap = {
+            flow: 'follow',
+            fans: 'followeds',
+          };
+          this.uInfo = {
+            ...this.uInfo,
+            [key]: [ ...oldList, ...res[keyMap[type]] ],
+            [`${type}More`]: res.more,
+          }
         })
+      },
+
+      onScroll(cls) {
+        const el = $(cls);
+        const viewH = el.height(); // 可见高度
+        const contentH = el.get(0).scrollHeight; // 内容高度
+        const scrollTop = el.scrollTop(); // 滚动高度
+        if (contentH - viewH - scrollTop < 150) {
+          this.getMemberList(this.selected);
+        }
       },
 
       likeMusic: likeMusic,
@@ -451,15 +527,18 @@
       .user-info-list {
         padding-left: 280px;
         padding-top: 40px;
+        position: absolute;
+        z-index: 2;
       }
       .user-avatar {
-        width: 280px;
-        height: 280px;
+        width: 290px;
+        height: 290px;
         border-radius: 50%;
         opacity: 0.4;
         position: absolute;
-        top: 50px;
-        left: 100px;
+        top: 60px;
+        left: 110px;
+        z-index: 1;
       }
 
       .user-info-txt {
@@ -470,6 +549,15 @@
       }
       .user-info-name {
         font-size: 32px;
+        max-width: 500px;
+
+        .user-signature {
+          font-size: 14px;
+          display: inline-block;
+          padding-left: 20px;
+          font-weight: normal;
+          max-width: 300px;
+        }
       }
       .user-info-follow {
         font-size: 28px;
@@ -479,9 +567,13 @@
         font-size: 26px;
         padding-left: 30px;
       }
-      .user-info-level {
+      .user-info-playlist {
         font-size: 24px;
         padding-left: 45px;
+      }
+      .user-info-level {
+        font-size: 22px;
+        padding-left: 60px;
       }
     }
 
@@ -498,7 +590,7 @@
       color: #fffc;
       height: calc(100vh - 120px);
 
-      .song-list {
+      .song-list, .member-list {
         height: calc(100vh - 120px);
         box-sizing: border-box;
         overflow-y: auto;
@@ -603,6 +695,36 @@
           font-weight: bold;
           right: 30px;
           color: #fff8;
+        }
+      }
+
+      .member-list {
+        .member-item {
+          position: relative;
+          width: 25%;
+          box-sizing: border-box;
+          display: inline-block;
+          vertical-align: top;
+          margin-bottom: 20px;
+          text-align: center;
+          cursor: pointer;
+          transition: 0.3s;
+          opacity: 0.7;
+
+          &:hover {
+            opacity: 1;
+          }
+
+          .member-img {
+            width: 60%;
+            border-radius: 50%;
+            margin-top: 20px;
+          }
+
+          .member-name {
+            padding-top: 10px;
+            color: #fff8;
+          }
         }
       }
     }

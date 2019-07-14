@@ -68,6 +68,7 @@
     font-weight: bold;
     border-radius: 0;
     opacity: 0.4;
+    z-index: 100;
 
     .left-nav-bg {
       background: -webkit-linear-gradient(top, #fff8, #fff6, #fff0, #fff0);
