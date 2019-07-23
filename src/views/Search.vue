@@ -48,6 +48,10 @@
               @click="playlistTracks(s, 'add', 'ADD_SONG_2_LIST')"
               class="operation-icon operation-icon-2 iconfont icon-add"
             />
+            <i
+              @click="download(s)"
+              class="operation-icon operation-icon-2 iconfont icon-download"
+            />
           </span>
           <div
             v-if="allList[userList.favId] && (allList[userList.favId].indexOf(s) > -1)"
@@ -90,7 +94,7 @@
 </template>
 
 <script>
-  import { searchReq, likeMusic } from "../assets/utils/request";
+  import { searchReq, likeMusic, download } from "../assets/utils/request";
   import { mapGetters } from 'vuex';
   import $ from 'jquery';
 
@@ -185,7 +189,8 @@
       },
       goTo(url) {
         window.location = url;
-      }
+      },
+      download,
     }
   }
 </script>

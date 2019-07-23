@@ -378,6 +378,7 @@ const JSONP = (url) => {
 };
 
 export const download = async (id) => {
+  window.event.stopPropagation();
   const allSongs = VUE_APP.$store.getters.getAllSongs;
   const song = allSongs[id];
   const { murl, guid, vkey } = Storage.get(['murl', 'guid', 'vkey']);

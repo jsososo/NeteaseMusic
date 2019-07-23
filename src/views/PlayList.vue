@@ -184,6 +184,8 @@
               border-top: 3px solid #409EFF;
               overflow: hidden;
               opacity: 0.3;
+              height: 45px;
+              transform-origin: bottom;
               animation: p-b-#{$i} #{$r4 / 3}s infinite linear;
               border-radius: 5px 5px 0 0;
 
@@ -198,19 +200,19 @@
 
             @keyframes p-b-#{$i} {
               from, to {
-                height: #{random(60)}px;
+                transform: scaleY(#{random()});
               }
               20% {
-                height: #{random(60)}px;
+                transform: scaleY(#{random()});
               }
               40% {
-                height: #{random(60)}px;
+                transform: scaleY(#{random()});
               }
               60% {
-                height: #{random(60)}px;
+                transform: scaleY(#{random()});
               }
               80% {
-                height: #{random(60)}px;
+                transform: scaleY(#{random()});
               }
             }
           }
@@ -229,7 +231,8 @@
         .heart-btn {
           position: absolute;
           bottom: 20px;
-          left: 105px;
+          transform: translate(105px, 0);
+          left: 0;
           color: #fff3;
           font-weight: bold;
           cursor: pointer;
@@ -270,15 +273,15 @@
           display: inline-block;
           transition: 0.3s;
           position: absolute;
-          transform: rotate(0);
+          transform: rotate(0) scale(0.38) translate(-138px, -156px);
           top: 10px;
           left: 10px;
-          width: 70px;
-          height: 70px;
-          line-height: 70px;
+          width: 200px;
+          height: 200px;
+          font-size: 100px;
+          line-height: 200px;
           font-weight: bold;
           color: #fff5;
-          font-size: 40px;
         }
         .list-name {
           display: inline-block;
@@ -297,7 +300,7 @@
           font-size: 44px;
           color: #fff4;
           padding-top: 30px;
-          transform: rotate(0);
+          transform: rotate(0) translate(0, 0);
           transition: 0.3s;
         }
 
@@ -312,7 +315,7 @@
           box-shadow: 0 4px 20px #0004;
           
           .heart-btn {
-            left: 120px;
+            transform: translate(120px, 0);
             color: #fffc;
 
             &.hearting {
@@ -321,7 +324,7 @@
           }
           
           .list-creator {
-            left: 155px;
+            transform: translate(10px);
             color: #fffc;
             
             a {
@@ -330,22 +333,14 @@
           }
 
           .list-count {
-            transform: rotate(-90deg);
-            padding-top: 10px;
+            transform: rotate(-90deg) translate(0, 10px);
           }
 
           .list-name {
-            font-size: 24px;
-            padding-left: 85px;
+            transform: scale(1.2) translate(15px);
           }
           .list-img {
-            transform: rotate(-30deg);
-            top: -20px;
-            left: -40px;
-            width: 120px;
-            height: 120px;
-            line-height: 120px;
-            font-size: 70px;
+            transform: rotate(-30deg) scale(0.7) translate(-70px, -150px);
           }
         }
       }

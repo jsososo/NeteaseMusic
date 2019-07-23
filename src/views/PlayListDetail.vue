@@ -40,6 +40,10 @@
             class="operation-icon operation-icon-2 iconfont icon-add"
           />
           <i
+            @click="download(s)"
+            class="operation-icon operation-icon-2 iconfont icon-download"
+          />
+          <i
             @click="playlistTracks(s, id, 'del', 'DEL_SONG')"
             v-if="userList.obj && userList.obj[id] && !userList.obj[id].subscribed && (id !== userList.favId)"
             class="operation-icon operation-icon-3 iconfont icon-delete"
@@ -246,7 +250,6 @@
         }
 
         &:hover {
-          height: 70px;
           opacity: 1;
           box-shadow: 0 0 10px #0003;
           border-bottom: 1px solid transparent;
@@ -262,38 +265,31 @@
           }
 
           .song-artist {
-            left: 100px;
-            width: 250px;
-            overflow: hidden;
-            white-space: nowrap;
-            text-overflow: ellipsis;
+            transform: translate(100px);
           }
           
           .song-order {
             color: #fff5;
-            vertical-align: 10px;
+            transform: translate(0, 10px);
           }
 
           .song-cover {
             filter: blur(5px);
             opacity: 0.4;
-            transform: rotate(-30deg);
-            width: 100px;
-            height: 100px;
-            top: -20px;
-            left: 0;
+            transform: rotate(-30deg) scale(2) translate(0, 10px);
           }
 
           .song-name {
             font-weight: bold;
-            margin-left: 100px;
-            font-size: 22px;
+            transform: scale(1.22) translate(90px);
             color: #fff;
           }
 
-          .operation-icon {
-            margin-top: 0;
-            opacity: 0.8;
+          .icon-container {
+            .operation-icon {
+              transform: translate(0, 0);
+              opacity: 0.8;
+            }
           }
         }
 
@@ -312,12 +308,10 @@
           height: 50px;
           vertical-align: top;
           position: absolute;
-          top: 10px;
-          left: 80px;
           z-index: 0;
           opacity: 0.8;
           filter: blur(0);
-          transform: rotate(0);
+          transform: rotate(0) scale(1) translate(65px, 10px);
           transition: 0.4s;
         }
 
@@ -326,7 +320,7 @@
           display: inline-block;
           vertical-align: top;
           line-height: 50px;
-          margin-left: 150px;
+          transform: translate(150px);
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -339,11 +333,16 @@
           font-size: 14px;
           position: absolute;
           bottom: 5px;
-          left: 70%;
+          left: 0;
+          transform: translate(400px);
           display: inline-block;
           vertical-align: top;
           padding-top: 20px;
           transition: 0.3s;
+          max-width: 250px;
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
         }
 
         .icon-container {
@@ -353,10 +352,11 @@
 
           @for $i from 1 through 3 {
             .operation-icon-#{$i} {
-              margin-top: 40px;
+              transform: translate(0, 40px);
               transition: 0.3s #{($i - 1) * 0.1}s;
               text-shadow: 0 2px 5px #0008;
               cursor: pointer;
+              margin-right: 12px;
               opacity: 0;
             }
           }
