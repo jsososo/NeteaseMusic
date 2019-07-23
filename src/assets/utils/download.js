@@ -18,7 +18,7 @@ export default function download(data, strFileName, strMimeType = null, cb = {})
     myBlob = (self.Blob || self.MozBlob || self.WebKitBlob || toString),
     fileName = strFileName || "download",
     blob,
-    reader;
+    reader,
   myBlob= myBlob.call ? myBlob.bind(self) : Blob ;
 
   if(String(this)==="true"){ //reverse arguments, allowing download.bind(true, "text/xml", "export.xml") to act as a callback
@@ -50,7 +50,7 @@ export default function download(data, strFileName, strMimeType = null, cb = {})
         }
       });
       setTimeout(function(){ ajax.send();}, 0); // allows setting custom ajax headers using the return:
-      // 创建之后的回调，这个ajax可以方便用来暂停等。
+      // 创建之后的回调，这个ajax可以方便用来取消等。
       cb.init && cb.init(ajax);
       return ajax;
     } // end if valid url?

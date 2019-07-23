@@ -25,6 +25,14 @@
       </a>
     </div>
     <div class="nav-line">
+      <a href="#/download">
+        <el-badge :value="downloadInfo.count" :hidden="downloadInfo.count === 0" class="item">
+          <i class="iconfont icon-down"></i>
+        </el-badge>
+        <div class="icon-text">下载中心</div>
+      </a>
+    </div>
+    <div class="nav-line">
       <a href="#/about">
         <i class="iconfont icon-version"></i>
         <div class="icon-text">关于</div>
@@ -40,6 +48,7 @@
     computed: {
       ...mapGetters({
         user: 'getUser',
+        downloadInfo: 'getDownloadInfo',
       })
     },
     created() {

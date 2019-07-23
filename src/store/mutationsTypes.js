@@ -39,9 +39,6 @@ export const UPDATE_RADIO_INFO = 'UPDATE_RADIO_INFO';
 // 显示下载设置弹窗
 export const SHOW_DOWN_SETTING = 'SHOW_DOWN_SETTING';
 
-// 更新下载的列表
-export const UPDATE_DOWNLOAD_LIST = 'UPDATE_DOWNLOAD_LIST';
-
 // 更显展示列表
 export const UPDATE_SHOW_LIST = 'UPDATE_SHOW_LIST';
 
@@ -77,3 +74,6 @@ export const UPDATE_PLAY_NOW = 'UPDATE_PLAY_NOW';
 
 // 更新评论信息
 export const UPDATE_COMMENT_INFO = 'UPDATE_COMMENT_INFO';
+
+// 更新下载列表
+export const UPDATE_DOWNLOAD = 'UPDATE_DOWNLOAD';

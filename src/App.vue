@@ -54,6 +54,10 @@
         down_size: 'high',
         down_high: 'sizeflac',
         volume: 1,
+        download_info: JSON.stringify({
+          count: 0,
+          list: [],
+        }),
       });
 
       // 初始化一下下载记录
@@ -64,10 +68,7 @@
           item.status = 'abort';
         }
       });
-      this.$store.dispatch('updateDownloadList', {
-        count: 0,
-        list: downList,
-      });
+      this.$store.dispatch('updateDownload');
     },
     methods: {
 

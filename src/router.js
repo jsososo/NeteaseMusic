@@ -10,6 +10,7 @@ const Comment = () => import('./views/Comment');
 const Lyric = () => import('./views/Lyric');
 const Album = () => import('./views/Album');
 const About = () => import('./views/About');
+const Download = () => import('./views/Download');
 
 Vue.use(Router);
 
@@ -74,6 +75,11 @@ const router = new Router({
       name: 'About',
       component: About,
     },
+    {
+      path: '/download',
+      name: 'Download',
+      component: Download,
+    }
   ]
 });
 

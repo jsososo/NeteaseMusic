@@ -1,6 +1,7 @@
 import * as types from './mutationsTypes';
 import Storage from "../assets/utils/Storage";
 import ArrHelper from '../assets/utils/arrayHelper';
+import Num from '../assets/utils/num';
 
 export default {
   [types.SET_OPERATION](state, data) {
@@ -217,6 +218,92 @@ export default {
     state.commentInfo = {
       ...state.commentInfo,
       ...data,
+    }
+  },
+
+  // 更新下载记录
+  [types.UPDATE_DOWNLOAD](state, data) {
+    if (!data) {
+      // 第一次进来的渲染
+      const downloadInfo = Storage.get('download_info', true);
+      downloadInfo.count = 0;
+      downloadInfo.list.forEach((obj) => {
+        if (obj.status === 'progress') {
+          obj.status = 'error';
+          obj.errMsg = '下载被中断了';
+          delete obj.ajax;
+          delete obj.p;
+          delete obj.t;
+          delete obj.l;
+        }
+      });
+      state.downloadInfo = downloadInfo;
+    } else {
+      const { id, p, l, t, ajax, status, errMsg, name, songId, br } = data;
+      const { downloadInfo } = state;
+      const d = downloadInfo.list.find((item) => item.id === id);
+      // 这是其他的更新下载状态
+      switch (status) {
+        case 'init':
+          downloadInfo.list.unshift({ status, id, startTime: new Date().getTime(), ajax, name, songId, br });
+          downloadInfo.count++;
+          break;
+        case 'success':
+          d.status = 'success';
+          d.endTime = new Date().getTime();
+          delete d.ajax;
+          delete d.p;
+          delete d.t;
+          delete d.l;
+          break;
+        case 'error':
+          d.errMsg = errMsg || '未知错误';
+          d.endTime = new Date().getTime();
+          delete d.ajax;
+          delete d.p;
+          delete d.t;
+          delete d.l;
+          break;
+        case 'progress':
+          d.p = Num(p * 100, 2);
+          d.t = t;
+          d.l = l;
+          d.status = 'progress';
+          break;
+        case 'clear':
+          downloadInfo.list = downloadInfo.list.filter((o) => ['init', 'progress'].indexOf(o.status) > 0);
+          break;
+        case 'clearError':
+          downloadInfo.list = downloadInfo.list.filter((o) => o.status !== 'error');
+          break;
+        case 'abort':
+          d.ajax.abort();
+          d.errMsg ='主动结束';
+          d.endTime = new Date().getTime();
+          d.status = 'error';
+          delete d.ajax;
+          delete d.p;
+          delete d.t;
+          delete d.l;
+          break;
+        case 'abortAll':
+          downloadInfo.list.forEach((item) => {
+            if (['init', 'progress'].indexOf(item.status) > 0) {
+              item.ajax.abort();
+              item.errMsg ='主动结束';
+              item.status = 'error';
+              item.endTime = new Date().getTime();
+              delete item.ajax;
+              delete item.p;
+              delete item.t;
+              delete item.l;
+            }
+          })
+        default: break;
+      }
+      downloadInfo.count = downloadInfo.list.filter((o) => ['init', 'progress'].indexOf(o.status) > -1).length;
+      Storage.set('download_info', downloadInfo, true);
+      state.downloadInfo = { ...downloadInfo };
     }
   }
 }

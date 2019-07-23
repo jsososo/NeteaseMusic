@@ -128,36 +128,3 @@ export function getSongUrl(v, isDown, onlyHigh) {
     ];
   }
 }
-
-export function download(v, onlyHigh = Storage.get('down-setting-only-high'), repeat = Storage.get('down-setting-repeat')) {
-  if (!v.objectId) {
-    return;
-  }
-  const VUE_APP = window.VUE_APP
-  const dispatch = VUE_APP.$store.dispatch;
-  if (onlyHigh === '' || repeat === '') {
-    return dispatch('updateDownSettingDialog', '您有下载配置还未完善，请先选择（可在下载页修改配置）');
-  }
-  // trueUrl 是通过原有的下载链接点击了重新下载所得到的，所以不需要重新计算了
-  const [url, name, highLimit] = v.trueUrl ? [v.trueUrl, v.name, false] : getSongUrl(v, true, onlyHigh === '1');
-  const time = new Date().getTime();
-  const id = `${v.objectId}-${time}`;
-
-  // 列表内已下载的不再下载了
-  if (repeat === '0' &&
-    VUE_APP.$store.getters.getDownList.list.find(item => item.objectId === v.objectId && item.status === 'success')) {
-    return dispatch('updateDownloadList', { id, name, url, objectId: v.objectId, time, status: 'error', errKey: 'repeat', reason: '已下载过，不再重复下载'});
-  }
-
-  // 仅下载高品质
-  if (highLimit) {
-    return dispatch('updateDownloadList', { id, name, url, objectId: v.objectId, time, status: 'error', errKey: 'ONLY_HIGH', reason: '没有高品质的音乐'});
-  }
-
-  down(url, name, null, {
-    init: (ajax) => dispatch('updateDownloadList', { id, name, url, objectId: v.objectId, ajax, time, status: 'init' }),
-    progress: (...arg) => dispatch('updateDownloadList', { id, status: 'down', progress: { percent: arg[0], loaded: arg[1], total: arg[2] }}),
-    success: () => dispatch('updateDownloadList', { id, status: 'success', okTime: new Date().getTime() }),
-    error: () => dispatch('updateDownloadList', { id, name, url, objectId: v.objectId, time, status: 'error', errKey: 'DOWLOAD_ERROR', reason: '下载中出错了', downloading: true }),
-  });
-}

@@ -1,6 +1,7 @@
 import apiList from './apiList';
 import Storage from './Storage';
 import { getQueryFromUrl } from './stringHelper';
+import downReq from './download';
 import timer from './timer';
 import axios from 'axios';
 import idMap from './idMap';
@@ -257,12 +258,16 @@ export const searchReq = async ({ keywords, type = 1, pageNo = 1 }) => {
   }
 
   // 获取歌曲的详细信息，搜索到的数据格式和这个接口里的一些字段不一样，而且没有专辑封面这种东西
+  getSongsDetail(ids);
+};
+
+export const getSongsDetail = (ids) => (
   request({
     api: 'SONG_DETAIL',
     data: { ids },
     cache: true,
-  }).then(({ songs }) => handleSongs(songs));
-};
+  }).then(({ songs }) => handleSongs(songs))
+)
 
 // 处理获取到的歌曲，把他们存到 allSongs 并获取链接
 export const handleSongs = (songs) => {
@@ -370,6 +375,41 @@ const JSONP = (url) => {
   setTimeout(() => {
     document.getElementsByTagName("head")[0].removeChild(jsonp)
   },500)
+};
+
+export const download = async (id) => {
+  const allSongs = VUE_APP.$store.getters.getAllSongs;
+  const song = allSongs[id];
+  const { murl, guid, vkey } = Storage.get(['murl', 'guid', 'vkey']);
+  const dispatch = VUE_APP.$store.dispatch;
+
+  if (!song.url) {
+    return VUE_APP.$message.warning('没有这首歌呀');
+  }
+  let url = '';
+
+  if (song.qqId) {
+    url = `${murl}M500${song.qqId}.mp3?guid=${guid}&vkey=${vkey}&fromtag=8&uin=0`;
+  } else {
+    const res = await request({
+      api: 'SONG_URL',
+      data: { id },
+      cache: true,
+    });
+    url = res.data[0].url;
+  }
+
+  const downId = `${new Date().getTime()}${id}`;
+  const name = `${song.ar.map((a) => a.name).join('、')}-${song.name}`;
+  downReq(url, name, null, {
+    init: (ajax) => {
+      VUE_APP.$message.success('加入下载中');
+      dispatch('updateDownload', { status: 'init', id: downId, ajax, name, songId: id, br: song.br });
+    },
+    success: () => dispatch('updateDownload', { status: 'success', id: downId }),
+    error: () => dispatch('updateDownload', { status: 'error', id: downId }),
+    progress: (p, l, t) => dispatch('updateDownload', { status: 'progress', id: downId, p, l, t }),
+  });
 };
 
 export default request;

@@ -78,13 +78,12 @@
           </div>
         </div>
 
-        <!-- 下载 -->
-        <!--<div class="inline-block ml_5">-->
-          <!--<span @click="down(playNow)">-->
-            <!--<i class="iconfont icon-xiazai" />-->
-          <!--</span>-->
-        <!--</div>-->
-        <!-- 下载 -->
+         <!--下载-->
+        <div class="inline-block ml_5 pd_5">
+          <span @click="down(playNow.id)">
+            <i class="iconfont icon-download ft_16 pointer" />
+          </span>
+        </div>
         <div class="inline-block ml_5 pd_5">
           <span @click="playlistTracks(playNow.id, 'add', 'ADD_SONG_2_LIST')">
             <i class="iconfont icon-add ft_16 pointer" />
@@ -101,8 +100,8 @@
   import Num from '../assets/utils/num';
   import Storage from '../assets/utils/Storage';
   import { mapGetters } from 'vuex';
-  import request, { getQQVkey, likeMusic } from '../assets/utils/request';
-  import { handleLyric, download, getQueryFromUrl } from "../assets/utils/stringHelper";
+  import request, { getQQVkey, likeMusic, download } from '../assets/utils/request';
+  import { handleLyric, getQueryFromUrl } from "../assets/utils/stringHelper";
   import timer from '../assets/utils/timer';
 
   export default {

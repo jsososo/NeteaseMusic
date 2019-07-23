@@ -79,5 +79,8 @@ export default {
   },
   getCommentInfo(state) {
     return state.commentInfo;
+  },
+  getDownloadInfo(state) {
+    return state.downloadInfo;
   }
 }

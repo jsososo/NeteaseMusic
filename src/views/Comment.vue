@@ -72,7 +72,7 @@
       },
       initComments(res) {
         const { comments } = this.playNow;
-        comments.unshift(res);
+        comments.latest.unshift(res);
         this.$message.success('发送成功~');
         this.$store.dispatch('updateCommentInfo', { type: 0, id: 0, val: '', title: '', open: false });
       },

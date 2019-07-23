@@ -35,9 +35,6 @@ export default {
   updateDownSettingDialog: ({ commit }, data) => {
     commit(types.SHOW_DOWN_SETTING, data);
   },
-  updateDownloadList: ({ commit }, data) => {
-    commit(types.UPDATE_DOWNLOAD_LIST, data);
-  },
   updateRandomHistory: ({ commit }, data) => {
     commit(types.UPDATE_RANDOM_HISTORY, data);
   },
@@ -66,5 +63,8 @@ export default {
   // 更新评论信息
   updateCommentInfo: ({ commit }, data) => {
     commit(types.UPDATE_COMMENT_INFO, data);
+  },
+  updateDownload: ({ commit }, data) => {
+    commit(types.UPDATE_DOWNLOAD, data);
   }
 }

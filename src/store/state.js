@@ -40,4 +40,8 @@ export default {
     open: false,
   },
   loading: false,
+  downloadInfo: { // 下载信息
+    count: 0,
+    list: [],
+  }
 };
