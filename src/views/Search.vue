@@ -202,9 +202,9 @@
     width: 550px;
     background: #0003;
     transition: 0.3s;
-    right: -200px;
-    top: 0;
-    transform: rotate(90deg);
+    right: 0;
+    top: 20px;
+    transform: rotate(90deg) translate(100%, -20px);
     border-radius: 20px;
     overflow-y: auto;
 
@@ -215,9 +215,7 @@
     }
 
     &.show {
-      right: 20px;
-      top: 20px;
-      transform: rotate(0);
+      transform: rotate(0) translate(0, 0);
     }
 
     .search-input {
@@ -320,9 +318,8 @@
             }
 
             .song-name {
-              font-size: 20px;
               color: #fffc;
-              padding-left: -40px;
+              transform: scale(1.25) translate(0);
             }
 
             .artist-name {
@@ -363,7 +360,8 @@
           display: inline-block;
           width: 270px;
           font-size: 16px;
-          padding-left: 50px;
+          transform: scale(1) translate(50px);
+          transform-origin: left;
           transition: 0.3s;
           overflow: hidden;
           white-space: nowrap;

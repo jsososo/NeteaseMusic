@@ -401,7 +401,7 @@ export const download = async (id) => {
   }
 
   const downId = `${new Date().getTime()}${id}`;
-  const name = `${song.ar.map((a) => a.name).join('、')}-${song.name}`;
+  const name = `${song.ar.map((a) => a.name).join('、')}-${song.name}.${(song.br > 320000) ? 'flac' : 'mp3'}`;
   downReq(url, name, null, {
     init: (ajax) => {
       VUE_APP.$message.success('加入下载中');

@@ -147,12 +147,13 @@
     height: (calc(100% - 40px));
     overflow: auto;
     position: absolute;
-    left: 80%;
+    left: 60%;
+    transform: translate(100%);
     opacity: 0;
     transition: 0.5s;
 
     &.show {
-      left: 60%;
+      transform: translate(0);
       opacity: 1;
     }
 
@@ -245,10 +246,10 @@
             
             @keyframes hearting {
               from, to, 40%, 50%, 60%, 70% {
-                font-size: 20px;
+                transform: scale(1);
               }
               45%, 65% {
-                font-size: 26px;
+                transform: scale(1.3);
               }
             }
           }
@@ -298,9 +299,11 @@
           right: 10px;
           font-weight: bold;
           font-size: 44px;
+          width: 80px;
+          text-align: right;
           color: #fff4;
-          padding-top: 30px;
-          transform: rotate(0) translate(0, 0);
+          transform: rotate(0) translate(0, 20px);
+          transform-origin: bottom left;
           transition: 0.3s;
         }
 
@@ -333,7 +336,8 @@
           }
 
           .list-count {
-            transform: rotate(-90deg) translate(0, 10px);
+            transform: rotate(-90deg) translate(-20px, 150%);
+            text-align: center;
           }
 
           .list-name {

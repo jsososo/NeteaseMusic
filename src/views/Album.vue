@@ -54,6 +54,10 @@
                 @click="playlistTracks(s, 'add', 'ADD_SONG_2_LIST')"
                 class="operation-icon operation-icon-2 iconfont icon-add"
               />
+              <i
+                @click="download(s)"
+                class="operation-icon operation-icon-3 iconfont icon-download"
+              />
             </div>
           </div>
         </div>
@@ -65,7 +69,7 @@
 
 <script>
   import { mapGetters } from 'vuex';
-  import request, { handleSongs, likeMusic } from '../assets/utils/request';
+  import request, { handleSongs, likeMusic, download } from '../assets/utils/request';
   import timer from '../assets/utils/timer';
   export default {
     name: "Album",
@@ -135,6 +139,7 @@
         dispatch('updatePlayingList', { list: this.info.songs });
         dispatch('updatePlayingStatus', true);
       },
+      download,
     }
   }
 </script>
@@ -286,11 +291,11 @@
           }
         }
 
-        @for $i from 1 to 3 {
+        @for $i from 1 to 4 {
           .operation-icon-#{$i} {
             position: absolute;
             bottom: 20px;
-            left: calc(60% + #{$i * 50}px);
+            left: calc(60% + #{$i * 30}px);
             cursor: pointer;
             font-size: 14px !important;
             transition: 0.3s;

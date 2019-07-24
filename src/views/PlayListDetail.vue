@@ -41,12 +41,12 @@
           />
           <i
             @click="download(s)"
-            class="operation-icon operation-icon-2 iconfont icon-download"
+            class="operation-icon operation-icon-3 iconfont icon-download"
           />
           <i
             @click="playlistTracks(s, id, 'del', 'DEL_SONG')"
             v-if="userList.obj && userList.obj[id] && !userList.obj[id].subscribed && (id !== userList.favId)"
-            class="operation-icon operation-icon-3 iconfont icon-delete"
+            class="operation-icon operation-icon-4 iconfont icon-delete"
           />
         </div>
       </div>
@@ -265,7 +265,7 @@
           }
 
           .song-artist {
-            transform: translate(100px);
+            transform: translate(90px);
           }
           
           .song-order {
@@ -281,7 +281,7 @@
 
           .song-name {
             font-weight: bold;
-            transform: scale(1.22) translate(90px);
+            transform: scale(1.22) translate(75px);
             color: #fff;
           }
 
@@ -321,6 +321,7 @@
           vertical-align: top;
           line-height: 50px;
           transform: translate(150px);
+          transform-origin: left;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -350,7 +351,7 @@
           bottom: 5px;
           left: 350px;
 
-          @for $i from 1 through 3 {
+          @for $i from 1 through 5 {
             .operation-icon-#{$i} {
               transform: translate(0, 40px);
               transition: 0.3s #{($i - 1) * 0.1}s;

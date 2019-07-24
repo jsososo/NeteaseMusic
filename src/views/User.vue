@@ -91,6 +91,10 @@
                   @click="playlistTracks(s, 'add', 'ADD_SONG_2_LIST')"
                   class="operation-icon operation-icon-2 iconfont icon-add"
                 />
+                <i
+                  @click="download(s)"
+                  class="operation-icon operation-icon-3 iconfont icon-download"
+                />
                 <span class="played-count-num" v-if="getNum(countMap[selected][s].count) > 0">{{getNum(countMap[selected][s].count)}}次</span>
               </div>
             </div>
@@ -115,7 +119,7 @@
 
 <script>
   import { mapGetters } from 'vuex';
-  import request, { loginStatus, likeMusic, handleSongs } from '../assets/utils/request';
+  import request, { loginStatus, likeMusic, handleSongs, download } from '../assets/utils/request';
   import Num from '../assets/utils/num';
   import $ from 'jquery';
   export default {
@@ -389,6 +393,7 @@
         dispatch('updatePlayingList', { list: info[selected] });
         dispatch('updatePlayingStatus', true);
       },
+      download,
     },
   }
 </script>
@@ -678,7 +683,7 @@
           }
         }
 
-        @for $i from 1 to 3 {
+        @for $i from 1 to 4 {
           .operation-icon-#{$i} {
             position: absolute;
             bottom: 20px;

@@ -17,7 +17,7 @@
         <div class="info-label"><i class="iconfont icon-song" /></div>
         <div class="info-val">
           {{playNow.name}}
-          <span class="info-br" v-if="playNow.br">{{parseInt(playNow.br / 1000)}}k</span>
+          <span class="info-br" v-if="playNow.br">{{getBr(playNow.br)}}</span>
         </div>
       </div>
       <div class="info-line">
@@ -70,6 +70,12 @@
               return window.location = `#/singer?id=${this.playNow.arId}`;
             }
         }
+      },
+      getBr(val) {
+        if (val > 320000) {
+          return '无损';
+        }
+        return `${parseInt(val / 1000)}k`;
       }
     }
   }
