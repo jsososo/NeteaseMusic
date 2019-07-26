@@ -58,6 +58,13 @@
           count: 0,
           list: [],
         }),
+        key_code_map: JSON.stringify({
+          PLAY_NEXT: '39',
+          PLAY_PREV: '37',
+          VOLUME_UP: '38',
+          VOLUME_DOWN: '40',
+          PLAY: '32',
+        })
       });
 
       // 初始化一下下载记录
@@ -224,31 +231,39 @@
       blue: #409EFF,
       green: #67C23A,
       yellow: #E6A23C,
+      gray: #666666,
     );
 
-    @each $c in red,blue,green,yellow {
+    .c-gray:hover {
+      color: #fff8 !important;
+      .iconfont {
+        color: #fff8 !important;
+      }
+    }
+
+    @each $c,$v in $color {
       .c-#{$c} {
         background: #0001;
-        border-left: 5px solid #{map_get($color, $c)}33;
+        border-left: 5px solid #{$v}33;
 
         &:hover {
           background: #0001;
           width: 120px;
           cursor: pointer;
-          color: #{map_get($color, $c)}cc;
+          color: #{$v}cc;
 
           &.selected {
             .iconfont {
-              color: #{map_get($color, $c)}cc;
+              color: #{$v}cc;
             }
           }
           .iconfont {
-            color: #{map_get($color, $c)}cc;
+            color: #{$v}cc;
           }
         }
 
         &.selected {
-          background: #{map_get($color, $c)}33;
+          background: #{$v}33;
         }
       }
     }

@@ -155,7 +155,7 @@
       $route(v) {
         this.id = v.query.id;
         this.querySinger();
-      }
+      },
     },
     created() {
       this.querySinger();

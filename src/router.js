@@ -92,6 +92,8 @@ router.beforeEach((to, from, next) => {
   const { dispatch } = VUE_APP.$store;
   switch (to.name) {
     case 'user':
+    case 'Download':
+    case 'About':
       dispatch('updateShowCover', false);
       break;
     default:

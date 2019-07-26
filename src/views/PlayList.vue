@@ -232,8 +232,7 @@
         .heart-btn {
           position: absolute;
           bottom: 20px;
-          transform: translate(105px, 0);
-          left: 0;
+          left: 110px;
           color: #fff3;
           font-weight: bold;
           cursor: pointer;
@@ -249,7 +248,7 @@
                 transform: scale(1);
               }
               45%, 65% {
-                transform: scale(1.3);
+                transform: scale(1.2);
               }
             }
           }
@@ -318,7 +317,6 @@
           box-shadow: 0 4px 20px #0004;
           
           .heart-btn {
-            transform: translate(120px, 0);
             color: #fffc;
 
             &.hearting {

@@ -89,6 +89,7 @@
     color: #fffc;
     width: 80vw;
     margin-left: 10vw;
+    margin-top: 10px;
 
     .down-button {
       display: inline-block;

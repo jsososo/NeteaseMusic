@@ -12,6 +12,10 @@
       </div>
       <div>
         <input v-model="search" class="search-input" type="text" placeholder="找呀找呀找歌曲">
+        <div @click="playListShow" v-if="list.length > 0" class="inline-block mt_15 pt_5 pointer play" style="line-height: 20px;">
+          <i class="iconfont icon-play pl_10 pr_10" />
+          播放下列歌曲
+        </div>
       </div>
     </div>
     <div class="song-list" v-if="allList[id]">
@@ -117,6 +121,17 @@
         dispatch('updatePlayingList', { list: allList[this.id], id: this.id });
         dispatch('updatePlayingStatus', true);
       },
+      playListShow() {
+        const { allSongs, list, id } = this;
+        const { dispatch } = this.$store;
+        const song = allSongs[list[0]];
+        if (!song.url) {
+          return;
+        }
+        dispatch('updatePlayNow', song);
+        dispatch('updatePlayingList', { list, id });
+        dispatch('updatePlayingStatus', true);
+      },
       searchList() {
         const { search, allList, id, allSongs } = this;
         const rex = search.replace(/\/|\s|\t|,|，|-|/g, '').toLowerCase();
@@ -213,7 +228,7 @@
         font-size: 20px;
         outline: none !important;
         border-bottom: 1px solid #0003;
-        width: 100%;
+        width: calc(100% - 140px);
         margin-left: 0;
 
         &::-webkit-input-placeholder {

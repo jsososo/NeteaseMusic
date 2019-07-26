@@ -182,8 +182,9 @@
           this.search('pageNo', pageNo + 1);
         }
       },
-      likeMusic: likeMusic,
+      likeMusic,
       playlistTracks(tracks, op, type) {
+        console.log('hello world');
         window.event.stopPropagation();
         this.$store.dispatch('setOperation', { data: { tracks, op }, type });
       },
@@ -244,34 +245,28 @@
       border-bottom: 2px solid transparent;
       padding-bottom: 2px;
       transition: 0.3s;
+
+      $colorMap: (
+        red: #F56C6C,
+        blue: #409EFF,
+        green: #67C23A,
+        yellow: #E6A23C,
+        gray: #666
+      );
       
       &.selected {
         color: #fffc;
 
-        &.red {
-          border-bottom: 2px solid #F56C6Ccc;
-        }
-        &.blue {
-          border-bottom: 2px solid #409EFFcc;
-        }
-        &.green {
-          border-bottom: 2px solid #67C23Acc;
+        @each $key,$item in $colorMap {
+          &.#{$key} {
+            border-bottom: 2px solid #{$item}cc;
+          }
         }
       }
 
-      &.red {
-        .iconfont {
-          color: #F56C6C;
-        }
-      }
-      &.blue {
-        .iconfont {
-          color: #409EFF;
-        }
-      }
-      &.green {
-        .iconfont {
-          color: #67C23A;
+      @each $key,$item in $colorMap {
+        &.#{$key} .iconfont {
+          color: $item;
         }
       }
     }
@@ -329,6 +324,7 @@
 
             .operation-btns {
               opacity: 1;
+              margin-left: 70px;
 
               .iconfont {
                 letter-spacing: 20px;
@@ -358,7 +354,7 @@
 
         .song-name {
           display: inline-block;
-          width: 270px;
+          width: 240px;
           font-size: 16px;
           transform: scale(1) translate(50px);
           transform-origin: left;

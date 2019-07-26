@@ -81,7 +81,7 @@
             icon: 'song',
             key: 'songs',
             color: 'red',
-            val: '歌曲'
+            val: '歌曲',
           },
         ],
         info: {
@@ -104,7 +104,7 @@
       $route(v) {
         this.id = v.query.id;
         this.queryAlbum();
-      }
+      },
     },
     created() {
       this.queryAlbum();

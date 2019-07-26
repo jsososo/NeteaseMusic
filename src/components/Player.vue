@@ -90,6 +90,11 @@
           </span>
         </div>
 
+        <div class="back-icon pointer" @click="goBack">
+          <i class="iconfont icon-arrow-left" />
+          BACK
+        </div>
+
       </div>
     </div>
     <audio id="m-player" :src="playNow.url || '/error'" controls></audio>
@@ -287,31 +292,41 @@
       // 当点击进度条的滑块时需要停止进度的判断，否则松开鼠标后onchange事件无法返回正确的value
       sDom && (sDom.onmousedown = () => this.stopUpdateCurrent = true);
       // 键盘事件绑定
-      window.onkeydown = ({ keyCode, path }) => {
+      window.onkeydown = ({ keyCode, path, ctrlKey, altKey, shiftKey }) => {
         // 输入框内的操作，忽略掉
         if (['textarea', 'input'].indexOf(path[0].nodeName.toLowerCase()) > -1) {
           return;
         }
-        if (this.keys.indexOf(keyCode) === -1) {
-          this.keys.push(keyCode);
-        }
-        this.keys = this.keys.sort();
-        const keys = this.keys.join(',');
+        const codeMap = Storage.get('key_code_map', true);
+        const codes = [];
+        ctrlKey && codes.push('ctrl');
+        altKey && codes.push('alt');
+        shiftKey && codes.push('shiftKey');
 
-        switch (keys) {
-          case '38':
-          case '40':
-            let val = Storage.get('volume') * 100 + { 38: 10, 40: -10 }[keys];
-            val = Math.max(val, 0);
-            val = Math.min(val, 100);
-            this.changeVolume(val);
-            this.$message.info(`音量调至${Num(val, 0)}%`);
+        if ([16, 17, 18].indexOf(keyCode) === -1) {
+          codes.push(keyCode);
+        }
+
+        let volume = Storage.get('volume') * 100;
+
+        switch (codes.join('-')) {
+          case codeMap.VOLUME_DOWN:
+            volume = Math.max(volume - 10, 0);
+            this.changeVolume(volume);
+            this.$message.info(`音量调至${Num(volume, 0)}%`);
             return false;
-          case '37':
-          case '39':
-            this.cutSong({ 37: 'playPrev', 39: 'playNext' }[keys]);
+          case codeMap.VOLUME_UP:
+            volume = Math.min(volume + 10, 100);
+            this.changeVolume(volume);
+            this.$message.info(`音量调至${Num(volume, 0)}%`);
             return false;
-          case '32':
+          case codeMap.PLAY_PREV:
+            this.cutSong('playPrev');
+            return false;
+          case codeMap.PLAY_NEXT:
+            this.cutSong('playNext');
+            return false;
+          case codeMap.PLAY:
             this.updatePlayingStatus(!this.playing);
             return false;
         }
@@ -355,6 +370,9 @@
         window.event.stopPropagation();
         this.$store.dispatch('setOperation', { data: { tracks, op }, type });
       },
+      goBack() {
+        history.back(-1);
+      }
     }
   }
 </script>
@@ -528,6 +546,37 @@
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+    }
+
+    .back-icon {
+      position: absolute;
+      right: 25px;
+      bottom: 20px;
+      width: 150px;
+      height: 40px;
+      line-height: 40px;
+      background: #fff1;
+      transition: 0.3s;
+      box-shadow: 0 0 0 #fff5;
+      color: #fff5;
+      font-size: 20px;
+      transform: translate(110px);
+
+      .iconfont {
+        font-size: 20px;
+        color: #fff5;
+        transition: 0.3s;
+        margin: 0 10px;
+      }
+      
+      &:hover {
+        box-shadow: 0 0 20px #fff5;
+        transform: translate(30px);
+        color: #fff8;
+        .iconfont {
+          color: #fff8;
+        }
+      }
     }
   }
 </style>
