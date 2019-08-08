@@ -2,6 +2,9 @@ export default {
   isHearMode: (state) => {
     return state.heartMode;
   },
+  getPlayingList: (state) => {
+    return state.playingList;
+  },
   getPlayingListId: (state) => {
     return state.playingListId;
   },
@@ -82,5 +85,8 @@ export default {
   },
   getDownloadInfo(state) {
     return state.downloadInfo;
+  },
+  isPersonFM(state) {
+    return state.isPersonFM;
   }
 }

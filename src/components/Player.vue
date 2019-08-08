@@ -105,8 +105,9 @@
   import Num from '../assets/utils/num';
   import Storage from '../assets/utils/Storage';
   import { mapGetters } from 'vuex';
-  import request, { getQQVkey, likeMusic, download } from '../assets/utils/request';
+  import request, { getQQVkey, likeMusic, download, getPersonFM } from '../assets/utils/request';
   import { handleLyric, getQueryFromUrl } from "../assets/utils/stringHelper";
+  import ArrayHelper from '../assets/utils/arrayHelper';
   import timer from '../assets/utils/timer';
 
   export default {
@@ -143,14 +144,19 @@
         allList: 'getAllList',
         user: 'getUser',
         playingListId: 'getPlayingListId',
+        isPersonFM: 'isPersonFM',
+        playingList: 'getPlayingList',
       }),
     },
     watch: {
       async playNow(v) {
-        const { listId, playingId, playerInfo } = this;
+        const { listId, playingId, playerInfo, isPersonFM, playingList } = this;
         const { id, lyric, name, comments, qqId, url } = v;
         const { murl, guid, vkey, vkey_expire } = Storage.get(['murl', 'guid', 'vkey', 'vkey_expire']);
         const dispatch = this.$store.dispatch;
+        if (isPersonFM && (playingList.index >= (playingList.raw.length - 2))) {
+          this.getPersonFM();
+        }
         if (id == playingId) {
            // 如果是因为评论、歌词的更新，就不在走下面的步骤了
           return;
@@ -372,6 +378,16 @@
       },
       goBack() {
         history.back(-1);
+      },
+      getPersonFM(second) {
+        getPersonFM()
+          .then((songs) => {
+            const ids = songs.map((s) => s.id);
+            this.$store.dispatch('setPersonFM', ids);
+            if (ArrayHelper.hasDuplicate(ids, this.playingList.raw) && !second) {
+              this.getPersonFM(true);
+            }
+          })
       }
     }
   }

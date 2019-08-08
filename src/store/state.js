@@ -43,5 +43,6 @@ export default {
   downloadInfo: { // 下载信息
     count: 0,
     list: [],
-  }
+  },
+  isPersonFM: false, // 是否为私人fm
 };

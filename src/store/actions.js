@@ -66,5 +66,8 @@ export default {
   },
   updateDownload: ({ commit }, data) => {
     commit(types.UPDATE_DOWNLOAD, data);
+  },
+  setPersonFM: ({ commit }, data) => {
+    commit(types.PERSON_FM, data);
   }
 }

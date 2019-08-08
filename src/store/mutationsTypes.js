@@ -77,3 +77,6 @@ export const UPDATE_COMMENT_INFO = 'UPDATE_COMMENT_INFO';
 
 // 更新下载列表
 export const UPDATE_DOWNLOAD = 'UPDATE_DOWNLOAD';
+
+// 私人fm 模式
+export const PERSON_FM = 'PERSON_FM';

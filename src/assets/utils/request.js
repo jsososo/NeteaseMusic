@@ -188,6 +188,7 @@ export const loginStatus = async () => {
       dispatch('setRecommendList', { list, obj: listObj });
     });
 
+
   // 获取歌单列表
   getMyList(uid, true);
 };
@@ -270,29 +271,32 @@ export const getSongsDetail = (ids) => (
 )
 
 // 处理获取到的歌曲，把他们存到 allSongs 并获取链接
-export const handleSongs = (songs) => {
-  const VUE_APP = window.VUE_APP;
-  const obj = {};
-  const allSongs = VUE_APP.$store.getters.getAllSongs;
-  const ids = [];
-  songs.forEach((s) => {
-    obj[s.id] = {
-      ...(allSongs[s.id] || {}),
-      al: (s.al || s.album),
-      ar: s.ar || s.artists,
-      name: s.name,
-      id: s.id,
-    };
-    allSongs[s.id] = obj[s.id];
-    if (!allSongs[s.id].url) {
-      ids.push(s.id);
+export const handleSongs = (songs) => (
+  new Promise((resolve, reject) => {
+    const VUE_APP = window.VUE_APP;
+    const obj = {};
+    const allSongs = VUE_APP.$store.getters.getAllSongs;
+    const ids = [];
+    songs.forEach((s) => {
+      obj[s.id] = {
+        ...(allSongs[s.id] || {}),
+        al: (s.al || s.album),
+        ar: s.ar || s.artists,
+        name: s.name,
+        id: s.id,
+      };
+      allSongs[s.id] = obj[s.id];
+      if (!allSongs[s.id].url) {
+        ids.push(s.id);
+      }
+    });
+    VUE_APP.$store.dispatch('updateAllSongs', obj);
+    while (ids.length > 0) {
+      querySongUrl(ids.splice(-500).join(','));
     }
-  });
-  VUE_APP.$store.dispatch('updateAllSongs', obj);
-  while (ids.length > 0) {
-    querySongUrl(ids.splice(-500).join(','));
-  }
-};
+    setTimeout(() => resolve(songs));
+  })
+);
 
 // 喜欢音乐
 export const likeMusic = (id) => {
@@ -412,5 +416,10 @@ export const download = async (id) => {
     progress: (p, l, t) => dispatch('updateDownload', { status: 'progress', id: downId, p, l, t }),
   });
 };
+
+export const getPersonFM = () => (
+  request('GET_PERSON_FM')
+    .then((res) => handleSongs(res.data))
+);
 
 export default request;

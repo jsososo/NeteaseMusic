@@ -30,6 +30,11 @@ const apiList = {
   'GET_USER_RECORD': '/api/user/record', // 获取听歌记录
   'GET_FOLLOWS': '/api/user/follows', // 获取关注列表
   'GET_FOLLOWEDS': '/api/user/followeds', // 获取粉丝列表
+  'GET_DJ_CATE_LIST': '/api/dj/catelist', // 获取电台分类
+  'GET_DJ_RECOMMEND': '/api/dj/recommend/type', // 根据分类获取推荐的电台
+  'GET_DJ_DETAIL': '/api/dj/detail', // 获取电台的详细信息
+  'GET_DJ_SONGS': 'api/dj/program', // 获取电台的歌单
+  'GET_PERSON_FM': 'api/personal_fm', // 获取私人fm
 
   '163': '//music.jsososo.com/neapi/index.php',
   'QQ_SEARCH': '//c.y.qq.com/soso/fcgi-bin/client_search_cp',

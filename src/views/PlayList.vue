@@ -22,6 +22,24 @@
           </div>
         </div>
       </div>
+
+      <!-- 私人 FM -->
+      <div
+        v-if="allList.daily && (hash === 'playlist' || hash === 'recommend') && !$route.query.id"
+        :class="`playlist-item ${playingListId === 'daily' && 'playing'}`"
+        @click="playPersonFM"
+      >
+        <div class="list-img" style="border: 1px solid #fff5;text-align: center;">
+          FM
+        </div>
+        <span class="list-name">私人FM</span>
+        <!--<span class="list-count">{{allList.daily.length}}</span>-->
+        <div v-if="isPersonFM && isPlaying" class="playing-item-bg">
+          <div v-for="(o, i) in new Array(100)" :key="`bg-item-${i}`" :class="`playing-bg-${i}`">
+            <div class="bg-item-inside"></div>
+          </div>
+        </div>
+      </div>
       <!-- 歌单列表 -->
       <div
         v-if="hash === 'playlist' || hash === 'recommend'"
@@ -48,7 +66,7 @@
 
 <script>
   import { mapGetters } from 'vuex';
-  import request, { handleSongs } from '../assets/utils/request';
+  import request, { handleSongs, getPersonFM } from '../assets/utils/request';
   export default {
     name: "PlayList",
     data() {
@@ -68,6 +86,7 @@
         heartMode: 'isHearMode',
         allSongs: 'getAllSongs',
         isPlaying: 'isPlaying',
+        isPersonFM: 'isPersonFM',
       })
     },
     watch: {
@@ -134,6 +153,25 @@
           dispatch('updatePlayingStatus', true);
           this.$message.success('心动模式启动～');
         })
+      },
+      playPersonFM() {
+        const { dispatch } = this.$store;
+        const { isPersonFM, allSongs } = this;
+        const updatePlayNow = (id) => {
+          if (this.allSongs[id]) {
+            dispatch('updatePlayNow', allSongs[id]);
+          } else {
+            setTimeout(() => updatePlayNow(id), 100);
+          }
+        }
+        if (!isPersonFM) {
+          getPersonFM()
+            .then((songs) => {
+              const ids = songs.map((s) => s.id);
+              dispatch('setPersonFM', ids);
+              updatePlayNow(ids[0]);
+            })
+        }
       }
     }
   }

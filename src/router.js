@@ -11,6 +11,7 @@ const Lyric = () => import('./views/Lyric');
 const Album = () => import('./views/Album');
 const About = () => import('./views/About');
 const Download = () => import('./views/Download');
+const Radio = () => import('./views/Radio');
 
 Vue.use(Router);
 
@@ -79,6 +80,11 @@ const router = new Router({
       path: '/download',
       name: 'Download',
       component: Download,
+    },
+    {
+      path: '/radio',
+      name: 'Radio',
+      component: Radio,
     }
   ]
 });

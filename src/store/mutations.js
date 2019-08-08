@@ -171,13 +171,15 @@ export default {
   },
   // 更新正在播放的音乐
   [types.UPDATE_PLAY_NOW](state, data) {
-    const { playingList, playNow } = state;
+    const { playingList, playNow, isPersonFM } = state;
     if (playNow.id) {
       playingList.history.push(playNow.id);
       playingList.index += 1;
     }
     state.playNow = data;
-    window.VUE_APP.$store.dispatch('updateRandomList');
+    if (!isPersonFM) {
+      window.VUE_APP.$store.dispatch('updateRandomList');
+    }
   },
   [types.UPDATE_PLAYING_LIST](state, { list, more, id, heart = false }) {
     const { playingList, allSongs } = state;
@@ -190,6 +192,7 @@ export default {
       playingList.history = [];
       playingList.index = 0;
     }
+    state.isPersonFM = false;
     state.playingListId = id;
     state.heartMode = heart;
     playingList.trueList = playingList.raw.filter((v) => allSongs[v].url || allSongs[v].qqId);
@@ -305,5 +308,23 @@ export default {
       Storage.set('download_info', downloadInfo, true);
       state.downloadInfo = { ...downloadInfo };
     }
+  },
+  [types.PERSON_FM](state, data) {
+    const { playingList } = state;
+    if (!state.isPersonFM) {
+      playingList.raw = data;
+      playingList.history = [];
+      playingList.index = 0;
+      playingList.random = data;
+      playingList.trueList = data;
+    } else {
+      const newList = ArrHelper.delDuplicate(playingList.raw || [], data);
+
+      playingList.raw = newList;
+      playingList.trueList = newList;
+      playingList.random = newList;
+    }
+    state.playingListId = '';
+    state.isPersonFM = true;
   }
 }
