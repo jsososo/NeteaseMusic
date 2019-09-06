@@ -9,10 +9,8 @@
     >
       <div v-if="playNow.lyric" class="lyric-list" :style="`top: ${top}px;`">
         <div v-for="(item, index) in playNow.lyric" :class="`lyric-item lyric-item-${index} ${index === lyricIndex ? 'lyric-item-now' : ''}`">
-          <div>{{item.str || ''}}</div>
-          <div v-if="item.trans">
-            {{item.trans}}
-          </div>
+          <div v-html="item.str || ''"></div>
+          <div v-if="item.trans" v-html="item.trans"></div>
         </div>
       </div>
     </div>

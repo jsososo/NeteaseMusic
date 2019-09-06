@@ -178,6 +178,7 @@
         userList: 'getUserList',
         allSongs: 'getAllSongs',
         playNow: 'getPlaying',
+        playingPercent: 'getPlayingPercent',
       }))
     },
     watch: {
@@ -217,6 +218,7 @@
         this.uid = this.$route.query.id;
         if (!this.uid) {
           this.uid = this.user.userId;
+          this.uInfo = {};
         }
         if (this.uid) {
           this.getUserDetail(this.uid);

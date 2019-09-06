@@ -12,7 +12,7 @@
             </div>
             <div class="content">{{item.content}}</div>
             <blockquote v-if="item.beReplied && item.beReplied[0]" class="be-replied">
-              <span class="user-name">@{{item.beReplied[0].user.nickname}}</span>
+              <a :href="`#/user?id=${item.user.userId}`" class="user-name">@{{item.beReplied[0].user.nickname}}</a>
               ：{{item.beReplied[0].content}}
             </blockquote>
             <div class="mt_10">

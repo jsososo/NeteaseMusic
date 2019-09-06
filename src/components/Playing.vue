@@ -150,8 +150,9 @@
           display: inline-block;
           vertical-align: top;
           text-shadow: 0 0 0;
-          position: absolute;
-          left: 75px;
+          margin-left: 50px;
+          margin-bottom: 15px;
+          width: 350px;
           transition: 0.3s;
           font-weight: bold;
 

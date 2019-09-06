@@ -200,10 +200,10 @@
   .search-page-container {
     position: absolute;
     height: calc(100% - 30px);
-    width: 550px;
+    width: 38%;
     background: #0003;
     transition: 0.3s;
-    right: 0;
+    right: 20px;
     top: 20px;
     transform: rotate(90deg) translate(100%, -20px);
     border-radius: 20px;
@@ -324,7 +324,6 @@
 
             .operation-btns {
               opacity: 1;
-              margin-left: 70px;
 
               .iconfont {
                 letter-spacing: 20px;
@@ -385,6 +384,7 @@
           vertical-align: top;
           font-size: 14px;
           height: 60px;
+          margin-left: 70px;
           overflow: hidden;
           white-space: nowrap;
           text-overflow: ellipsis;

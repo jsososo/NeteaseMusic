@@ -59,18 +59,20 @@ export function handleLyric(str, type, obj) {
   dom.innerHTML = str;
   const arr = dom.innerHTML.split('\n');
   arr.forEach((item) => {
-    const time = item.match(/^\[(\d+:\d+.\d+)\]/);
-    if (time) {
-      const timeArr = time[1].split(':');
-      const s = item.replace(time[0], '');
-      if (!s) {
-        return;
-      }
-      const timeKey = Number(timeArr[0] * 60000) + Number(timeArr[1]) * 1000
-      obj[timeKey] = obj[timeKey] || {};
-      obj[timeKey][type] = s;
+    const times = item.match(/\[\d+:\d+.\d+\]/g);
+    if (times) {
+      times.forEach((time) => {
+        const timeArr = time.replace(/\[|\]/g, '').split(':');
+        const s = item.replace(times.join(''), '');
+        if (!s) {
+          return;
+        }
+        const timeKey = Number(timeArr[0] * 60000) + Number(timeArr[1]) * 1000;
+        obj[timeKey] = obj[timeKey] || {};
+        obj[timeKey][type] = s;
+      });
     }
-  })
+  });
   return obj;
 }
 
