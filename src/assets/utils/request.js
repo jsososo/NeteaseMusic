@@ -144,8 +144,8 @@ export const loginStatus = async () => {
       .then(({ result }) => {
         const listObj = {};
         const list = result.map((item) => {
-          const { id, name = '', picUrl, trackCount } = item;
-          listObj[item.id] = { id, name, trackCount, coverImgUrl: picUrl };
+          const { id, name = '', picUrl, trackCount, playCount } = item;
+          listObj[item.id] = { id, name, trackCount, coverImgUrl: picUrl, playCount };
           return listObj[item.id];
         });
         dispatch('setRecommendList', { list, obj: listObj });
@@ -181,8 +181,8 @@ export const loginStatus = async () => {
     .then(({ recommend }) => {
       const listObj = {};
       const list = recommend.map((item) => {
-        const { id, name = '', picUrl, trackCount } = item;
-        listObj[item.id] = { id, name, trackCount, coverImgUrl: picUrl };
+        const { id, name = '', picUrl, trackCount, creator, playCount } = item;
+        listObj[item.id] = { id, name, trackCount, coverImgUrl: picUrl, creator, playCount };
         return listObj[item.id];
       });
       dispatch('setRecommendList', { list, obj: listObj });
@@ -198,8 +198,8 @@ export const getMyList = async (uid = Storage.get('uid'), getFav, id) => {
   const { playlist } = await request({ api: 'USER_LIST', data: { uid }});
   const listObj = {};
   const list = playlist.map((item) => {
-    const { id, name = '', coverImgUrl, trackCount, subscribed, creator } = item;
-    listObj[item.id] = { id, name, trackCount, coverImgUrl, subscribed, creator };
+    const { id, name = '', coverImgUrl, trackCount, subscribed, creator, playCount } = item;
+    listObj[item.id] = { id, name, trackCount, coverImgUrl, subscribed, creator, playCount };
     return listObj[item.id];
   });
   window.VUE_APP.$store.dispatch('setUserList', { list, obj: listObj, favId: list[0].id });

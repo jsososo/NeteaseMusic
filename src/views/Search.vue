@@ -90,11 +90,29 @@
         空空如也！
       </div>
     </div>
+
+    <div v-if="searchQuery.type === 1000">
+      <div class="playlist-list result-list" v-if="searchQuery.playlists && searchQuery.playlists.length > 0">
+        <div v-for="s in searchQuery.playlists" class="playlist-item" @click="goTo(`#/playlist/detail?id=${s.id}`)">
+          <img class="playlist-img" :src="`${s.coverImgUrl}?param=120y120`"  />
+          <div class="playlist-name">{{s.name}}</div>
+          <div class="playlist-author">
+            <span v-if="s.creator">By: {{s.creator.nickname}}</span>
+            <span class="pl_20"><i class="iconfont icon-yinyue" />: {{numToStr(s.playCount || 0)}}</span>
+          </div>
+          <div class="playlist-trackcount">{{s.trackCount}}</div>
+        </div>
+      </div>
+      <div class="empty-status" v-if="!searchQuery.playlists || searchQuery.playlists.length === 0">
+        空空如也！
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
   import { searchReq, likeMusic, download } from "../assets/utils/request";
+  import { numToStr } from "../assets/utils/stringHelper";
   import { mapGetters } from 'vuex';
   import $ from 'jquery';
 
@@ -122,6 +140,12 @@
             color: 'green',
             icon: 'singer',
             text: '歌手',
+          },
+          {
+            val: 1000,
+            color: 'yellow',
+            icon: 'playlist',
+            text: '歌单',
           },
         ],
         loading: false,
@@ -192,6 +216,7 @@
         window.location = url;
       },
       download,
+      numToStr,
     }
   }
 </script>
@@ -525,6 +550,76 @@
           white-space: nowrap;
           text-overflow: ellipsis;
           box-sizing: border-box;
+        }
+      }
+    }
+
+    .playlist-list {
+      padding: 0 10px;
+
+      .playlist-item {
+        color: #fff9;
+        border-bottom: 1px solid #fff6;
+        padding: 15px 20px;
+        height: 70px;
+        opacity: 0.7;
+        transition: 0.3s;
+        cursor: pointer;
+        background: transparent;
+        position: relative;
+        overflow: hidden;
+
+        &:hover {
+          opacity: 1;
+          background: #fff1;
+
+          .playlist-name {
+            transform: translate(120px) scale(1.1);
+          }
+          .playlist-author {
+            transform: translate(100px, 20px);
+          }
+          .playlist-img {
+            border-radius: 10px;
+            transform: scale(1.1);
+          }
+          .playlist-trackcount {
+            transform: rotate(-90deg) translate(15px, 150%);
+          }
+        }
+
+        .playlist-name {
+          display: inline-block;
+          width: 100%;
+          vertical-align: top;
+          transform: translate(90px) scale(1);
+          font-weight: bold;
+          transition: 0.3s;
+        }
+        .playlist-author {
+          width: 100%;
+          transform: translate(110px, 20px) scale(1);
+          font-size: 12px;
+          transition: 0.3s;
+        }
+        .playlist-img {
+          width: 70px;
+          border-radius: 20px;
+          position: absolute;
+          transform: scale(1);
+          transition: 0.3s;
+        }
+        .playlist-trackcount {
+          position: absolute;
+          right: 10px;
+          font-weight: bold;
+          font-size: 44px;
+          width: 80px;
+          text-align: right;
+          color: #fff4;
+          transform: rotate(0) translate(0, -20px);
+          transform-origin: bottom left;
+          transition: 0.3s;
         }
       }
     }

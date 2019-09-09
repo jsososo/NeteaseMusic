@@ -130,3 +130,12 @@ export function getSongUrl(v, isDown, onlyHigh) {
     ];
   }
 }
+
+export const numToStr = (n) => {
+  if (n > 10000000) {
+    return `${Number(n / 1000000).toFixed(1)}m`;
+  } else if (n > 1000) {
+    return `${Number(n / 1000).toFixed(1)}k`;
+  }
+  return n;
+};

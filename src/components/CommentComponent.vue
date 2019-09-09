@@ -30,6 +30,7 @@
 <script>
   import request from '../assets/utils/request';
   import timer from '../assets/utils/timer';
+  import { numToStr } from "../assets/utils/stringHelper";
   import { mapGetters } from 'vuex';
   import $ from 'jquery';
   export default {
@@ -128,9 +129,7 @@
       getTime(t) {
         return timer(t).str('YY-MM-DD HH:mm:ss');
       },
-      numberHandle(n) {
-        return n > 1000 ? `${Number(n / 1000).toFixed(1)}k` : n
-      },
+      numberHandle: numToStr,
       likeComment(c, type) {
         const { playNow, commentType } = this;
         const t = Number(!c.liked);

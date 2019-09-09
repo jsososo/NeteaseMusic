@@ -58,7 +58,10 @@
         <span class="list-name">{{item.name}}</span>
         <span class="list-count">{{item.trackCount}}</span>
         <i @click="toHeartMode(item.id)" :class="`iconfont icon-heart heart-btn ${heartMode && playingListId === item.id && 'hearting'}`" />
-        <span class="list-creator" v-if="item.creator">By: <a :href="`#/user?id=${item.creator.userId}`">{{item.creator.nickname}}</a></span>
+        <span class="list-creator" v-if="item.creator">
+          By: <a :href="`#/user?id=${item.creator.userId}`">{{item.creator.nickname}}</a>
+          <span class="pl_20" v-if="item.playCount"><i class="iconfont icon-yinyue" />: {{numToStr(item.playCount)}}</span>
+        </span>
       </div>
     </div>
   </div>
@@ -66,6 +69,7 @@
 
 <script>
   import { mapGetters } from 'vuex';
+  import { numToStr } from "../assets/utils/stringHelper";
   import request, { handleSongs, getPersonFM } from '../assets/utils/request';
   export default {
     name: "PlayList",
@@ -163,7 +167,7 @@
           } else {
             setTimeout(() => updatePlayNow(id), 100);
           }
-        }
+        };
         if (!isPersonFM) {
           getPersonFM()
             .then((songs) => {
@@ -172,7 +176,9 @@
               updatePlayNow(ids[0]);
             })
         }
-      }
+      },
+
+      numToStr,
     }
   }
 </script>
