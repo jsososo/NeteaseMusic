@@ -218,10 +218,7 @@ export default {
 
   // 更新评论信息
   [types.UPDATE_COMMENT_INFO](state, data) {
-    state.commentInfo = {
-      ...state.commentInfo,
-      ...data,
-    }
+    state.commentInfo = data;
   },
 
   // 更新下载记录

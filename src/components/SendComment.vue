@@ -1,7 +1,8 @@
 <template>
   <div :class="`write-comment-container ${commentInfo.open && 'open'}`">
     <div class="comment-main">
-      <div class="ft_14 pl_5" style="color: #fff9; line-height: 20px"> 为 <span class="comment-title">{{commentInfo.title}}</span> 献上评论</div>
+      <div v-if="!commentInfo.commentId" class="ft_14 pl_5" style="color: #fff9; line-height: 20px"> 为 <span class="comment-title">{{commentInfo.title}}</span> 献上评论</div>
+      <div v-if="commentInfo.commentId" class="ft_14 pl_5" style="color: #fff9; line-height: 20px"> 回复 @<span class="comment-title">{{commentInfo.nick}}</span> </div>
       <textarea
         class="comment-input"
         :rows="2"
@@ -24,6 +25,7 @@
     name: "SendComment",
     props: {
       successCb: Function,
+      type: Number,
     },
     data() {
       return {
@@ -38,7 +40,7 @@
     },
     methods: {
       clickPlane() {
-        const { commentInfo } = this;
+        const { commentInfo, type } = this;
         let id = 0, title = commentInfo.title;
         if (commentInfo.open) {
           if (!commentInfo.val) {
@@ -51,25 +53,27 @@
             request({
               api: 'COMMENT',
               data: {
-                t: 1,
-                type: commentInfo.type,
+                t: commentInfo.commentId ? 2 : 1,
+                type,
                 id: commentInfo.id,
                 content: commentInfo.val,
+                commentId: commentInfo.commentId,
               },
               cache: true,
             }).then((res) => {
               this.loading = false;
+              res.comment.beReplied = commentInfo.beReplied ? [ commentInfo.beReplied] : null;
               this.successCb(res.comment);
             }, () => this.$message.error('评论失败了'));
           }
         } else {
-          switch (commentInfo.type) {
+          switch (type) {
             case 0:
               id = this.playNow.id;
               title = this.playNow.name;
               break;
           }
-          this.$store.dispatch('updateCommentInfo', { id, title, open: true });
+          this.$store.dispatch('updateCommentInfo', { type, id, title, open: true });
         }
       },
       closeComment() {

@@ -18,6 +18,7 @@
             <div class="mt_10">
               <i @click="likeComment(item, t)" :class="`iconfont pointer ${item.newLike} icon-zan${item.liked ? '' : '-o'}`" />
               <span class="pl_10 ft_12">{{numberHandle(item.likedCount)}}</span>
+              <i class="iconfont icon-reply ml_20 pointer" style="vertical-align: -1px;" @click="reply(item)" />
               <i class="iconfont icon-delete ml_20 pointer" @click="delComment(item.commentId)" v-if="item.user.userId === user.userId" />
             </div>
           </div>
@@ -88,6 +89,12 @@
         } catch (err) {
           console.log(err);
         }
+      },
+      async reply(beReplied) {
+        const { commentId, user } = beReplied;
+        console.log(user);
+        const { id } = this;
+        this.$store.dispatch('updateCommentInfo', { type: 0, id, commentId, open: true, nick: user.nickname, beReplied });
       },
       getComments() {
         const { playNow, commentType } = this;

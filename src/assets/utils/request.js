@@ -162,11 +162,14 @@ export const loginStatus = async () => {
         getPlayList(list[0].id)
           .then(({ privileges }) => {
             const allSongs = VUE_APP.$store.getters.getAllSongs;
+            const idList = privileges.map((s) => s.id);
             // 默认播放
             if (!mid) {
               dispatch('updatePlayNow', allSongs[privileges[0].id]);
-              dispatch('updatePlayingList', { list: privileges.map((s) => s.id), id: list[0].id });
+            } else {
+              idList.unshift(mid);
             }
+            dispatch('updatePlayingList', { list: idList, id: list[0].id });
           })
       });
     return;
@@ -186,8 +189,10 @@ export const loginStatus = async () => {
       // 默认播放日推
       if (!mid) {
         dispatch('updatePlayNow', allSongs[songs[0]]);
-        dispatch('updatePlayingList', { list: songs, id: 'daily' });
+      } else {
+        songs.unshift(mid);
       }
+      dispatch('updatePlayingList', { list: songs, id: 'daily' });
     });
 
   // 日推歌单
