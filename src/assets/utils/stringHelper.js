@@ -30,7 +30,7 @@ export function getQueryFromUrl(key, search = window.location.href) {
 }
 
 export function changeUrlQuery(obj, baseUrl = window.location.href, update = true) {
-  const query = getQueryFromUrl(baseUrl);
+  const query = getQueryFromUrl(undefined, baseUrl);
   const url = baseUrl.split('?')[0];
 
   const newQuery = {...query, ...obj};

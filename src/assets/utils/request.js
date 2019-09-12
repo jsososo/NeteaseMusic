@@ -135,6 +135,16 @@ const querySongUrl = (id) => request({
 export const loginStatus = async () => {
   const VUE_APP = window.VUE_APP;
   const dispatch = VUE_APP.$store.dispatch;
+  const mid = getQueryFromUrl('mid');
+
+  if (mid) {
+    getSongsDetail(mid)
+      .then(() => {
+        const allSongs = VUE_APP.$store.getters.getAllSongs;
+        dispatch('updatePlayNow', allSongs[mid]);
+        dispatch('updatePlayingList', { list: [ mid ] });
+      })
+  }
 
   // 查询登陆情况
   const res = await request('LOGIN_STATUS');
@@ -153,8 +163,10 @@ export const loginStatus = async () => {
           .then(({ privileges }) => {
             const allSongs = VUE_APP.$store.getters.getAllSongs;
             // 默认播放
-            dispatch('updatePlayNow', allSongs[privileges[0].id]);
-            dispatch('updatePlayingList', { list: privileges.map((s) => s.id), id: list[0].id });
+            if (!mid) {
+              dispatch('updatePlayNow', allSongs[privileges[0].id]);
+              dispatch('updatePlayingList', { list: privileges.map((s) => s.id), id: list[0].id });
+            }
           })
       });
     return;
@@ -172,8 +184,10 @@ export const loginStatus = async () => {
 
       const allSongs = VUE_APP.$store.getters.getAllSongs;
       // 默认播放日推
-      dispatch('updatePlayNow', allSongs[songs[0]]);
-      dispatch('updatePlayingList', { list: songs, id: 'daily' });
+      if (!mid) {
+        dispatch('updatePlayNow', allSongs[songs[0]]);
+        dispatch('updatePlayingList', { list: songs, id: 'daily' });
+      }
     });
 
   // 日推歌单
@@ -246,9 +260,10 @@ export const searchReq = async ({ keywords, type = 1, pageNo = 1 }) => {
     res.result.songs = [ ...(search.songs || []), ...(res.result.songs || []) ];
     res.result.artists = [ ...(search.artists || []), ...(res.result.artists || []) ];
     res.result.albums = [ ...(search.albums || []), ...(res.result.albums || []) ];
+    res.result.playlists = [ ...(search.playlists || []), ...(res.result.playlists || []) ];
   }
   if (search.keywords === keywords) {
-    dispatch('updateSearch', { ...res.result, loading: false, total: res.result.songCount || res.result.artistCount });
+    dispatch('updateSearch', { ...res.result, loading: false, total: res.result.songCount || res.result.artistCount || res.result.playlistCount });
   }
   dispatch('updateAllSongs', obj);
 
@@ -268,7 +283,7 @@ export const getSongsDetail = (ids) => (
     data: { ids },
     cache: true,
   }).then(({ songs }) => handleSongs(songs))
-)
+);
 
 // 处理获取到的歌曲，把他们存到 allSongs 并获取链接
 export const handleSongs = (songs) => (
@@ -381,6 +396,7 @@ const JSONP = (url) => {
   },500)
 };
 
+// 下载
 export const download = async (id) => {
   window.event.stopPropagation();
   const allSongs = VUE_APP.$store.getters.getAllSongs;

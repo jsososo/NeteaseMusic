@@ -84,11 +84,23 @@
             <i class="iconfont icon-download ft_16 pointer" />
           </span>
         </div>
+
+        <!-- 添加到歌单 -->
         <div class="inline-block ml_5 pd_5">
           <span @click="playlistTracks(playNow.id, 'add', 'ADD_SONG_2_LIST')">
             <i class="iconfont icon-add ft_16 pointer" />
           </span>
         </div>
+
+        <input id="cp-share-input" :value="`http://music.jsososo.com/#${$route.fullPath}`">
+        <!-- 分享 -->
+        <div class="inline-block ml_5 pd_5">
+          <span @click="copyUrl">
+            <i class="iconfont icon-share ft_16 pointer" />
+          </span>
+        </div>
+
+
 
         <div class="back-icon pointer" @click="goBack">
           <i class="iconfont icon-arrow-left" />
@@ -106,7 +118,7 @@
   import Storage from '../assets/utils/Storage';
   import { mapGetters } from 'vuex';
   import request, { getQQVkey, likeMusic, download, getPersonFM } from '../assets/utils/request';
-  import { handleLyric, getQueryFromUrl } from "../assets/utils/stringHelper";
+  import { handleLyric, getQueryFromUrl, changeUrlQuery } from "../assets/utils/stringHelper";
   import ArrayHelper from '../assets/utils/arrayHelper';
   import timer from '../assets/utils/timer';
 
@@ -154,6 +166,7 @@
         const { id, lyric, name, comments, qqId, url } = v;
         const { murl, guid, vkey, vkey_expire } = Storage.get(['murl', 'guid', 'vkey', 'vkey_expire']);
         const dispatch = this.$store.dispatch;
+        changeUrlQuery({ mid: id });
         if (isPersonFM && (playingList.index >= (playingList.raw.length - 2))) {
           this.getPersonFM();
         }
@@ -288,6 +301,7 @@
       };
       // 音乐播放时进度条
       pDom.ontimeupdate = () => {
+        changeUrlQuery({ mid: this.playNow.id });
         !this.stopUpdateCurrent && (this.currentTime = this.playNow.url ? pDom.currentTime : 0);
         this.playerInfo = {
           current: this.currentTime,
@@ -388,6 +402,12 @@
               this.getPersonFM(true);
             }
           })
+      },
+      copyUrl() {
+        const e = document.getElementById("cp-share-input");
+        e.select();
+        document.execCommand("Copy");
+        this.$message.success('复制链接成功，去分享吧');
       }
     }
   }
@@ -405,6 +425,12 @@
     bottom: 0;
     left: 0;
     padding-left: 20px;
+
+    #cp-share-input {
+      opacity: 0;
+      position: fixed;
+      top: -1000px;
+    }
 
     .other-control {
       margin-left: 25px;
