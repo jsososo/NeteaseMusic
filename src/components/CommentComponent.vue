@@ -10,16 +10,16 @@
               <a :href="`#/user?id=${item.user.userId}`"><b class="user-name">{{item.user.nickname}}</b></a>
               <span class="pl_20 comment-time">{{getTime(item.time)}}</span>
             </div>
-            <div class="content">{{item.content}}</div>
+            <div class="content" v-html="item.content"></div>
             <blockquote v-if="item.beReplied && item.beReplied[0]" class="be-replied">
               <a :href="`#/user?id=${item.user.userId}`" class="user-name">@{{item.beReplied[0].user.nickname}}</a>
-              ：{{item.beReplied[0].content}}
+              ：<span v-html="item.beReplied[0].content"></span>
             </blockquote>
             <div class="mt_10">
               <i @click="likeComment(item, t)" :class="`iconfont pointer ${item.newLike} icon-zan${item.liked ? '' : '-o'}`" />
               <span class="pl_10 ft_12">{{numberHandle(item.likedCount)}}</span>
-              <i class="iconfont icon-reply ml_20 pointer" style="vertical-align: -1px;" @click="reply(item)" />
-              <i class="iconfont icon-delete ml_20 pointer" @click="delComment(item.commentId)" v-if="item.user.userId === user.userId" />
+              <i v-if="!playNow.from" class="iconfont icon-reply ml_20 pointer" style="vertical-align: -1px;" @click="reply(item)" />
+              <i class="iconfont icon-delete ml_20 pointer" @click="delComment(item.commentId)" v-if="!playNow.from && item.user.userId === user.userId" />
             </div>
           </div>
         </div>
@@ -29,7 +29,7 @@
 </template>
 
 <script>
-  import request from '../assets/utils/request';
+  import request, { handleQQComments } from '../assets/utils/request';
   import timer from '../assets/utils/timer';
   import { numToStr } from "../assets/utils/stringHelper";
   import { mapGetters } from 'vuex';
@@ -96,6 +96,7 @@
         const { id } = this;
         this.$store.dispatch('updateCommentInfo', { type: 0, id, commentId, open: true, nick: user.nickname, beReplied });
       },
+      // 获取评论
       getComments() {
         const { playNow, commentType } = this;
         const { comments, id } = [playNow][commentType];
@@ -108,16 +109,33 @@
           return;
         }
         this.loading = true;
-        request({
-          api: ['MUSIC_COMMENTS'][commentType],
-          data: { offset, limit: 20, total, id }
-        }).then((res) => {
-          comments.offset += limit;
-          comments.total = res.total;
-          comments.latest = [ ...comments.latest, ...res.comments ];
-          this.loading = false;
-          this.$store.dispatch(['updateSongDetail'][commentType], { id, comments });
-        })
+
+        if (playNow.from === 'qq') {
+          request({
+            api: 'QQ_GET_COMMENT',
+            data: {
+              id: playNow.songid,
+              pageNo: offset / 20 + 1,
+            },
+          }).then((res) => {
+            comments.offset += limit;
+            comments.total = res.data.comment.commenttotal;
+            comments.latest = [ ...comments.latest, ...handleQQComments(res.data.comment.commentlist)];
+            this.$store.dispatch(['updateSongDetail'][commentType], { id, comments });
+            this.loading = false;
+          })
+        } else {
+          request({
+            api: ['MUSIC_COMMENTS'][commentType],
+            data: { offset, limit: 20, total, id }
+          }).then((res) => {
+            comments.offset += limit;
+            comments.total = res.total;
+            comments.latest = [ ...comments.latest, ...res.comments ];
+            this.loading = false;
+            this.$store.dispatch(['updateSongDetail'][commentType], { id, comments });
+          })
+        }
       },
       onScroll() {
         const { comments, loading } = this;
@@ -140,6 +158,9 @@
       likeComment(c, type) {
         const { playNow, commentType } = this;
         const t = Number(!c.liked);
+        if (playNow.from) {
+          return this.$message.warning('暂不支持网易云音乐以外的评论点赞');
+        }
         request({
           api: 'LIKE_COMMENT',
           data: {

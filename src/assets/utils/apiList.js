@@ -36,14 +36,17 @@ const apiList = {
   'GET_DJ_SONGS': 'api/dj/program', // 获取电台的歌单
   'GET_PERSON_FM': 'api/personal_fm', // 获取私人fm
 
+  'QQ_SEARCH': 'apiQ/search', // qq 音乐搜索
+  'QQ_VKEY': 'apiQ/vkey', // qq音乐 vkey
+  'QQ_LYRIC': 'apiQ/lyric', // qq音乐歌词
+  'QQ_GET_COMMENT': 'apiQ/comment', // qq音乐获取评论
+
   '163': '//music.jsososo.com/neapi/index.php',
-  'QQ_SEARCH': '//c.y.qq.com/soso/fcgi-bin/client_search_cp',
   'QQ_SONG_INFO': '//u.y.qq.com/cgi-bin/musicu.fcg',
   'QQ_LIST': '//c.y.qq.com/rsc/fcgi-bin/fcg_get_profile_homepage.fcg',
   'QQ_USER_LIST_DETAIL': '//music.jsososo.com/api/getQQListDetail.php',
   'QQ_GET_LYRIC': '//music.jsososo.com/api/getQQLyricNew.php',
   'QQ_RADIO_INFO': '//u.y.qq.com/cgi-bin/musicu.fcg',
-  'QQ_GET_COMMENT': '//music.jsososo.com/api/qqSongComment.php',
 };
 
 export default apiList;

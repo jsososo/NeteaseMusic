@@ -2,7 +2,7 @@
   <div>
     <CommentComponent :comment-type="0" :id="playNow.id" :comments="comments" />
 
-    <SendComment :type="0" :success-cb="initComments" />
+    <SendComment v-if="!playNow.from" :type="0" :success-cb="initComments" />
   </div>
 </template>
 

@@ -21,6 +21,7 @@
   import Playing from './components/Playing';
   import Operation from './components/Operation';
   import request, { loginStatus, getQQVkey } from './assets/utils/request';
+  import { messageHelp } from "./assets/utils/util";
   import { mapGetters } from 'vuex';
 
   export default {
@@ -76,6 +77,8 @@
         }
       });
       this.$store.dispatch('updateDownload');
+
+      messageHelp(1);
     },
     methods: {
 

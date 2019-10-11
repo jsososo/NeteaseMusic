@@ -23,13 +23,15 @@
       <div class="info-line">
         <div class="info-label"><i class="iconfont icon-singer" /></div>
         <div class="info-val">
-          <a v-for="a in allSongs[playNow.id].ar" :key="a.id" :href="`#/singer?id=${a.id}`">{{a.name}} </a>
+          <a v-if="!playNow.from" v-for="a in allSongs[playNow.id].ar" :key="a.id" :href="`#/singer?id=${a.id}`">{{a.name}} </a>
+          <span v-if="!!playNow.from" v-for="a in allSongs[playNow.id].ar" :key="a.id">{{a.name}} </span>
         </div>
       </div>
       <div class="info-line">
         <div class="info-label"><i class="iconfont icon-album" /></div>
         <div class="info-val" v-if="playNow.al && playNow.al.name">
-          <a :href="`#/album?id=${playNow.al.id}`">{{playNow.al.name}}</a>
+          <a v-if="!playNow.from" :href="`#/album?id=${playNow.al.id}`">{{playNow.al.name}}</a>
+          <span v-if="!!playNow.from" :href="`#/album?id=${playNow.al.id}`">{{playNow.al.name}}</span>
         </div>
       </div>
 

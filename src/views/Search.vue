@@ -1,8 +1,13 @@
 <template>
   <div :class="`search-page-container ${show && 'show'}`" @scroll="onScroll">
     <input type="text" class="search-input mt_15" placeholder="Search..." v-model="keywords">
+    <div class="platform-select">
+      <i @click="search('platform', '163')" :class="`iconfont icon-163 ${platform === '163' && 'active'}`" />
+      <i @click="search('platform', 'qq')" :class="`iconfont icon-qq ${platform === 'qq' && 'active'}`" />
+    </div>
     <div class="ml_10 mt_10 mb_20">
       <div
+        v-if="platform === '163' || item.hasQQ"
         v-for="item in typeList"
         :key="`type-${item.val}`"
         @click="search('type', item.val)"
@@ -38,7 +43,7 @@
           <div class="song-album-img" :style="`background-image: url('${allSongs[s].al && `${allSongs[s].al.picUrl}?param=50y50`}')`"></div>
           <span class="song-name">{{allSongs[s].name}}</span>
           <span class="artist-name">{{allSongs[s].ar.map((a) => a.name).join('/')}}</span>
-          <span class="operation-btns">
+          <span class="operation-btns" v-show="platform === '163'">
             <i
               v-if="allList[userList.favId]"
               @click="likeMusic(s)"
@@ -91,6 +96,7 @@
       </div>
     </div>
 
+    <!-- 歌单 -->
     <div v-if="searchQuery.type === 1000">
       <div class="playlist-list result-list" v-if="searchQuery.playlists && searchQuery.playlists.length > 0">
         <div v-for="s in searchQuery.playlists" class="playlist-item" @click="goTo(`#/playlist/detail?id=${s.id}`)">
@@ -114,6 +120,7 @@
   import { searchReq, likeMusic, download } from "../assets/utils/request";
   import { numToStr } from "../assets/utils/stringHelper";
   import { mapGetters } from 'vuex';
+  import { messageHelp } from "../assets/utils/util";
   import $ from 'jquery';
 
   export default {
@@ -128,6 +135,7 @@
             color: 'red',
             icon: 'song',
             text: '歌曲',
+            hasQQ: true,
           },
           {
             val: 10,
@@ -148,6 +156,7 @@
             text: '歌单',
           },
         ],
+        platform: '163',
         loading: false,
       }
     },
@@ -168,19 +177,25 @@
     },
     created() {
       setTimeout(() => this.show = true, 1);
+      messageHelp(2);
     },
     beforeDestroy() {
       this.show = false;
     },
     methods: {
       async search(key, val) {
-        const { searchQuery, loading } = this;
+        const { searchQuery, loading, platform } = this;
         if (loading) {
           return;
+        }
+        if (key === 'platform') {
+          this.platform = val;
+          return this.search('type', 1);
         }
         this.loading = true;
         searchQuery.pageNo = 1;
         searchQuery[key] = val;
+        searchQuery.platform = platform;
         await searchReq(searchQuery);
         this.loading = false;
       },
@@ -233,6 +248,27 @@
     transform: rotate(90deg) translate(100%, -20px);
     border-radius: 20px;
     overflow-y: auto;
+    
+    .platform-select {
+      display: inline-block;
+      vertical-align: bottom;
+      margin-left: 10px;
+
+      .iconfont {
+        color: #fff;
+        display: inline-block;
+        margin: 0 10px;
+        opacity: 0.4;
+
+        &.active {
+          opacity: 0.8;
+        }
+
+        &:before {
+          cursor: pointer;
+        }
+      }
+    }
 
     &::-webkit-scrollbar {
       width: 0;

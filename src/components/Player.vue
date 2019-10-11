@@ -86,15 +86,15 @@
         </div>
 
         <!-- 添加到歌单 -->
-        <div class="inline-block ml_5 pd_5">
+        <div class="inline-block ml_5 pd_5" v-if="!playNow.from">
           <span @click="playlistTracks(playNow.id, 'add', 'ADD_SONG_2_LIST')">
             <i class="iconfont icon-add ft_16 pointer" />
           </span>
         </div>
 
-        <input id="cp-share-input" :value="`http://music.jsososo.com/#${$route.fullPath}`">
+        <input id="cp-share-input" :value="`http://music.jsososo.com/#/?mid=${playNow.id}`">
         <!-- 分享 -->
-        <div class="inline-block ml_5 pd_5">
+        <div v-if="!playNow.from" class="inline-block ml_5 pd_5">
           <span @click="copyUrl">
             <i class="iconfont icon-share ft_16 pointer" />
           </span>
@@ -117,7 +117,7 @@
   import Num from '../assets/utils/num';
   import Storage from '../assets/utils/Storage';
   import { mapGetters } from 'vuex';
-  import request, { getQQVkey, likeMusic, download, getPersonFM } from '../assets/utils/request';
+  import request, { getQQVkey, likeMusic, download, getPersonFM, handleQQComments } from '../assets/utils/request';
   import { handleLyric, getQueryFromUrl, changeUrlQuery } from "../assets/utils/stringHelper";
   import ArrayHelper from '../assets/utils/arrayHelper';
   import timer from '../assets/utils/timer';
@@ -140,6 +140,7 @@
           duration: 0,
         },
         playingId: 0,
+        playingPlatform: '',
         listId: 0,
         keys: [],
       }
@@ -162,11 +163,10 @@
     },
     watch: {
       async playNow(v) {
-        const { listId, playingId, playerInfo, isPersonFM, playingList } = this;
-        const { id, lyric, name, comments, qqId, url } = v;
+        const { listId, playingId, playerInfo, isPersonFM, playingList, playingPlatform } = this;
+        const { id, lyric, name, comments, qqId, url, mid, songid } = v;
         const { murl, guid, vkey, vkey_expire } = Storage.get(['murl', 'guid', 'vkey', 'vkey_expire']);
         const dispatch = this.$store.dispatch;
-        changeUrlQuery({ mid: id });
         if (isPersonFM && (playingList.index >= (playingList.raw.length - 2))) {
           this.getPersonFM();
         }
@@ -175,7 +175,8 @@
           return;
         }
 
-        if (playerInfo.current > 0) {
+        // 网易云的听歌打卡
+        if (playerInfo.current > 0 && playingPlatform === '163') {
           let sourceid = (listId === 'daily' ? '' : listId) || '';
           if (!sourceid) {
             sourceid = this.allSongs[playingId].al.id;
@@ -204,6 +205,7 @@
         document.title = name;
         this.currentTime = 0;
         this.playingId = id;
+        this.playingPlatform = v.from || '163';
         this.listId = this.playingListId;
 
         // 更新后面的背景
@@ -211,42 +213,71 @@
 
         // 没有歌词的拿歌词
         if (!lyric) {
-          request({ api: 'GET_LYRIC', data: { id }, cache: true })
-            .then((res) => {
-              const { nolyric, lrc = {}, tlyric = {} } = res;
-              let lyric = {};
-              if (nolyric) {
-                lyric = {
-                  0: {
-                    str: '没有歌词哟，好好享受',
-                  },
-                }
-              } else {
-                handleLyric(lrc.lyric, 'str', lyric);
-                handleLyric(tlyric.lyric, 'trans', lyric);
-              }
-              dispatch('updateSongDetail', { id, lyric });
+          if (v.from === 'qq') {
+            request({
+              api: 'QQ_LYRIC',
+              data: { songmid: mid },
+            }).then((res) => {
+              const { lyric, trans } = res.data;
+              const lyricObj = {};
+              handleLyric(lyric, 'str', lyricObj);
+              handleLyric(trans, 'trans', lyricObj);
+              dispatch('updateSongDetail', { id, lyric: lyricObj });
             })
+          } else {
+            request({ api: 'GET_LYRIC', data: { id }, cache: true })
+              .then((res) => {
+                const { nolyric, lrc = {}, tlyric = {} } = res;
+                let lyric = {};
+                if (nolyric) {
+                  lyric = {
+                    0: {
+                      str: '没有歌词哟，好好享受',
+                    },
+                  }
+                } else {
+                  handleLyric(lrc.lyric, 'str', lyric);
+                  handleLyric(tlyric.lyric, 'trans', lyric);
+                }
+                dispatch('updateSongDetail', { id, lyric });
+              })
+          }
         }
 
         // 没有评论的拿评论
         if (!comments) {
-          request({
-            api: 'MUSIC_COMMENTS',
-            data: {
-              offset: 0,
-              limit: 20,
-              id,
-            }
-          }).then((res) => {
-            const comments = {
-              hot: res.hotComments || [],
-              latest: res.comments || [],
-              total: res.total,
-              offset: 20,
-            };
-            dispatch('updateSongDetail', { id, comments });
-          })
+          if (v.from === 'qq') {
+            request({
+              api: 'QQ_GET_COMMENT',
+              data: { id: songid },
+            }).then((res) => {
+              const comments = {
+                hot: handleQQComments(res.data.hotComment.commentlist),
+                latest: handleQQComments(res.data.comment.commentlist),
+                total: res.data.comment.commenttotal,
+                offset: 20,
+              };
+              dispatch('updateSongDetail', { id, comments });
+            })
+          } else {
+            request({
+              api: 'MUSIC_COMMENTS',
+              data: {
+                offset: 0,
+                limit: 20,
+                id,
+              }
+            }).then((res) => {
+              const comments = {
+                hot: res.hotComments || [],
+                latest: res.comments || [],
+                total: res.total,
+                offset: 20,
+              };
+              console.log(comments);
+              dispatch('updateSongDetail', { id, comments });
+            })
+          }
         }
       },
     },
@@ -301,7 +332,6 @@
       };
       // 音乐播放时进度条
       pDom.ontimeupdate = () => {
-        changeUrlQuery({ mid: this.playNow.id });
         !this.stopUpdateCurrent && (this.currentTime = this.playNow.url ? pDom.currentTime : 0);
         this.playerInfo = {
           current: this.currentTime,
@@ -408,7 +438,8 @@
         e.select();
         document.execCommand("Copy");
         this.$message.success('复制链接成功，去分享吧');
-      }
+      },
+      changeUrlQuery,
     }
   }
 </script>

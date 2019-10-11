@@ -54,7 +54,8 @@ const request = (param) => {
     url: '' + url,
     data,
   }).then((res) => {
-    if (res.data.code === 200) {
+    res.data = res.data || {};
+    if (res.data.code === 200 || res.data.result === 100) {
       return res.data;
     } else {
       throw({ data: res.data });
@@ -229,13 +230,16 @@ export const getMyList = async (uid = Storage.get('uid'), getFav, id) => {
 };
 
 // 搜索请求
-export const searchReq = async ({ keywords, type = 1, pageNo = 1 }) => {
+export const searchReq = async ({ keywords, type = 1, pageNo = 1, platform }) => {
   const VUE_APP = window.VUE_APP;
   const dispatch = VUE_APP.$store.dispatch;
 
   if (!keywords) {
     return dispatch('updateSearch', { keywords, type, pageNo, loading: false, songs: [], artists: [], total: 0 });
   }
+
+  if (platform === 'qq')
+    return searchQQReq({ keywords, type, pageNo });
 
   const allSongs = VUE_APP.$store.getters.getAllSongs;
   dispatch('updateSearch', { keywords, type, pageNo, loading: true });
@@ -280,6 +284,75 @@ export const searchReq = async ({ keywords, type = 1, pageNo = 1 }) => {
 
   // 获取歌曲的详细信息，搜索到的数据格式和这个接口里的一些字段不一样，而且没有专辑封面这种东西
   getSongsDetail(ids);
+};
+
+// qq搜索请求
+const searchQQReq = async ({ keywords: key, pageNo, type }) => {
+  const VUE_APP = window.VUE_APP;
+  const dispatch = VUE_APP.$store.dispatch;
+  const allSongs = VUE_APP.$store.getters.getAllSongs;
+  const search = VUE_APP.$store.getters.getSearch;
+  dispatch('updateSearch', { loading: true });
+
+  const obj = {
+    1: {
+      type: '',
+      key: 'songs',
+      total: 'songCount',
+    },
+  }[type];
+  const res = await request({
+    api: 'QQ_SEARCH',
+    data: {
+      key,
+      type: obj.type,
+      pageNo,
+    }
+  });
+
+  const { list, total, type: strType } = res.data;
+
+  const songList = list.map((item) => {
+    const {
+      albumid,
+      albummid,
+      albumname,
+      strMediaMid,
+      singer,
+      size128,
+      songmid,
+      songid,
+      songname,
+    } = item;
+    const { murl, guid, vkey } = Storage.get(['murl', 'guid', 'vkey']);
+    const songObj = {
+      ar: singer,
+      br: 128000,
+      al: {
+        id: albumid,
+        mid: albummid,
+        name: albumname,
+        picUrl: `https://y.gtimg.cn/music/photo_new/T002R300x300M000${albummid}.jpg`,
+      },
+      name: songname,
+      id: strMediaMid,
+      mid: songmid,
+      songid,
+      from: 'qq',
+      url: size128 ? `${murl}M500${strMediaMid}.mp3?guid=${guid}&vkey=${vkey}&fromtag=8&uin=0` : '',
+    };
+
+    allSongs[songObj.id] = songObj;
+    return songObj.id;
+  });
+  dispatch('updateAllSongs', allSongs);
+
+  const searchResult = {
+    loading: false,
+  };
+  searchResult[obj.key] = pageNo > 1 ? [...(search[obj.key] || []), ...songList] : songList;
+  searchResult[obj.total] = total;
+  dispatch('updateSearch', searchResult)
 };
 
 export const getSongsDetail = (ids) => (
@@ -350,45 +423,47 @@ export const likeMusic = (id) => {
   })
 };
 
-// jsonp 查询qq音乐
-const searchQQ = (val, id) => {
-  const url = '//c.y.qq.com/soso/fcgi-bin/client_search_cp';
+// 查询qq音乐
+const searchQQ = async (val, id) => {
   const { murl, guid, vkey } = Storage.get(['murl', 'guid', 'vkey']);
+  let mediaId = '';
 
   if (idMap[id]) {
-    setTimeout(() => {
-      window.VUE_APP.$store.dispatch('updateSongDetail', { id, qqId: idMap[id], br: 128000, url: `${murl}M500${idMap[id]}.mp3?guid=${guid}&vkey=${vkey}&fromtag=8&uin=0` });
+    mediaId = idMap[id];
+  } else {
+    const res = await request({
+      api: 'QQ_SEARCH',
+      data: {
+        pageNo: 1,
+        pageSize: 1,
+        key: val,
+      }
     });
-  }
-  window.QUERY_QQ_TIMES += 1;
-  const data = { p: 1, n: 1, w: val, cr: 1, aggr: 1, jsonpCallback: `SEARCH_QQ_MUSIC_${window.QUERY_QQ_TIMES}`};
-  const query = Object.keys(data).map((k) => `${k}=${data[k]}`).join('&');
-  const req = `${url}?${query}`;
-
-
-  window[`SEARCH_QQ_MUSIC_${window.QUERY_QQ_TIMES}`] = (res) => {
-    const song = res.data.song.list[0] || {};
+    const song = res.data.list[0] || {};
     if (song.media_mid && song.size128) {
-      window.VUE_APP.$store.dispatch('updateSongDetail', { id, qqId: song.media_mid, br: 128000, url: `${murl}M500${song.media_mid}.mp3?guid=${guid}&vkey=${vkey}&fromtag=8&uin=0` });
+      mediaId = song.media_mid;
+    } else {
+      return;
     }
-  };
-  JSONP(req);
+  }
+
+  return window.VUE_APP.$store.dispatch('updateSongDetail', { id, qqId: mediaId, br: 128000, url: `${murl}M500${mediaId}.mp3?guid=${guid}&vkey=${vkey}&fromtag=8&uin=0` });
 };
 
 export const getQQVkey = () => {
-  window.getQQMusicUrl = (res) => {
-    const mUrl = res.req_0.data.testfile2g;
-    const { guid, vkey } = getQueryFromUrl(null, mUrl);
-    Storage.set({
-      guid,
-      vkey,
-      vkey_expire: timer().from(90, 'm').str('YYYYMMDDHHmm'),
-      // 返回的url信息在播放非128k的音乐时都可能出现403，下面这个链接是从别人的qq音乐项目里找来的
-      // murl: res.req_0.data.sip[1] || res.req_0.data.sip[0],
-      murl: 'http://183.131.60.16/amobile.music.tc.qq.com/',
+  request('QQ_VKEY')
+    .then((res) => {
+      const { domain, guid, vkey } = res.data;
+      if (!vkey) {
+        return getQQVkey();
+      }
+      Storage.set({
+        guid,
+        vkey,
+        vkey_expire: timer().from(90, 'm').str('YYYYMMDDHHmm'),
+        murl: 'http://183.131.60.16/amobile.music.tc.qq.com/',
+      });
     });
-  };
-  JSONP(apiList['GET_QQ_VKEY']);
 };
 
 const JSONP = (url) => {
@@ -442,5 +517,30 @@ export const getPersonFM = () => (
   request('GET_PERSON_FM')
     .then((res) => handleSongs(res.data))
 );
+
+// 处理qq音乐的评论数据格式
+export const handleQQComments = (list) => (list || []).map((obj) => ({
+  commentId: obj.commentid,
+  content: obj.middlecommentcontent ?
+    (obj.middlecommentcontent.map((r) => `回复 ${r.replyednick}：${r.subcommentcontent.replace(/\\n/g, '<br/>')}`).join(' //')) :
+    obj.rootcommentcontent.replace(/\\n/g, '<br/>'),
+  time: obj.time * 1000,
+  beReplied: obj.middlecommentcontent ? [
+    {
+      content: obj.rootcommentcontent.replace(/\\n/g, '<br/>'),
+      user: {
+        avatarUrl: '',
+        userId: obj.rootcommentuin,
+        nickname: obj.rootcommentnick.replace('@', ''),
+      }
+    }
+  ] : [],
+  user: {
+    userId: obj.uin,
+    nickname: obj.nick,
+    avatarUrl: obj.avatarurl,
+  },
+  likedCount: obj.praisenum,
+}));
 
 export default request;
