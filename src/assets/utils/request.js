@@ -318,6 +318,7 @@ const searchQQReq = async ({ keywords: key, pageNo, type }) => {
       albummid,
       albumname,
       strMediaMid,
+      media_mid,
       singer,
       size128,
       songmid,
@@ -339,7 +340,7 @@ const searchQQReq = async ({ keywords: key, pageNo, type }) => {
       mid: songmid,
       songid,
       from: 'qq',
-      url: size128 ? `${murl}M500${strMediaMid}.mp3?guid=${guid}&vkey=${vkey}&fromtag=8&uin=0` : '',
+      url: size128 ? `${murl}M500${songmid}.mp3?guid=${guid}&vkey=${vkey}&fromtag=8&uin=0` : '',
     };
 
     allSongs[songObj.id] = songObj;
@@ -440,8 +441,8 @@ const searchQQ = async (val, id) => {
       }
     });
     const song = res.data.list[0] || {};
-    if (song.media_mid && song.size128) {
-      mediaId = song.media_mid;
+    if (song.songmid && song.size128) {
+      mediaId = song.songmid;
     } else {
       return;
     }
@@ -454,9 +455,6 @@ export const getQQVkey = () => {
   request('QQ_VKEY')
     .then((res) => {
       const { domain, guid, vkey } = res.data;
-      if (!vkey) {
-        return getQQVkey();
-      }
       Storage.set({
         guid,
         vkey,

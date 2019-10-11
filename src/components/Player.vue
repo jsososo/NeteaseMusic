@@ -143,6 +143,7 @@
         playingPlatform: '',
         listId: 0,
         keys: [],
+        errorId: '',
       }
     },
     computed: {
@@ -305,19 +306,34 @@
       };
       // 如果不播放了可能是url过期了
       pDom.onerror = () => {
-        const { id } = this.playNow;
+        const { id, mid, url } = this.playNow;
         if (!id) {
           return;
         }
-        dispatch('setDownLoading', true)
-        request({ api: 'SONG_URL', data: { id }})
-          .then((res) => {
-            const { url, br } = res.data[0];
-            if (!url) {
-              return this.cutSong('playNext');
-            }
-            dispatch('updateSongDetail', { url, br, id });
+        if (this.errorId === id) {
+          return this.cutSong('playNext');
+        }
+        this.errorId = id;
+        dispatch('setDownLoading', true);
+        if (this.playNow.from === 'qq') {
+          request({
+            api: 'QQ_VKEY',
+            data: { id: mid }
+          }).then((res) => {
+            const { vkey, guid } = res.data;
+            dispatch('updateSongDetail', { id, url: changeUrlQuery({ vkey, guid }, url, false) });
           });
+
+        } else {
+          request({ api: 'SONG_URL', data: { id }})
+            .then((res) => {
+              const { url, br } = res.data[0];
+              if (!url) {
+                return this.cutSong('playNext');
+              }
+              dispatch('updateSongDetail', { url, br, id });
+            });
+        }
       };
       // audio正在加载音乐
       pDom.onwaiting = () => dispatch('setDownLoading', true);

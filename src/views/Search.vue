@@ -43,13 +43,15 @@
           <div class="song-album-img" :style="`background-image: url('${allSongs[s].al && `${allSongs[s].al.picUrl}?param=50y50`}')`"></div>
           <span class="song-name">{{allSongs[s].name}}</span>
           <span class="artist-name">{{allSongs[s].ar.map((a) => a.name).join('/')}}</span>
-          <span class="operation-btns" v-show="platform === '163'">
+          <span class="operation-btns">
             <i
+              v-show="platform === '163'"
               v-if="allList[userList.favId]"
               @click="likeMusic(s)"
               :class="`operation-icon operation-icon-1 iconfont icon-${allList[userList.favId].indexOf(s) > -1 ? 'like' : 'unlike'}`"
             />
             <i
+              v-show="platform === '163'"
               @click="playlistTracks(s, 'add', 'ADD_SONG_2_LIST')"
               class="operation-icon operation-icon-2 iconfont icon-add"
             />
@@ -59,6 +61,7 @@
             />
           </span>
           <div
+            v-show="platform === '163'"
             v-if="allList[userList.favId] && (allList[userList.favId].indexOf(s) > -1)"
             class="liked-item"
           />
@@ -177,6 +180,8 @@
     },
     created() {
       setTimeout(() => this.show = true, 1);
+      this.platform = this.searchQuery.platform;
+      this.keywords = this.searchQuery.keywords;
       messageHelp(2);
     },
     beforeDestroy() {

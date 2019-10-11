@@ -15,7 +15,8 @@
           所以可能存在搜索出来的歌曲和世纪显示的歌曲不匹配的情况，欢迎在这里进行评论，我会尽快修复 <a href="https://github.com/jsososo/NeteaseMusic/issues/1" target="_blank">#ISSUE1</a>
         </p>
         <p class="mt_20">GitHub: <a href="https://github.com/jsososo/NeteaseMusic" target="_blank">网易云第三方 Web 播放器</a></p>
-        <p>后端：<a href="https://github.com/Binaryify/NeteaseCloudMusicApi" target="_blank">NeteaseCloudMusicApi</a></p>
+        <p>后端：「网易云」<a href="https://github.com/Binaryify/NeteaseCloudMusicApi" target="_blank">NeteaseCloudMusicApi</a></p>
+        <p>后端：「QQ音乐」<a href="https://github.com/jsososo/QQMusicApi" target="_blank">QQMusicApi</a> (也是我的项目，也欢迎支持一下)</p>
       </div>
     </div>
 
