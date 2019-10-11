@@ -44,6 +44,7 @@
             class="operation-icon operation-icon-2 iconfont icon-add"
           />
           <i
+            v-if="!!allSongs[s].url"
             @click="download(s)"
             class="operation-icon operation-icon-3 iconfont icon-download"
           />

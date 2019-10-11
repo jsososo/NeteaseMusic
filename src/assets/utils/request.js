@@ -109,10 +109,21 @@ const querySongUrl = (id) => request({
   const dispatch = VUE_APP.$store.dispatch;
 
   const obj = {};
+  const arr = [];
   data.forEach((s) => {
     if (!s.url || s.fee === 1) {
       const song = allSongs[s.id];
-      searchQQ(`${song.name.replace(/\(|\)|（|）/g, ' ')} ${song.ar.map((a) => a.name).join(' ')}`, s.id);
+      request({
+        api: 'QQ_SONG_FIND',
+        data: {
+          key: `${song.name.replace(/\(|\)|（|）/g, ' ')} ${song.ar.map((a) => a.name).join(' ')}`,
+        }
+      }).then((res) => {
+        obj[s.id].url = res.data.url;
+        obj[s.id].br = 128000;
+        obj[s.id].qqId = res.data.songmid;
+      })
+      // searchQQ(`${song.name.replace(/\(|\)|（|）/g, ' ')} ${song.ar.map((a) => a.name).join(' ')}`, s.id, arr, data.length);
     }
     if (idMap[s.id]) {
       const { murl, guid, vkey } = Storage.get(['murl', 'guid', 'vkey']);
@@ -120,8 +131,9 @@ const querySongUrl = (id) => request({
         ...allSongs[s.id],
         br: 128000,
         qqId: idMap[s.id],
-        url: `${murl}M500${idMap[id]}.mp3?guid=${guid}&vkey=${vkey}&fromtag=8&uin=0`
+        // url: `${murl}M500${idMap[id]}.mp3?guid=${guid}&vkey=${vkey}&fromtag=8&uin=0`
       };
+      getQQUrls([idMap[s.id]], s.id);
     }
     obj[s.id] = { ...allSongs[s.id], br: s.br, url: s.url }
   });
@@ -313,39 +325,11 @@ const searchQQReq = async ({ keywords: key, pageNo, type }) => {
   const { list, total, type: strType } = res.data;
 
   const songList = list.map((item) => {
-    const {
-      albumid,
-      albummid,
-      albumname,
-      strMediaMid,
-      media_mid,
-      singer,
-      size128,
-      songmid,
-      songid,
-      songname,
-    } = item;
-    const { murl, guid, vkey } = Storage.get(['murl', 'guid', 'vkey']);
-    const songObj = {
-      ar: singer,
-      br: 128000,
-      al: {
-        id: albumid,
-        mid: albummid,
-        name: albumname,
-        picUrl: `https://y.gtimg.cn/music/photo_new/T002R300x300M000${albummid}.jpg`,
-      },
-      name: songname,
-      id: strMediaMid,
-      mid: songmid,
-      songid,
-      from: 'qq',
-      url: size128 ? `${murl}M500${songmid}.mp3?guid=${guid}&vkey=${vkey}&fromtag=8&uin=0` : '',
-    };
-
+    const songObj = QQ2163(item);
     allSongs[songObj.id] = songObj;
     return songObj.id;
   });
+  getQQUrls(songList);
   dispatch('updateAllSongs', allSongs);
 
   const searchResult = {
@@ -363,6 +347,36 @@ export const getSongsDetail = (ids) => (
     cache: true,
   }).then(({ songs }) => handleSongs(songs))
 );
+
+const QQ2163 = (item) => {
+  const {
+    albumid,
+    albummid,
+    albumname,
+    strMediaMid,
+    singer,
+    songmid,
+    songid,
+    songname,
+    url,
+  } = item;
+  return {
+    ar: singer,
+    br: 128000,
+    al: {
+      id: albumid,
+      mid: albummid,
+      name: albumname,
+      picUrl: `https://y.gtimg.cn/music/photo_new/T002R300x300M000${albummid}.jpg`,
+    },
+    name: songname,
+    id: strMediaMid,
+    mid: songmid,
+    songid,
+    from: 'qq',
+    url,
+  };
+}
 
 // 处理获取到的歌曲，把他们存到 allSongs 并获取链接
 export const handleSongs = (songs) => (
@@ -425,7 +439,7 @@ export const likeMusic = (id) => {
 };
 
 // 查询qq音乐
-const searchQQ = async (val, id) => {
+const searchQQ = async (val, id, arr, length) => {
   const { murl, guid, vkey } = Storage.get(['murl', 'guid', 'vkey']);
   let mediaId = '';
 
@@ -443,12 +457,34 @@ const searchQQ = async (val, id) => {
     const song = res.data.list[0] || {};
     if (song.songmid && song.size128) {
       mediaId = song.songmid;
-    } else {
-      return;
     }
   }
 
-  return window.VUE_APP.$store.dispatch('updateSongDetail', { id, qqId: mediaId, br: 128000, url: `${murl}M500${mediaId}.mp3?guid=${guid}&vkey=${vkey}&fromtag=8&uin=0` });
+  arr.push(mediaId);
+  console.log(arr, length);
+
+  if (arr.length === length) {
+    getQQUrls(arr);
+  }
+
+  // return window.VUE_APP.$store.dispatch('updateSongDetail', { id, qqId: mediaId, br: 128000, url: `${murl}M500${mediaId}.mp3?guid=${guid}&vkey=${vkey}&fromtag=8&uin=0` });
+};
+
+export const getQQUrls = (arr, sid) => {
+  const id = arr.filter((item) => !!item);
+  const allSongs = window.VUE_APP.$store.getters.getAllSongs;
+  request({
+    api: 'QQ_GET_URLS',
+    data: { id },
+  }).then((res) => {
+    Object.keys(res.data).forEach((k) => {
+      const song = allSongs[sid || k];
+      song.url = res.data[k];
+      song.br = 128000;
+      song.qqId = k;
+    });
+    window.VUE_APP.$store.dispatch('updateAllSongs', allSongs);
+  })
 };
 
 export const getQQVkey = () => {

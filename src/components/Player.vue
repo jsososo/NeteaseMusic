@@ -317,11 +317,10 @@
         dispatch('setDownLoading', true);
         if (this.playNow.from === 'qq') {
           request({
-            api: 'QQ_VKEY',
+            api: 'QQ_GET_URLS',
             data: { id: mid }
           }).then((res) => {
-            const { vkey, guid } = res.data;
-            dispatch('updateSongDetail', { id, url: changeUrlQuery({ vkey, guid }, url, false) });
+            dispatch('updateSongDetail', { id, url: res.data[mid] });
           });
 
         } else {

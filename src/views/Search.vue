@@ -182,7 +182,7 @@
       setTimeout(() => this.show = true, 1);
       this.platform = this.searchQuery.platform;
       this.keywords = this.searchQuery.keywords;
-      messageHelp(2);
+      // messageHelp(2);
     },
     beforeDestroy() {
       this.show = false;

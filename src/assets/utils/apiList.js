@@ -40,6 +40,8 @@ const apiList = {
   'QQ_VKEY': 'apiQ/vkey', // qq音乐 vkey
   'QQ_LYRIC': 'apiQ/lyric', // qq音乐歌词
   'QQ_GET_COMMENT': 'apiQ/comment', // qq音乐获取评论
+  'QQ_GET_URLS': 'apiQ/song/urls', // 获取 qq 音乐播放链接
+  'QQ_SONG_FIND': 'apiQ/song/find',
 
   '163': '//music.jsososo.com/neapi/index.php',
   'QQ_SONG_INFO': '//u.y.qq.com/cgi-bin/musicu.fcg',

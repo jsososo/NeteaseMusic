@@ -13,6 +13,12 @@ export const messageHelp = (id) => {
       message: '如果网易云寻不到想要的歌曲，就点下「企鹅」试试吧',
       type: 'info',
       duration: 20000,
+    },
+    3: {
+      title: '😫',
+      message: '由于qq音乐对 vip 音乐增加了拦截限制，所以目前无法再获取 vip 音乐的播放链接，请谅解',
+      type: 'info',
+      duration: 20000,
     }
   };
 
