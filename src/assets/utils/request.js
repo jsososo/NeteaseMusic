@@ -345,8 +345,8 @@ const searchQQReq = async ({ keywords: key, pageNo, type }) => {
     };
     return songObj.id;
   });
-  getQQUrls(songList);
   dispatch('updateAllSongs', newObj);
+  getQQUrls(songList);
 
   const searchResult = {
     loading: false,
@@ -488,12 +488,11 @@ const searchQQ = async (val, id, arr, length) => {
 
 export const getQQUrls = (arr, sid) => {
   const id = arr.filter((item) => !!item);
-  console.log(arr);
-  const allSongs = window.VUE_APP.$store.getters.getAllSongs;
   request({
     api: 'QQ_GET_URLS',
     data: { id },
   }).then((res) => {
+    const allSongs = window.VUE_APP.$store.getters.getAllSongs;
     const newObj = {};
     Object.keys(res.data).forEach((k) => {
       const song = allSongs[sid || k];
