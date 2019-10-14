@@ -193,12 +193,6 @@
           })
         }
 
-        if (qqId) {
-          const newUrl = `${murl}M500${qqId}.mp3?guid=${guid}&vkey=${vkey}&fromtag=8&uin=0`;
-          if (url !== newUrl) {
-            dispatch('updateSongDetail', { id, url: newUrl });
-          }
-        }
         if (timer().str('YYYYMMDDHHmm') > vkey_expire) {
           getQQVkey();
         }

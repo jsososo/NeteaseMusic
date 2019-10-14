@@ -533,24 +533,24 @@ export const download = async (id) => {
   window.event.stopPropagation();
   const allSongs = VUE_APP.$store.getters.getAllSongs;
   const song = allSongs[id];
-  const { murl, guid, vkey } = Storage.get(['murl', 'guid', 'vkey']);
+  // const { murl, guid, vkey } = Storage.get(['murl', 'guid', 'vkey']);
   const dispatch = VUE_APP.$store.dispatch;
 
   if (!song.url) {
     return VUE_APP.$message.warning('没有这首歌呀');
   }
-  let url = '';
+  let url = song.url;
 
-  if (song.qqId) {
-    url = `${murl}M500${song.qqId}.mp3?guid=${guid}&vkey=${vkey}&fromtag=8&uin=0`;
-  } else {
-    const res = await request({
-      api: 'SONG_URL',
-      data: { id },
-      cache: true,
-    });
-    url = res.data[0].url;
-  }
+  // if (song.qqId) {
+  //   // url = `${murl}M500${song.qqId}.mp3?guid=${guid}&vkey=${vkey}&fromtag=8&uin=0`;
+  // } else {
+  //   const res = await request({
+  //     api: 'SONG_URL',
+  //     data: { id },
+  //     cache: true,
+  //   });
+  //   url = res.data[0].url;
+  // }
 
   const downId = `${new Date().getTime()}${id}`;
   const name = `${song.ar.map((a) => a.name).join('、')}-${song.name}.${(song.br > 320000) ? 'flac' : 'mp3'}`;
