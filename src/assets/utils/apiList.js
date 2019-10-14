@@ -41,7 +41,9 @@ const apiList = {
   'QQ_LYRIC': 'apiQ/lyric', // qq音乐歌词
   'QQ_GET_COMMENT': 'apiQ/comment', // qq音乐获取评论
   'QQ_GET_URLS': 'apiQ/song/urls', // 获取 qq 音乐播放链接
-  'QQ_SONG_FIND': 'apiQ/song/find',
+  'QQ_SONG_FIND': 'apiQ/song/find', // 根据关键词去查找一首qq音乐中的歌
+  'QQ_SONG_FINDS': 'apiQ/song/finds', // 批量的查找
+  'QQ_SET_COOKIE': 'apiQ/user/setCookie', // 设置 cookie
 
   '163': '//music.jsososo.com/neapi/index.php',
   'QQ_SONG_INFO': '//u.y.qq.com/cgi-bin/musicu.fcg',

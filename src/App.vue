@@ -78,7 +78,7 @@
       });
       this.$store.dispatch('updateDownload');
 
-      messageHelp(3);
+      messageHelp(4);
     },
     methods: {
 

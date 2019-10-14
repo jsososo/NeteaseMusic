@@ -9,6 +9,7 @@ export default {
     total: 0,
     pageNo: 1,
     keywords: '',
+    platform: '163',
   },
   playingList: { // 播放列表，里面有原列表、随机列表、历史列表、历史顺序，这几个数组中一律存放歌曲id
     raw: [], // 原始的歌单

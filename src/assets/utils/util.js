@@ -2,9 +2,9 @@ import Storage from './Storage';
 
 export const messageHelp = (id) => {
   const message = {
-    1: {
+    4: {
       title: '新功能',
-      message: '搜索功能全面支持 QQ 音乐啦',
+      message: '搜索功能全面支持 QQ 音乐啦，vip 的拦截设置绕圈子暂时解决啦，更多内容前去关于了解',
       type: 'info',
       duration: 20000,
     },

@@ -92,7 +92,7 @@ export const getPlayList = async (id) => request({ api: 'LIST_DETAIL', data: { i
     dispatch('updateAllSongs', newSongObj);
 
     while (ids.length > 0) {
-      querySongUrl(ids.splice(-500).join(','));
+      querySongUrl(ids.splice(-300).join(','));
     }
 
     return res;
@@ -110,20 +110,11 @@ const querySongUrl = (id) => request({
 
   const obj = {};
   const arr = [];
+  const qqFinds = {};
   data.forEach((s) => {
     if (!s.url || s.fee === 1) {
       const song = allSongs[s.id];
-      request({
-        api: 'QQ_SONG_FIND',
-        data: {
-          key: `${song.name.replace(/\(|\)|（|）/g, ' ')} ${song.ar.map((a) => a.name).join(' ')}`,
-        }
-      }).then((res) => {
-        obj[s.id].url = res.data.url;
-        obj[s.id].br = 128000;
-        obj[s.id].qqId = res.data.songmid;
-      })
-      // searchQQ(`${song.name.replace(/\(|\)|（|）/g, ' ')} ${song.ar.map((a) => a.name).join(' ')}`, s.id, arr, data.length);
+      qqFinds[s.id] = `${song.name.replace(/\(|\)|（|）/g, ' ')} ${song.ar.map((a) => a.name).join(' ')}`
     }
     if (idMap[s.id]) {
       const { murl, guid, vkey } = Storage.get(['murl', 'guid', 'vkey']);
@@ -137,6 +128,27 @@ const querySongUrl = (id) => request({
     }
     obj[s.id] = { ...allSongs[s.id], br: s.br, url: s.url }
   });
+  if (Object.keys(qqFinds).length) {
+    request({
+      api: 'QQ_SONG_FINDS',
+      method: 'post',
+      data: {
+        data: qqFinds,
+      }
+    }).then((res) => {
+      const newObj = {};
+      Object.keys(res.data).forEach((id) => {
+        newObj[id] = {
+          ...allSongs[id],
+          url: res.data[id].url,
+          qqId: res.data[id].songmid,
+          br: 128000,
+        };
+      });
+      console.log(newObj);
+      dispatch('updateAllSongs', newObj);
+    });
+  }
   dispatch('updateAllSongs', obj);
   return {
     songs: obj,
@@ -324,13 +336,17 @@ const searchQQReq = async ({ keywords: key, pageNo, type }) => {
 
   const { list, total, type: strType } = res.data;
 
+  const newObj = {};
   const songList = list.map((item) => {
     const songObj = QQ2163(item);
-    allSongs[songObj.id] = songObj;
+    newObj[songObj.id] = {
+      ...allSongs[songObj.id],
+      ...songObj,
+    };
     return songObj.id;
   });
   getQQUrls(songList);
-  dispatch('updateAllSongs', allSongs);
+  dispatch('updateAllSongs', newObj);
 
   const searchResult = {
     loading: false,
@@ -370,7 +386,7 @@ const QQ2163 = (item) => {
       picUrl: `https://y.gtimg.cn/music/photo_new/T002R300x300M000${albummid}.jpg`,
     },
     name: songname,
-    id: strMediaMid,
+    id: songmid,
     mid: songmid,
     songid,
     from: 'qq',
@@ -472,18 +488,21 @@ const searchQQ = async (val, id, arr, length) => {
 
 export const getQQUrls = (arr, sid) => {
   const id = arr.filter((item) => !!item);
+  console.log(arr);
   const allSongs = window.VUE_APP.$store.getters.getAllSongs;
   request({
     api: 'QQ_GET_URLS',
     data: { id },
   }).then((res) => {
+    const newObj = {};
     Object.keys(res.data).forEach((k) => {
       const song = allSongs[sid || k];
       song.url = res.data[k];
       song.br = 128000;
       song.qqId = k;
+      newObj[song.id] = song;
     });
-    window.VUE_APP.$store.dispatch('updateAllSongs', allSongs);
+    window.VUE_APP.$store.dispatch('updateAllSongs', newObj);
   })
 };
 

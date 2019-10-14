@@ -12,11 +12,17 @@ const Album = () => import('./views/Album');
 const About = () => import('./views/About');
 const Download = () => import('./views/Download');
 const Radio = () => import('./views/Radio');
+const SetQCookie = () => import('./views/setQCookie');
 
 Vue.use(Router);
 
 const router = new Router({
   routes: [
+    {
+      path: '/setQCookie',
+      name: 'setQCookie',
+      component: SetQCookie,
+    },
     {
       path: '/singer',
       name: 'singer',
