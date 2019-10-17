@@ -22,7 +22,7 @@
         </div>
       </div>
     </div>
-    <div class="song-list" v-if="allList[`${platform === '163' ? '' : platform}${id}`]">
+    <div class="song-list" v-if="allList[trueId]">
       <div
         :class="`song-item ${playNow.id === s && 'played'} ${!allSongs[s].url && 'disabled'}`"
         v-for="(s, i) in list"
@@ -74,6 +74,7 @@
     data() {
       return {
         id: getQueryFromUrl('id'),
+        trueId: '',
         search: '',
         list: [],
         listInfo: null,
@@ -105,7 +106,8 @@
     },
     created() {
       const { allList, id, userList, platform } = this;
-      this.list = allList[`${platform === '163' ? '' : platform}${id}`] || [];
+      this.trueId = `${platform === '163' ? '' : 'qq'}${id}`;
+      this.list = allList[this.trueId] || [];
       this.listInfo = (userList && userList.obj && userList.obj[id]) || null;
       this.init();
     },
@@ -136,18 +138,18 @@
         }
       },
       playMusic(id) {
-        const { allSongs, allList } = this;
+        const { allSongs, allList, trueId, platform } = this;
         const { dispatch } = this.$store;
         const song = allSongs[id];
         if (!song.url) {
           return;
         }
         dispatch('updatePlayNow', song);
-        dispatch('updatePlayingList', { list: allList[this.id], id: this.id });
+        dispatch('updatePlayingList', { list: allList[trueId], id: trueId });
         dispatch('updatePlayingStatus', true);
       },
       playListShow() {
-        const { allSongs, list, id } = this;
+        const { allSongs, list, trueId: id } = this;
         const { dispatch } = this.$store;
         const song = allSongs[list[0]];
         if (!song.url) {
@@ -158,8 +160,7 @@
         dispatch('updatePlayingStatus', true);
       },
       searchList() {
-        const { search, allList, id: rawId, allSongs, platform } = this;
-        const id = `${platform === '163' ? '' : 'qq'}${rawId}`;
+        const { search, allList, trueId: id, allSongs, platform } = this;
         const rex = search.replace(/\/|\s|\t|,|，|-|/g, '').toLowerCase();
         if (!rex) {
           return this.list = allList[id];
