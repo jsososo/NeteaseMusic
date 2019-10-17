@@ -1,17 +1,22 @@
 # NetEasyMusic
-网易云第三方 web端
+网易云 + QQ音乐 第三方 web端
 
-可以通过访问 http://163.jsososo.com 预览。
+可以通过访问 http://music.jsososo.com || http://y.jsososo.com 预览。
 
 对于网易云没有版权的歌曲，采用粗暴的用歌名 + 歌手在qq音乐里进行搜索，生成链接。
+
+ps: qq音乐那边是需要登陆vip用户 cookie 才能获取到一些接口的数据，目前是我会不定时的去更新，有什么好的建议也欢迎告诉我或者提 pr，这个项目或者隔壁的[QQMusicApi](https://github.com/jsososo/QQMusicApi)都可。
 
 ## 后端
 
 [NeteaseCloudMusicApi](https://github.com/Binaryify/NeteaseCloudMusicApi)
 
+[QQMusicApi](https://github.com/jsososo/QQMusicApi)
+
+
 ## 前端
 
-项目使用 vue-cli-3 作为脚手架，用vue全家桶搭建，项目由之前的 [qq音乐播放器](https://github.com/jsososo/music-player) 改造而来，还处在开发中，只为了一个 **最帅的网易云音乐播放器**
+项目使用 vue-cli-3 作为脚手架，用vue全家桶搭建，项目由之前的 [qq音乐播放器](https://github.com/jsososo/music-player) 改造而来，只为了一个 **最帅的音乐播放器**
 
 
 ## Feature && TODO
@@ -41,6 +46,7 @@
 - [x] 分享歌曲 (19-9-12)
 - [x] 回复评论 (19-9-12)
 - [x] 支持QQ音乐的搜索 (19-10-11)
+- [x] 支持QQ音乐用户歌单(19-10-17)
 - [ ] 歌单编辑等操作
 - [ ] 极简模式
 - [ ] 电台
