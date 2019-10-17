@@ -3,6 +3,10 @@ export default {
   allList: {}, // 全部的歌单信息，和 allSongs 类似
   user: {}, // 用户信息
   userList: {}, // 用户歌单信息
+  qUserList: {
+    list: [],
+    obj: {},
+  }, // qq音乐的用户歌单信息
   recommendList: {}, // 推荐歌单信息
   search: { // 搜索的参数和结果
     type: 1,

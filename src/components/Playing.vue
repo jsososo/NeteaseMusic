@@ -18,6 +18,7 @@
         <div class="info-val">
           {{playNow.name}}
           <span class="info-br" v-if="playNow.br">{{getBr(playNow.br)}}</span>
+          <i style="vertical-align: -1px;" :class="`pl_10 iconfont icon-${playNow.from || '163'}`" />
         </div>
       </div>
       <div class="info-line">

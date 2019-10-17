@@ -269,7 +269,6 @@
                 total: res.total,
                 offset: 20,
               };
-              console.log(comments);
               dispatch('updateSongDetail', { id, comments });
             })
           }

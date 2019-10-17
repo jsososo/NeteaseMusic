@@ -92,7 +92,6 @@
       },
       async reply(beReplied) {
         const { commentId, user } = beReplied;
-        console.log(user);
         const { id } = this;
         this.$store.dispatch('updateCommentInfo', { type: 0, id, commentId, open: true, nick: user.nickname, beReplied });
       },

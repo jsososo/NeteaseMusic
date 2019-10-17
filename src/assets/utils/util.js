@@ -19,6 +19,12 @@ export const messageHelp = (id) => {
       message: '由于qq音乐对 vip 音乐增加了拦截限制，所以目前无法再获取 vip 音乐的播放链接，请谅解',
       type: 'info',
       duration: 20000,
+    },
+    5: {
+      title: '新功能！！',
+      message: '🐧 音乐歌单全方面支持啦！去歌单页面，切到🐧tab，输入企鹅号就可以啦（需要企鹅音乐主页设为公开）',
+      type: 'info',
+      duration: 20000,
     }
   };
 

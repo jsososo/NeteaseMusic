@@ -44,6 +44,8 @@ const apiList = {
   'QQ_SONG_FIND': 'apiQ/song/find', // 根据关键词去查找一首qq音乐中的歌
   'QQ_SONG_FINDS': 'apiQ/song/finds', // 批量的查找
   'QQ_SET_COOKIE': 'apiQ/user/setCookie', // 设置 cookie
+  'QQ_USER_DETAIL': 'apiQ/user/detail', // 查询qq用户的歌单
+  'QQ_LIST_DETAIL': 'apiQ/songlist', // qq 音乐歌单
 
   '163': '//music.jsososo.com/neapi/index.php',
   'QQ_SONG_INFO': '//u.y.qq.com/cgi-bin/musicu.fcg',

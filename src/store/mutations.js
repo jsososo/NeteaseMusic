@@ -239,13 +239,13 @@ export default {
       });
       state.downloadInfo = downloadInfo;
     } else {
-      const { id, p, l, t, ajax, status, errMsg, name, songId, br } = data;
+      const { id, p, l, t, ajax, status, errMsg, name, songId, br, from } = data;
       const { downloadInfo } = state;
       const d = downloadInfo.list.find((item) => item.id === id);
       // 这是其他的更新下载状态
       switch (status) {
         case 'init':
-          downloadInfo.list.unshift({ status, id, startTime: new Date().getTime(), ajax, name, songId, br });
+          downloadInfo.list.unshift({ status, from, id, startTime: new Date().getTime(), ajax, name, songId, br });
           downloadInfo.count++;
           break;
         case 'success':
@@ -323,5 +323,10 @@ export default {
     }
     state.playingListId = '';
     state.isPersonFM = true;
+  },
+
+  // 更新 qq 用户歌单
+  [types.UPDATE_Q_USER_LIST](state, data) {
+    state.qUserList = data;
   }
 }

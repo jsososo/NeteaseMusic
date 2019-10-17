@@ -19,7 +19,6 @@
     },
     methods: {
       sendCookie() {
-        console.log(this.inputCookie);
         request({
           api: 'QQ_SET_COOKIE',
           method: 'post',

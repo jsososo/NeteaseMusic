@@ -28,7 +28,7 @@
         </div>
         <div class="item-time">{{getTime(item.startTime)}}</div>
         <div class="item-operation">
-          <div class="down-button" v-if="['init', 'progress'].indexOf(item.status) === -1" @click="download(item.songId)">重新下载</div>
+          <div class="down-button" v-if="['init', 'progress'].indexOf(item.status) === -1" @click="download(item.songId, item.name)">重新下载</div>
           <div class="down-button" v-if="['init', 'progress'].indexOf(item.status) > -1" @click="updateDownload({ status: 'abort', id: item.id })">取消下载</div>
         </div>
       </div>
@@ -39,7 +39,7 @@
 <script>
   import timer from '../assets/utils/timer';
   import { mapGetters } from 'vuex';
-  import { download, getSongsDetail } from "../assets/utils/request";
+  import { download, getSongsDetail, getQQUrls } from "../assets/utils/request";
 
   export default {
     name: "Download",
@@ -56,7 +56,19 @@
     created() {
       this.$store.dispatch('updateShowCover', false);
       if (this.downloadInfo.list.length > 0) {
-        getSongsDetail(this.downloadInfo.list.map((item) => item.songId));
+        const list = [];
+        const qList = [];
+        this.downloadInfo.list.forEach((item) => {
+          if ((item.from || '163') === '163') {
+            list.push(item.songId)
+          }
+          if (item.from === 'qq') {
+            qList.push(item.songId);
+          }
+         });
+
+        qList.length > 0 && getQQUrls(qList);
+        list.length > 0 && getSongsDetail(list);
       }
     },
     methods: {

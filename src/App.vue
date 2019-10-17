@@ -79,6 +79,7 @@
       this.$store.dispatch('updateDownload');
 
       messageHelp(4);
+      messageHelp(5);
     },
     methods: {
 
@@ -207,6 +208,7 @@
   .right-select-tab-list {
     position: absolute;
     left: -120px;
+    color: #fff;
 
     @for $i from 0 to 5 {
       .tab-item-#{$i} {

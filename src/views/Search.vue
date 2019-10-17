@@ -228,7 +228,6 @@
       },
       likeMusic,
       playlistTracks(tracks, op, type) {
-        console.log('hello world');
         window.event.stopPropagation();
         this.$store.dispatch('setOperation', { data: { tracks, op }, type });
       },

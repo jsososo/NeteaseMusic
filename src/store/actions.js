@@ -69,5 +69,8 @@ export default {
   },
   setPersonFM: ({ commit }, data) => {
     commit(types.PERSON_FM, data);
+  },
+  updateQUserList: ({ commit }, data) => {
+    commit(types.UPDATE_Q_USER_LIST, data);
   }
 }

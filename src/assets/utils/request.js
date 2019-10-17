@@ -67,7 +67,7 @@ const request = (param) => {
   });
 };
 
-// 获取播放列表
+// 获取歌单列表
 export const getPlayList = async (id) => request({ api: 'LIST_DETAIL', data: { id }})
   .then(async (res) => {
     const { playlist } = res;
@@ -96,6 +96,34 @@ export const getPlayList = async (id) => request({ api: 'LIST_DETAIL', data: { i
     }
 
     return res;
+  });
+
+// 获取qq音乐歌单列表
+export const getQQPlayList = async (id) => request({ api: 'QQ_LIST_DETAIL', data: { id }})
+  .then(async (res) => {
+    const VUE_APP = window.VUE_APP;
+    const dispatch = VUE_APP.$store.dispatch;
+    const allSongs = VUE_APP.$store.getters.getAllSongs;
+    const newSongObj = {};
+    const ids = [];
+    const songs = res.data.songlist.map((item) => {
+      const obj = {
+        ...(allSongs[item.id] || {}),
+        ...QQ2163(item),
+      };
+      if (!obj.url) {
+        ids.push(obj.id);
+      }
+      newSongObj[obj.id] = obj;
+      return obj.id;
+    });
+
+    dispatch('query163List', { songs, listId: `qq${id}` });
+    dispatch('updateAllSongs', newSongObj);
+    while (ids.length > 0) {
+      getQQUrls(ids.splice(-200));
+    }
+    return res.data;
   });
 
 // 批量获取歌曲的url
@@ -145,7 +173,6 @@ const querySongUrl = (id) => request({
           br: 128000,
         };
       });
-      console.log(newObj);
       dispatch('updateAllSongs', newObj);
     });
   }
@@ -477,7 +504,6 @@ const searchQQ = async (val, id, arr, length) => {
   }
 
   arr.push(mediaId);
-  console.log(arr, length);
 
   if (arr.length === length) {
     getQQUrls(arr);
@@ -495,7 +521,10 @@ export const getQQUrls = (arr, sid) => {
     const allSongs = window.VUE_APP.$store.getters.getAllSongs;
     const newObj = {};
     Object.keys(res.data).forEach((k) => {
-      const song = allSongs[sid || k];
+      const song = allSongs[sid || k] || { id: k, from: 'qq', br: 128000, };
+      if (song.url) {
+        return;
+      }
       song.url = res.data[k];
       song.br = 128000;
       song.qqId = k;
@@ -529,7 +558,7 @@ const JSONP = (url) => {
 };
 
 // 下载
-export const download = async (id) => {
+export const download = async (id, songName) => {
   window.event.stopPropagation();
   const allSongs = VUE_APP.$store.getters.getAllSongs;
   const song = allSongs[id];
@@ -552,12 +581,13 @@ export const download = async (id) => {
   //   url = res.data[0].url;
   // }
 
+  url = url.replace('ws.stream.qqmusic.qq.com', '183.131.60.16/amobile.music.tc.qq.com');
   const downId = `${new Date().getTime()}${id}`;
-  const name = `${song.ar.map((a) => a.name).join('、')}-${song.name}.${(song.br > 320000) ? 'flac' : 'mp3'}`;
+  const name = songName ? songName : `${song.ar.map((a) => a.name).join('、')}-${song.name}.${song.from === 'qq' ? 'm4a' : ((song.br > 320000) ? 'flac' : 'mp3')}`;
   downReq(url, name, null, {
     init: (ajax) => {
       VUE_APP.$message.success('加入下载中');
-      dispatch('updateDownload', { status: 'init', id: downId, ajax, name, songId: id, br: song.br });
+      dispatch('updateDownload', { status: 'init', from: (song.from || '163'), id: downId, ajax, name, songId: id, br: song.br });
     },
     success: () => dispatch('updateDownload', { status: 'success', id: downId }),
     error: () => dispatch('updateDownload', { status: 'error', id: downId }),
@@ -594,5 +624,53 @@ export const handleQQComments = (list) => (list || []).map((obj) => ({
   },
   likedCount: obj.praisenum,
 }));
+
+// 获取 qq 用户的歌单
+export const queryQQUserDetail = async (id) => {
+  const res = await request({
+    api: 'QQ_USER_DETAIL',
+    data: { id }
+  });
+  if (res.result === 301) {
+    return this.$message.error('嗨呀，服务器上的企鹅音乐 cookie 过期了，联系 jsososo@outlook.com 吧');
+  }
+  if (res.result !== 100) {
+    return this.$message.error(res.errMsg);
+  }
+  if (!res.data.creator || String(res.data.creator.uin) !== id) {
+    return this.$message.error('找不到呀，或者锁了主页吧');
+  }
+
+  const fav = res.data.mymusic[0];
+  const favObj = {
+    name: '喜欢的',
+    id: fav.id,
+    dirid: 201,
+    coverImgUrl: fav.picurl,
+    trackCount: fav.num0,
+  };
+  const qUserList = {
+    favId: fav.id,
+    list: [ favObj ],
+    obj: {
+      [fav.id]: favObj,
+    }
+  };
+  (res.data.mydiss.list || []).forEach((item) => {
+    const obj = {
+      name: item.title,
+      id: item.dissid,
+      dirid: item.dirid,
+      trackCount: item.subtitle.match(/^(\d+)首/)[1],
+      coverImgUrl: item.picurl,
+    };
+    qUserList.list.push(obj);
+    qUserList.obj[item.dissid] = obj;
+  });
+
+  window.VUE_APP.$store.dispatch('updateQUserList', qUserList);
+
+
+};
 
 export default request;

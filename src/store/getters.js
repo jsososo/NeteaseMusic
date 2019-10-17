@@ -1,4 +1,7 @@
 export default {
+  getQUserList: (state) => {
+    return state.qUserList;
+  },
   isHearMode: (state) => {
     return state.heartMode;
   },

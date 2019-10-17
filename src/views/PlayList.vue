@@ -1,6 +1,19 @@
 <template>
   <div :class="`playlist-container ${show && 'show'}`">
-    <div class="playlist-list hide-scroll">
+
+    <div class="right-select-tab-list" v-if="hash === 'playlist'">
+      <div
+        :class="`tab-item-${i} c-${t.color} ${selected === t.key && 'selected'}`"
+        v-for="(t, i) in tabs"
+        :key="t.icon"
+        @click="selected = t.key"
+      >
+        <i :class="`iconfont icon-${t.icon}`" />
+        {{t.val}}
+      </div>
+    </div>
+
+    <div v-if="selected === '163' || hash === 'recommend'" class="playlist-list hide-scroll">
       <div v-if="!user.userId && hash === 'playlist' && !$route.query.id" class="text-center fc_fff ft_20" style="padding-top: 100px;opacity: 0.8;letter-spacing: 2px;">
         登陆后可以查看个人歌单
       </div>
@@ -64,13 +77,45 @@
         </span>
       </div>
     </div>
+
+    <div v-if="selected === 'qq' && hash === 'playlist'" class="playlist-list hide-scroll">
+      <div class="input-qq mb_20">
+        <input type="text" placeholder="输入QQ号吧" v-model="inputQQ" />
+        <div class="update-btn" v-if="inputQQ !== qqId" @click="updateQQNum">更新</div>
+      </div>
+      <div v-if="!qqId" class="text-center fc_fff ft_20" style="padding-top: 100px;opacity: 0.8;letter-spacing: 2px;">
+        输入 QQ 号可查看个人歌单
+      </div>
+      <div v-if="qqId && qUserList.list.length === 0" class="text-center fc_fff ft_20" style="padding-top: 100px;opacity: 0.8;letter-spacing: 2px;">
+        没有歌单呢
+      </div>
+
+      <!-- 歌单列表 -->
+      <div
+        :class="`playlist-item ${playingListId == `qq${item.id}` && 'playing'}`"
+        v-for="item in qUserList.list"
+        :key="`playlist-q-${item.id}`"
+        @click="goTo(item.id, 'qq')"
+      >
+        <div v-if="playingListId == `qq${item.id}` && isPlaying" class="playing-item-bg">
+          <div v-for="(o, i) in new Array(100)" :key="`bg-item-${i}`" :class="`playing-bg-${i}`">
+            <div class="bg-item-inside"></div>
+          </div>
+        </div>
+        <img :src="`${item.coverImgUrl}?param=50y50`" class="list-bg-img" />
+        <img :src="`${item.coverImgUrl}?param=200y200`" class="list-img" />
+        <span class="list-name">{{item.name}}</span>
+        <span class="list-count">{{item.trackCount}}</span>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
   import { mapGetters } from 'vuex';
   import { numToStr } from "../assets/utils/stringHelper";
-  import request, { handleSongs, getPersonFM } from '../assets/utils/request';
+  import request, { handleSongs, getPersonFM, queryQQUserDetail } from '../assets/utils/request';
+  import Storage from "../assets/utils/Storage";
   export default {
     name: "PlayList",
     data() {
@@ -78,6 +123,23 @@
         show: false,
         hash: '',
         pagePlayList: [],
+        tabs: [
+          {
+            icon: '163',
+            key: '163',
+            color: 'red',
+            val: '网易云'
+          },
+          {
+            icon: 'qq',
+            key: 'qq',
+            color: 'green',
+            val: '企鹅'
+          }
+        ],
+        selected: '163',
+        inputQQ: Storage.get('qqId'),
+        qqId: Storage.get('qqId'),
       };
     },
     computed: {
@@ -91,16 +153,29 @@
         allSongs: 'getAllSongs',
         isPlaying: 'isPlaying',
         isPersonFM: 'isPersonFM',
+        qUserList: 'getQUserList',
       })
     },
     watch: {
       $route() {
         this.hashChange();
+      },
+      userList(v) {
+        if (this.hash === 'playlist') {
+          this.pagePlayList = v.list;
+        }
+      },
+      selected(v) {
+        Storage.set('playlist_from', v);
       }
     },
     created() {
       this.hashChange();
       setTimeout(() => this.show = true);
+      this.selected = Storage.get('playlist_from') || '163';
+      if (this.inputQQ) {
+        this.updateQQNum();
+      }
     },
     destroyed() {
       this.show = false;
@@ -127,8 +202,8 @@
           this.pagePlayList = res.playlist;
         })
       },
-      goTo(id) {
-        window.location = `#/playlist/detail?id=${id}`;
+      goTo(id, platform = '') {
+        window.location = `#/playlist/detail?id=${id}&from=${platform}`;
       },
       toHeartMode(pid) {
         window.event.stopPropagation();
@@ -177,6 +252,12 @@
             })
         }
       },
+      updateQQNum() {
+        const { inputQQ } = this;
+        this.qqId = inputQQ;
+        Storage.set('qqId', inputQQ);
+        queryQQUserDetail(inputQQ);
+      },
 
       numToStr,
     }
@@ -188,8 +269,7 @@
     width: 40%;
     display: inline-block;
     vertical-align: top;
-    height: (calc(100% - 40px));
-    overflow: auto;
+    height: (calc(100vh - 100px));
     position: absolute;
     left: 60%;
     transform: translate(100%);
@@ -207,6 +287,44 @@
       padding-left: 20px;
       height: 100%;
       overflow-y: auto;
+
+      .input-qq {
+        margin-top: 20px;
+
+        input {
+          display: inline-block;
+          vertical-align: top;
+          background: transparent;
+          outline: none;
+          border: none;
+          color: #fffa;
+          width: 300px;
+          font-size: 22px;
+          border-bottom: 1px solid #fff3;
+          
+          &::placeholder {
+            color: #fff3;
+          }
+        }
+
+        .update-btn {
+          display: inline-block;
+          vertical-align: top;
+          border: 1px solid #fff8;
+          padding: 2px 12px;
+          border-radius: 4px;
+          cursor: pointer;
+          color: #fff8;
+          margin-left: 20px;
+          transition: 0.3s;
+          
+          &:hover {
+            color: #fffa;
+            border-color: #fffa;
+          }
+        }
+        
+      }
 
       .playlist-item {
         position: relative;

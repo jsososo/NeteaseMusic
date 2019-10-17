@@ -1,12 +1,16 @@
 <template>
   <div class="list-detail-container">
+    <div v-if="!listInfo && loading" class="text-center fc_fff ft_20" style="padding-top: 100px;opacity: 0.8;letter-spacing: 2px;">拼命查找了！</div>
     <div v-if="listInfo" class="list-info-detail">
       <div>
         <img class="list-info-cover" :src="`${listInfo.coverImgUrl}?param=100y100`">
         <div class="list-info-txt">
           <div class="list-info-name">{{listInfo.name}}</div>
-          <div class="list-info-creator" v-if="listInfo.creator">
+          <div class="list-info-creator" v-if="listInfo.creator && platform === '163'">
             By <a :href="`#/user?id=${listInfo.creator.userId}`"><span class="creator-name">{{listInfo.creator.nickname}}</span></a>
+          </div>
+          <div class="list-info-creator" v-if="listInfo.creator && platform !== '163'">
+            By <span class="creator-name">{{listInfo.creator.nickname}}</span>
           </div>
         </div>
       </div>
@@ -18,7 +22,7 @@
         </div>
       </div>
     </div>
-    <div class="song-list" v-if="allList[id]">
+    <div class="song-list" v-if="allList[`${platform === '163' ? '' : platform}${id}`]">
       <div
         :class="`song-item ${playNow.id === s && 'played'} ${!allSongs[s].url && 'disabled'}`"
         v-for="(s, i) in list"
@@ -35,11 +39,12 @@
         <span class="song-artist">{{allSongs[s].ar.map((a) => a.name).join('/')}}</span>
         <div class="icon-container">
           <i
-            v-if="allList[userList.favId] && (id != userList.favId)"
+            v-if="allList[userList.favId] && (id != userList.favId) && platform === '163'"
             @click="likeMusic(s)"
             :class="`operation-icon operation-icon-1 iconfont icon-${allList[userList.favId].indexOf(s) > -1 ? 'like' : 'unlike'}`"
           />
           <i
+            v-if="platform === '163'"
             @click="playlistTracks(s, id, 'add', 'ADD_SONG_2_LIST')"
             class="operation-icon operation-icon-2 iconfont icon-add"
           />
@@ -50,7 +55,7 @@
           />
           <i
             @click="playlistTracks(s, id, 'del', 'DEL_SONG')"
-            v-if="userList.obj && userList.obj[id] && !userList.obj[id].subscribed && (id !== userList.favId)"
+            v-if="platform === '163' && userList.obj && userList.obj[id] && !userList.obj[id].subscribed && (id !== userList.favId)"
             class="operation-icon operation-icon-4 iconfont icon-delete"
           />
         </div>
@@ -61,7 +66,7 @@
 
 <script>
   import { getQueryFromUrl } from "../assets/utils/stringHelper";
-  import { getPlayList, likeMusic, download } from "../assets/utils/request";
+  import { getPlayList, likeMusic, download, getQQPlayList } from "../assets/utils/request";
   import { mapGetters } from 'vuex';
 
   export default {
@@ -72,6 +77,8 @@
         search: '',
         list: [],
         listInfo: null,
+        loading: true,
+        platform: getQueryFromUrl('from') || '163',
       }
     },
     computed: {
@@ -92,12 +99,14 @@
       },
       $route(){
         this.id = this.$route.query.id;
+        this.platform = this.$route.query.from || '163';
         this.init();
       }
     },
     created() {
-      this.list = this.allList[this.id] || [];
-      this.listInfo = (this.userList && this.userList.obj && this.userList.obj[this.id]) || null;
+      const { allList, id, userList, platform } = this;
+      this.list = allList[`${platform === '163' ? '' : platform}${id}`] || [];
+      this.listInfo = (userList && userList.obj && userList.obj[id]) || null;
       this.init();
     },
     methods: {
@@ -105,11 +114,26 @@
         if (this.id === 'daily') {
           return this.list = this.allList.daily || [];
         }
-        getPlayList(this.id)
-          .then(({ playlist }) => {
-            const { name, creator, coverImgUrl, playCount } = playlist;
-            this.listInfo = { name, creator, coverImgUrl, playCount };
-          })
+        this.loading = true;
+        if (this.platform === 'qq') {
+          getQQPlayList(this.id)
+            .then(({ dissname, nickname, logo }) => {
+              this.listInfo = {
+                name: dissname,
+                creator: { nickname },
+                coverImgUrl: logo,
+                platform: 'qq',
+              };
+              this.loading = false;
+            });
+        } else {
+          getPlayList(this.id)
+            .then(({ playlist }) => {
+              const { name, creator, coverImgUrl, playCount } = playlist;
+              this.listInfo = { name, creator, coverImgUrl, playCount, platform: '163' };
+              this.loading = false;
+            })
+        }
       },
       playMusic(id) {
         const { allSongs, allList } = this;
@@ -134,7 +158,8 @@
         dispatch('updatePlayingStatus', true);
       },
       searchList() {
-        const { search, allList, id, allSongs } = this;
+        const { search, allList, id: rawId, allSongs, platform } = this;
+        const id = `${platform === '163' ? '' : 'qq'}${rawId}`;
         const rex = search.replace(/\/|\s|\t|,|，|-|/g, '').toLowerCase();
         if (!rex) {
           return this.list = allList[id];
@@ -191,6 +216,8 @@
         opacity: 0.6;
         display: inline-block;
         vertical-align: top;
+        width: 100px;
+        height: 100px;
       }
 
       .list-info-txt {

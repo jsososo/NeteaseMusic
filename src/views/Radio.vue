@@ -76,11 +76,9 @@
         this.radioId = v.query.id;
       },
       selectCate(v) {
-        console.log(v, 'cate');
         v && this.getRadioList(v);
       },
       radioId(v) {
-        console.log(v, 'radioId');
         v && this.getRadioDetail(v);
       },
     },
@@ -114,7 +112,6 @@
           data: { rid }
         }).then((res) => {
           this.radioDetail = res.djRadio;
-          console.log(this.radioDetail);
         });
         request({
           api: 'GET_DJ_SONGS',

@@ -112,10 +112,10 @@
         selected: 'songs',
         tabs: [
           {
-          icon: 'song',
-          key: 'songs',
-          color: 'red',
-          val: '热门歌曲'
+            icon: 'song',
+            key: 'songs',
+            color: 'red',
+            val: '热门歌曲'
           },
           {
             icon: 'album',
