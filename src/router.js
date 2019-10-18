@@ -13,11 +13,17 @@ const About = () => import('./views/About');
 const Download = () => import('./views/Download');
 const Radio = () => import('./views/Radio');
 const SetQCookie = () => import('./views/setQCookie');
+const Simple = () => import('./views/Simple');
 
 Vue.use(Router);
 
 const router = new Router({
   routes: [
+    {
+      path: '/simple',
+      name: 'simple',
+      component: Simple,
+    },
     {
       path: '/setQCookie',
       name: 'setQCookie',
@@ -102,6 +108,9 @@ router.beforeEach((to, from, next) => {
     return next();
   }
   const { dispatch } = VUE_APP.$store;
+  if (to.name !== 'Simple' && VUE_APP.$store.getters.getMode === 'simple') {
+    dispatch('updateMode', '');
+  }
   switch (to.name) {
     case 'user':
     case 'Download':

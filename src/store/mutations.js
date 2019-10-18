@@ -328,5 +328,9 @@ export default {
   // 更新 qq 用户歌单
   [types.UPDATE_Q_USER_LIST](state, data) {
     state.qUserList = data;
+  },
+
+  [types.UPDATE_MODE](state, data) {
+    state.mode = data;
   }
 }

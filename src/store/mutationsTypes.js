@@ -83,3 +83,6 @@ export const PERSON_FM = 'PERSON_FM';
 
 // 更新 qq 用户的歌单
 export const UPDATE_Q_USER_LIST = 'UPDATE_Q_USER_LIST';
+
+// 更新全局的 ui 模式
+export const UPDATE_MODE = 'UPDATE_MODE';

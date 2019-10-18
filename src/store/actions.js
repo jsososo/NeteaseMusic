@@ -72,5 +72,8 @@ export default {
   },
   updateQUserList: ({ commit }, data) => {
     commit(types.UPDATE_Q_USER_LIST, data);
+  },
+  updateMode: ({ commit }, data) => {
+    commit(types.UPDATE_MODE, data);
   }
 }

@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="app" :class="`mode-${mode}`">
     <img src="./assets/img/bg-1.png" alt="" class="app-bg">
     <img id="play-music-bg" alt="">
     <div class="main-container">
@@ -36,6 +36,7 @@
       ...mapGetters({
         allSongs: 'getAllSongs',
         showCover: 'isShowCoverImg',
+        mode: 'getMode',
       })
     },
     created() {
@@ -65,6 +66,8 @@
           VOLUME_UP: '38',
           VOLUME_DOWN: '40',
           PLAY: '32',
+          QUIT_SIMPLE: '27',
+          TO_SIMPLE: ''
         })
       });
 

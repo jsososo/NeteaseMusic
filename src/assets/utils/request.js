@@ -108,8 +108,8 @@ export const getQQPlayList = async (id) => request({ api: 'QQ_LIST_DETAIL', data
     const ids = [];
     const songs = res.data.songlist.map((item) => {
       const obj = {
-        ...(allSongs[item.id] || {}),
         ...QQ2163(item),
+        ...(allSongs[item.songmid] || {}),
       };
       if (!obj.url) {
         ids.push(obj.id);

@@ -1,4 +1,7 @@
 export default {
+  getMode: (state) => {
+    return state.mode;
+  },
   getQUserList: (state) => {
     return state.qUserList;
   },

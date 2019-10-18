@@ -1,6 +1,6 @@
 <template>
   <div class="list-detail-container">
-    <div v-if="!listInfo && loading" class="text-center fc_fff ft_20" style="padding-top: 100px;opacity: 0.8;letter-spacing: 2px;">拼命查找了！</div>
+    <div v-if="!listInfo && loading && list.length === 0" class="text-center fc_fff ft_20" style="padding-top: 100px;opacity: 0.8;letter-spacing: 2px;">拼命查找了！</div>
     <div v-if="listInfo" class="list-info-detail">
       <div>
         <img class="list-info-cover" :src="`${listInfo.coverImgUrl}?param=100y100`">

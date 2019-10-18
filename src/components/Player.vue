@@ -160,6 +160,7 @@
         playingListId: 'getPlayingListId',
         isPersonFM: 'isPersonFM',
         playingList: 'getPlayingList',
+        mode: 'getMode',
       }),
     },
     watch: {
@@ -387,6 +388,14 @@
           case codeMap.PLAY:
             this.updatePlayingStatus(!this.playing);
             return false;
+          case (codeMap.TO_SIMPLE || 'ctrl-83'):
+            window.location = '#/simple';
+            return false;
+          case (codeMap.QUIT_SIMPLE || '27'):
+            if (this.mode === 'simple') {
+              window.location = '#/';
+            }
+            return false;
         }
       };
       window.onkeypress = window.onkeydown;
@@ -453,6 +462,11 @@
 </script>
 
 <style lang="scss">
+  .mode-simple {
+    .player-container {
+      bottom: -100px;
+    }
+  }
   audio {
     display: none !important;
   }

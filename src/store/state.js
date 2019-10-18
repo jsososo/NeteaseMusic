@@ -1,4 +1,5 @@
 export default {
+  mode: '', // 一个全局的 ui 模式
   allSongs: {}, // 全部的歌曲信息，其他地方除了 playNow 不再存储信息，一律通过 id 到 allSongs 中获取
   allList: {}, // 全部的歌单信息，和 allSongs 类似
   user: {}, // 用户信息

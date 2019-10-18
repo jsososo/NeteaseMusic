@@ -39,6 +39,12 @@
       </a>
     </div>
     <div class="nav-line">
+      <a href="#/simple">
+        <i class="iconfont icon-windmill"></i>
+        <div class="icon-text">极简</div>
+      </a>
+    </div>
+    <div class="nav-line">
       <a href="#/about">
         <i class="iconfont icon-version"></i>
         <div class="icon-text">关于</div>
@@ -55,6 +61,7 @@
       ...mapGetters({
         user: 'getUser',
         downloadInfo: 'getDownloadInfo',
+        mode: 'getMode',
       })
     },
     created() {
@@ -62,6 +69,9 @@
     },
     methods: {
       goToUser() {
+        if (this.mode === 'simple') {
+          return window.location = '#/';
+        }
         window.location = '#/user';
       }
     }
@@ -69,6 +79,33 @@
 </script>
 
 <style lang="scss">
+  .mode-simple {
+    .page-left-nav {
+      height: 100px !important;
+      width: 100px !important;
+      border-radius: 50%;
+      padding: 0;
+      top: -40px;
+      left: -40px;
+
+      .avatar {
+        margin-top: 0;
+        width: 100px !important;
+        height: 100px !important;
+
+        .avatar-img {
+          width: 100px !important;
+          height: 100px !important;
+        }
+      }
+
+      &:hover {
+        transform: scale(1.5);
+        top: -20px;
+        left: -20px;
+      }
+    }
+  }
   .page-left-nav {
     position: absolute;
     left: 0;
