@@ -20,7 +20,7 @@
   import PageLeft from './components/PageLeft';
   import Playing from './components/Playing';
   import Operation from './components/Operation';
-  import request, { loginStatus, getQQVkey } from './assets/utils/request';
+  import { loginStatus } from './assets/utils/request';
   import { messageHelp } from "./assets/utils/util";
   import { mapGetters } from 'vuex';
 
@@ -43,7 +43,6 @@
       window.VUE_APP = this;
       window.QUERY_QQ_TIMES = 1;
       loginStatus();
-      getQQVkey();
 
       // 播放顺序，qq号的一些配置
       if (!Storage.get('orderType')) {

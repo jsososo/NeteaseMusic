@@ -22,10 +22,10 @@
           <i class="el-icon-loading mr_10" v-if="loading || downloading" />
           <span class="player-song-title pointer" @click="goTo('#/')">{{playNow.name}}</span>
           <span class="player-song-singer pl_20 pointer">
-            <a v-for="a in allSongs[playNow.id].ar" :key="a.id" :href="`#/singer?id=${a.id}`">{{a.name}} </a>
+            <a v-for="a in allSongs[playNow.id].ar" :key="a.id" :href="changeUrlQuery({ id: a.id, mid: a.mid, from: playNow.from }, '#/singer', false)">{{a.name}} </a>
           </span>
           <span
-            v-if="allList[userList.favId]"
+            v-if="allList[userList.favId] && !playNow.from"
             @click="likeMusic(playNow.id)"
             style="margin-left: 25px; cursor: pointer;"
             :class="allList[userList.favId].indexOf(playNow.id) > -1 ? 'iconfont icon-like iconfont' : 'iconfont icon-unlike'">
@@ -92,9 +92,9 @@
           </span>
         </div>
 
-        <input id="cp-share-input" :value="`http://music.jsososo.com/#/?mid=${playNow.id}`">
+        <input id="cp-share-input" :value="changeUrlQuery({ shareId: playNow.id, from: playNow.from }, 'http://music.jsososo.com/#/', false)">
         <!-- 分享 -->
-        <div v-if="!playNow.from" class="inline-block ml_5 pd_5">
+        <div class="inline-block ml_5 pd_5">
           <span @click="copyUrl">
             <i class="iconfont icon-share ft_16 pointer" />
           </span>
@@ -117,10 +117,9 @@
   import Num from '../assets/utils/num';
   import Storage from '../assets/utils/Storage';
   import { mapGetters } from 'vuex';
-  import request, { getQQVkey, likeMusic, download, getPersonFM, handleQQComments } from '../assets/utils/request';
+  import request, { likeMusic, download, getPersonFM, handleQQComments } from '../assets/utils/request';
   import { handleLyric, getQueryFromUrl, changeUrlQuery } from "../assets/utils/stringHelper";
   import ArrayHelper from '../assets/utils/arrayHelper';
-  import timer from '../assets/utils/timer';
 
   export default {
     name: "PlayerPage",
@@ -166,8 +165,8 @@
     watch: {
       async playNow(v) {
         const { listId, playingId, playerInfo, isPersonFM, playingList, playingPlatform } = this;
-        const { id, lyric, name, comments, qqId, url, mid, songid } = v;
-        const { murl, guid, vkey, vkey_expire } = Storage.get(['murl', 'guid', 'vkey', 'vkey_expire']);
+        const { id, lyric, name, comments, mid, songid } = v;
+        const trueId = v.from === 'qq' ? mid : id;
         const dispatch = this.$store.dispatch;
         if (isPersonFM && (playingList.index >= (playingList.raw.length - 2))) {
           this.getPersonFM();
@@ -194,9 +193,6 @@
           })
         }
 
-        if (timer().str('YYYYMMDDHHmm') > vkey_expire) {
-          getQQVkey();
-        }
         dispatch('updatePlayingPercent', 0);
         document.title = name;
         this.currentTime = 0;
@@ -205,7 +201,7 @@
         this.listId = this.playingListId;
 
         // 更新后面的背景
-        document.getElementById('play-music-bg').src = (this.allSongs[v.id] && this.allSongs[v.id].al && (`${this.allSongs[v.id].al.picUrl}?param=1440y1440`)) || '';
+        document.getElementById('play-music-bg').src = (this.allSongs[id] && this.allSongs[id].al && (`${this.allSongs[id].al.picUrl}?param=1440y1440`)) || '';
 
         // 没有歌词的拿歌词
         if (!lyric) {
@@ -218,7 +214,7 @@
               const lyricObj = {};
               handleLyric(lyric, 'str', lyricObj);
               handleLyric(trans, 'trans', lyricObj);
-              dispatch('updateSongDetail', { id, lyric: lyricObj });
+              dispatch('updateSongDetail', { id: trueId, lyric: lyricObj });
             })
           } else {
             request({ api: 'GET_LYRIC', data: { id }, cache: true })
@@ -253,7 +249,7 @@
                 total: res.data.comment.commenttotal,
                 offset: 20,
               };
-              dispatch('updateSongDetail', { id, comments });
+              dispatch('updateSongDetail', { id: trueId, comments });
             })
           } else {
             request({

@@ -162,7 +162,7 @@ export default {
     }
     state.allSongs = { ...state.allSongs };
     if (state.playingList.raw.indexOf(data) > -1) {
-      state.playingList.trueList = state.raw.filter((id) => (state.allSongs[id].url || state.allSongs[id].qqId));
+      state.playingList.trueList = state.raw.filter((id) => state.allSongs[id].url);
       window.VUE_APP.$store.dispatch('updateRandomList');
     }
   },

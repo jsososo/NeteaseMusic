@@ -6,11 +6,12 @@
         <div class="album-name">
           {{baseInfo.name}}
           <div class="album-name-alia">{{(baseInfo.alias || []).join('、')}}</div>
-          <div class="album-artist">
+          <div class="album-artist" v-if="baseInfo.artists">
             <a v-for="a in baseInfo.artists" :key="a.id" :href="`#/singer?id=${a.id}`">{{a.name}} </a>
           </div>
-          <div class="album-company">发行：{{baseInfo.company}}</div>
+          <div class="album-company" v-if="baseInfo.company">发行：{{baseInfo.company}}</div>
           <div class="album-pb-time">{{baseInfo.publishTime}}</div>
+          <div class="album-info-from">信息来源：{{{ 163: '网易云', qq: '企鹅音乐' }[platform]}}</div>
         </div>
         <div class="base-desc" v-if="baseInfo.description">{{baseInfo.description}}</div>
       </div>
@@ -46,11 +47,12 @@
             <div class="song-ar">{{allSongs[s].ar.map((a) => a.name).join('/')}}</div>
             <div class="song-operation">
               <i
-                v-if="allList[userList.favId]"
+                v-if="allList[userList.favId] && platform === '163'"
                 @click="likeMusic(s)"
                 :class="`operation-icon operation-icon-1 iconfont icon-${allList[userList.favId].indexOf(s) > -1 ? 'like' : 'unlike'}`"
               />
               <i
+                v-if="platform === '163'"
                 @click="playlistTracks(s, 'add', 'ADD_SONG_2_LIST')"
                 class="operation-icon operation-icon-2 iconfont icon-add"
               />
@@ -69,7 +71,7 @@
 
 <script>
   import { mapGetters } from 'vuex';
-  import request, { handleSongs, likeMusic, download } from '../assets/utils/request';
+  import request, { handleSongs, likeMusic, download, handleQQSongs } from '../assets/utils/request';
   import timer from '../assets/utils/timer';
   export default {
     name: "Album",
@@ -88,6 +90,8 @@
           songs: [],
         },
         id: this.$route.query.id,
+        mid: this.$route.query.mid,
+        platform: this.$route.query.from || '163',
         baseInfo: {},
       }
     },
@@ -103,6 +107,8 @@
     watch: {
       $route(v) {
         this.id = v.query.id;
+        this.mid = v.query.mid;
+        this.platform = v.query.from || '163';
         this.queryAlbum();
       },
     },
@@ -111,7 +117,28 @@
     },
     methods: {
       queryAlbum() {
+        const { platform, mid: albummid } = this;
         this.$store.dispatch('updateShowCover', false);
+        if (platform === 'qq') {
+          request({
+            api: 'QQ_ALBUM',
+            data: { albummid },
+          }).then((res) => {
+            this.baseInfo = {
+              ...res.data,
+              picUrl: `https://y.gtimg.cn/music/photo_new/T002R300x300M000${albummid}.jpg`,
+              publishTime: res.data.time_public,
+            }
+
+          });
+
+          return request({
+            api: 'QQ_ALBUM_SONGS',
+            data: { albummid },
+          }).then((res) => {
+            this.info.songs = handleQQSongs(res.data.list);
+          })
+        }
         request({
           api: 'GET_ALBUM',
           data: { id: this.id },
@@ -178,7 +205,7 @@
           margin-top: 5px;
           margin-bottom: 30px;
         }
-        .album-company, .album-pb-time, .album-artist {
+        .album-company, .album-pb-time, .album-artist, .album-info-from {
           margin-top: 5px;
           font-size: 14px;
           color: #fff8;

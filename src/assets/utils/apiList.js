@@ -46,6 +46,13 @@ const apiList = {
   'QQ_SET_COOKIE': 'apiQ/user/setCookie', // 设置 cookie
   'QQ_USER_DETAIL': 'apiQ/user/detail', // 查询qq用户的歌单
   'QQ_LIST_DETAIL': 'apiQ/songlist', // qq 音乐歌单
+  'QQ_SINGER_DESC': 'apiQ/singer/desc', // qq 歌手介绍
+  'QQ_SINGER_SIM': 'apiQ/singer/sim', // qq 相似歌手
+  'QQ_SINGER_SONGS': 'apiQ/singer/songs', // qq 歌手的热门歌曲
+  'QQ_SINGER_ALBUMS': 'apiQ/singer/album', // qq 歌手的专辑
+  'QQ_ALBUM': 'apiQ/album', // qq 专辑信息
+  'QQ_ALBUM_SONGS': 'apiQ/album/songs', // qq 专辑歌曲
+  'QQ_SONG_DETAIL': 'apiQ/song', // qq 歌曲详情
 
   '163': '//music.jsososo.com/neapi/index.php',
   'QQ_SONG_INFO': '//u.y.qq.com/cgi-bin/musicu.fcg',

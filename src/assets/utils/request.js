@@ -187,15 +187,27 @@ const querySongUrl = (id) => request({
 export const loginStatus = async () => {
   const VUE_APP = window.VUE_APP;
   const dispatch = VUE_APP.$store.dispatch;
-  const mid = getQueryFromUrl('mid');
+  const { shareId, from } = getQueryFromUrl();
 
-  if (mid) {
-    getSongsDetail(mid)
-      .then(() => {
+  if (shareId) {
+    if (from === 'qq') {
+      request({
+        api: 'QQ_SONG_DETAIL',
+        data: { songmid: shareId }
+      }).then((res) => {
+        handleQQSongs([res.data.track_info]);
         const allSongs = VUE_APP.$store.getters.getAllSongs;
-        dispatch('updatePlayNow', allSongs[mid]);
-        dispatch('updatePlayingList', { list: [ mid ] });
+        dispatch('updatePlayNow', allSongs[shareId]);
+        dispatch('updatePlayingList', { list: [ shareId ] });
       })
+    } else {
+      getSongsDetail(shareId)
+        .then(() => {
+          const allSongs = VUE_APP.$store.getters.getAllSongs;
+          dispatch('updatePlayNow', allSongs[shareId]);
+          dispatch('updatePlayingList', { list: [ shareId ] });
+        })
+    }
   }
 
   // 查询登陆情况
@@ -216,10 +228,10 @@ export const loginStatus = async () => {
             const allSongs = VUE_APP.$store.getters.getAllSongs;
             const idList = privileges.map((s) => s.id);
             // 默认播放
-            if (!mid) {
+            if (!shareId) {
               dispatch('updatePlayNow', allSongs[privileges[0].id]);
             } else {
-              idList.unshift(mid);
+              idList.unshift(shareId);
             }
             dispatch('updatePlayingList', { list: idList, id: list[0].id });
           })
@@ -239,10 +251,10 @@ export const loginStatus = async () => {
 
       const allSongs = VUE_APP.$store.getters.getAllSongs;
       // 默认播放日推
-      if (!mid) {
+      if (!shareId) {
         dispatch('updatePlayNow', allSongs[songs[0]]);
       } else {
-        songs.unshift(mid);
+        songs.unshift(shareId);
       }
       dispatch('updatePlayingList', { list: songs, id: 'daily' });
     });
@@ -391,7 +403,7 @@ export const getSongsDetail = (ids) => (
   }).then(({ songs }) => handleSongs(songs))
 );
 
-const QQ2163 = (item) => {
+export const QQ2163 = (item) => {
   const {
     albumid,
     albummid,
@@ -534,19 +546,6 @@ export const getQQUrls = (arr, sid) => {
   })
 };
 
-export const getQQVkey = () => {
-  request('QQ_VKEY')
-    .then((res) => {
-      const { domain, guid, vkey } = res.data;
-      Storage.set({
-        guid,
-        vkey,
-        vkey_expire: timer().from(90, 'm').str('YYYYMMDDHHmm'),
-        murl: 'http://183.131.60.16/amobile.music.tc.qq.com/',
-      });
-    });
-};
-
 const JSONP = (url) => {
   const jsonp = document.createElement("script");
   jsonp.type = "text/javascript";
@@ -562,7 +561,6 @@ export const download = async (id, songName) => {
   window.event.stopPropagation();
   const allSongs = VUE_APP.$store.getters.getAllSongs;
   const song = allSongs[id];
-  // const { murl, guid, vkey } = Storage.get(['murl', 'guid', 'vkey']);
   const dispatch = VUE_APP.$store.dispatch;
 
   if (!song.url) {
@@ -570,18 +568,8 @@ export const download = async (id, songName) => {
   }
   let url = song.url;
 
-  // if (song.qqId) {
-  //   // url = `${murl}M500${song.qqId}.mp3?guid=${guid}&vkey=${vkey}&fromtag=8&uin=0`;
-  // } else {
-  //   const res = await request({
-  //     api: 'SONG_URL',
-  //     data: { id },
-  //     cache: true,
-  //   });
-  //   url = res.data[0].url;
-  // }
-
-  url = url.replace('ws.stream.qqmusic.qq.com', '183.131.60.16/amobile.music.tc.qq.com');
+  // 别的网站下载会有跨域问题
+  url = url.replace(/^(.+)qq.com/, 'http://183.131.60.16/amobile.music.tc.qq.com');
   const downId = `${new Date().getTime()}${id}`;
   const name = songName ? songName : `${song.ar.map((a) => a.name).join('、')}-${song.name}.${song.from === 'qq' ? 'm4a' : ((song.br > 320000) ? 'flac' : 'mp3')}`;
   downReq(url, name, null, {
@@ -670,7 +658,33 @@ export const queryQQUserDetail = async (id) => {
 
   window.VUE_APP.$store.dispatch('updateQUserList', qUserList);
 
+};
 
+export const handleQQSongs = (list) => {
+  const allSongs = window.VUE_APP.$store.getters.getAllSongs;
+  const obj = {};
+  const ids = [];
+  list.forEach(({ singer, mid, id, name, mv, album}) => {
+    if (!allSongs[mid]) {
+      album.picUrl = `https://y.gtimg.cn/music/photo_new/T002R300x300M000${album.mid}.jpg`;
+      obj[mid] = {
+        ar: singer,
+        mid,
+        id: mid,
+        songid: id,
+        name,
+        mv,
+        from: 'qq',
+        al: album,
+      };
+    }
+    ids.push(mid);
+  });
+
+  window.VUE_APP.$store.dispatch('updateAllSongs', obj);
+
+  getQQUrls(ids);
+  return ids;
 };
 
 export default request;

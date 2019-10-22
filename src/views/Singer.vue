@@ -6,6 +6,7 @@
         <div class="singer-name">
           {{baseInfo.name}}
           <div class="singer-name-alia">{{(baseInfo.alias || []).join('、')}}</div>
+          <div class="singer-info-from">信息来源：{{{ 163: '网易云', qq: '企鹅音乐' }[platform]}}</div>
         </div>
         <div class="base-desc">{{baseInfo.briefDesc}}</div>
       </div>
@@ -40,11 +41,12 @@
             <div class="song-ar">{{allSongs[s].ar.map((a) => a.name).join('/')}}</div>
             <div class="song-operation">
               <i
-                v-if="allList[userList.favId]"
+                v-if="allList[userList.favId] && platform === '163'"
                 @click="likeMusic(s)"
                 :class="`operation-icon operation-icon-1 iconfont icon-${allList[userList.favId].indexOf(s) > -1 ? 'like' : 'unlike'}`"
               />
               <i
+                v-if="platform === '163'"
                 @click="playlistTracks(s, 'add', 'ADD_SONG_2_LIST')"
                 class="operation-icon operation-icon-2 iconfont icon-add"
               />
@@ -65,10 +67,10 @@
           :key="a.id"
           class="album-item"
         >
-          <div class="album-img-container pointer" @click="goTo(`#/album?id=${a.id}`)">
+          <div class="album-img-container pointer" @click="goTo(changeUrlQuery({ id: a.id, mid: a.mid, from: platform }, '#/album', false))">
             <img :src="`${a.picUrl}?param=200y200`" alt="">
           </div>
-          <div class="album-name pointer" @click="goTo(`#/album?id=${a.id}`)">{{a.name}}</div>
+          <div class="album-name pointer" @click="goTo({ id: a.id, mid: a.mid, from: platform }, '#/album', false)">{{a.name}}</div>
         </div>
         <div v-if="info.albums.length === 0" class="text-center mt_40">没啥专辑哟</div>
       </div>
@@ -84,7 +86,7 @@
 
       <!-- 相似歌手 -->
       <div class="simi-list" v-if="selected === 'simis'">
-        <div v-for="s in info.simis" class="singer-item" @click="goTo(`#/singer?id=${s.id}`)">
+        <div v-for="s in info.simis" class="singer-item" @click="changeUrlQuery({ id: s.id, mid: s.mid, from: platform }, '#/singer')">
           <img class="singer-img" :src="`${String(s.img1v1Url) === 'null' ? 'http://p3.music.126.net/VnZiScyynLG7atLIZ2YPkw==/18686200114669622.jpg' : s.img1v1Url}?param=120y120`"  />
           <div class="singer-name">{{s.name}}</div>
         </div>
@@ -95,7 +97,8 @@
 
 <script>
   import { mapGetters } from 'vuex';
-  import request, { handleSongs, likeMusic, download } from '../assets/utils/request';
+  import request, { handleSongs, likeMusic, download, handleQQSongs } from '../assets/utils/request';
+  import { changeUrlQuery } from "../assets/utils/stringHelper";
   import $ from 'jquery';
 
   export default {
@@ -103,6 +106,8 @@
     data() {
       return {
         id: this.$route.query.id,
+        mid: this.$route.query.mid,
+        platform: this.$route.query.from || '163',
         baseInfo: {},
         info: {
           songs: [],
@@ -154,6 +159,8 @@
     watch: {
       $route(v) {
         this.id = v.query.id;
+        this.mid = v.query.mid;
+        this.platform = v.query.from || '163';
         this.querySinger();
       },
     },
@@ -162,8 +169,48 @@
     },
     methods: {
       querySinger() {
-        const { id } = this;
-        this.$store.dispatch('updateShowCover', false);
+        const { id, mid: singermid, platform } = this;
+        const { dispatch } = this.$store;
+        dispatch('updateShowCover', false);
+
+        // 专辑
+        this.queryAlbum();
+
+        if (platform === 'qq') {
+          // 歌手详情
+          request({
+            api: 'QQ_SINGER_DESC',
+            data: { singermid },
+          }).then((res) => {
+            const name = res.data.basic.item.find((obj) => obj.key === '中文名').value;
+            const alias = res.data.basic.item.find((obj) => obj.key === '外文名').value.split(',');
+            this.baseInfo = {
+              img1v1Url: `https://y.gtimg.cn/music/photo_new/T001R300x300M000${singermid}.jpg`,
+              name,
+              alias,
+              briefDesc: res.data.desc,
+            }
+            this.info.descs = (res.data.other.item || []).map((item) => ({ ti: item.key, txt: item.value }));
+          });
+
+          // 相似歌手
+          request({
+            api: 'QQ_SINGER_SIM',
+            data: { singermid },
+          }).then((res) => {
+            this.info.simis = res.data.list.map((item) => ({ ...item, img1v1Url: item.pic }));
+          });
+
+          // 歌曲
+          request({
+            api: 'QQ_SINGER_SONGS',
+            data: { singermid, num: 50 },
+          }).then((res) => {
+            this.info.songs = handleQQSongs(res.data.list);
+          });
+          return;
+        }
+
         // 信息
         request({
           api: 'GET_SINGER_DESC',
@@ -184,9 +231,6 @@
           this.info.songs = (res.hotSongs || []).map((item) => item.id);
         });
 
-        // 专辑
-        this.queryAlbum();
-
         // 相似歌手
         request({
           api: 'SIMI_ARTIST',
@@ -194,14 +238,40 @@
           cache: true,
         }).then((res) => this.info.simis = res.artists);
       },
+
       queryAlbum(offset = 0) {
-        if (offset !== 0 && this.albumQ.loading) {
+        const { albumQ, info, platform, mid: singermid } = this;
+        if (offset !== 0 && albumQ.loading) {
           return;
         }
-        if (offset > 0 && offset > this.info.albums.length) {
+        if (offset > 0 && offset > info.albums.length) {
           return;
         }
-        this.albumQ.loading = true;
+        albumQ.loading = true;
+
+        if (platform === 'qq') {
+          return request({
+            api: 'QQ_SINGER_ALBUMS',
+            data: { singermid, pageNo: offset / 30 + 1, pageSize: 30 },
+          }).then((res) => {
+            const list = res.data.list.map(({ albumid, album_mid, album_name}) => ({
+              id: albumid,
+              mid: album_mid,
+              name: album_name,
+              picUrl: `https://y.gtimg.cn/music/photo_new/T002R300x300M000${album_mid}.jpg`
+            }));
+            if (offset === 0) {
+              info.albums = list;
+            } else {
+              info.albums = [ ...info.albums, ...list];
+            }
+            this.albumQ = {
+              offset: offset + 30,
+              loading: false,
+            }
+          })
+        }
+
         request({
           api: 'GET_SINGER_ALBUMS',
           data: { offset, limit: 30, id: this.id }
@@ -245,6 +315,7 @@
       },
       goTo(url) { window.location = url },
       download,
+      changeUrlQuery,
     },
   }
 </script>
@@ -276,7 +347,7 @@
         padding-left: 20px;
         padding-top: 20px;
         
-        .singer-name-alia {
+        .singer-name-alia, .singer-info-from {
           font-size: 12px;
           font-weight: normal;
           color: #fff5;
