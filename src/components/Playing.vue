@@ -87,6 +87,10 @@
 </script>
 
 <style lang="scss" scoped>
+  .mode-mobile .playnow-container {
+    display: none;
+  }
+  
   .playnow-container {
     position: relative;
     .progress-container {

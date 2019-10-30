@@ -335,7 +335,7 @@ export const searchReq = async ({ keywords, type = 1, pageNo = 1, platform }) =>
     res.result.playlists = [ ...(search.playlists || []), ...(res.result.playlists || []) ];
   }
   if (search.keywords === keywords) {
-    dispatch('updateSearch', { ...res.result, loading: false, total: res.result.songCount || res.result.artistCount || res.result.playlistCount });
+    dispatch('updateSearch', { ...res.result, loading: false, total: res.result.songCount || res.result.artistCount || res.result.playlistCount || res.result.albumCount });
   }
   dispatch('updateAllSongs', obj);
 
@@ -359,39 +359,92 @@ const searchQQReq = async ({ keywords: key, pageNo, type }) => {
 
   const obj = {
     1: {
-      type: '',
+      type: 0,
       key: 'songs',
-      total: 'songCount',
+      total: 'total',
     },
+    10: {
+      type: 8,
+      key: 'albums',
+      total: 'total',
+    },
+    100: {
+      type: '9',
+      key: 'artists',
+      total: 'artistCount',
+    },
+    1000: {
+      type: 2,
+      key: 'playlists'
+    }
   }[type];
   const res = await request({
     api: 'QQ_SEARCH',
     data: {
       key,
-      type: obj.type,
+      t: obj.type,
       pageNo,
     }
   });
 
   const { list, total, type: strType } = res.data;
+  let resultList = [];
 
-  const newObj = {};
-  const songList = list.map((item) => {
-    const songObj = QQ2163(item);
-    newObj[songObj.id] = {
-      ...allSongs[songObj.id],
-      ...songObj,
-    };
-    return songObj.id;
-  });
-  dispatch('updateAllSongs', newObj);
-  getQQUrls(songList);
+  // 搜索歌曲
+  if (type === 1) {
+    const newObj = {};
+    resultList = list.map((item) => {
+      const songObj = QQ2163(item);
+      newObj[songObj.id] = {
+        ...allSongs[songObj.id],
+        ...songObj,
+      };
+      return songObj.id;
+    });
+    dispatch('updateAllSongs', newObj);
+    getQQUrls(resultList);
+  }
+
+  // 搜索专辑
+  if (type === 10) {
+    resultList = list.map((item) => ({
+      from: 'qq',
+      id: item.albumID,
+      mid: item.albumMID,
+      name: item.albumName,
+      picUrl: item.albumPic,
+    }))
+  }
+
+  // 搜索歌手
+  if (type === 100) {
+    resultList = list.map((item) => ({
+      from: 'qq',
+      id: item.singerID,
+      mid: item.singerMID,
+      name: item.singerName,
+      picUrl: item.singerPic,
+    }))
+  }
+
+  // 搜索歌单
+  if (type === 1000) {
+    resultList = list.map((item) => ({
+      from: 'qq',
+      id: item.dissid,
+      name: item.dissname,
+      creator: item.creator,
+      playCount: item.listennum,
+      trackCount: item.song_count,
+      coverImgUrl: item.imgurl,
+    }))
+  }
 
   const searchResult = {
     loading: false,
   };
-  searchResult[obj.key] = pageNo > 1 ? [...(search[obj.key] || []), ...songList] : songList;
-  searchResult[obj.total] = total;
+  searchResult[obj.key] = pageNo > 1 ? [...(search[obj.key] || []), ...resultList] : resultList;
+  searchResult.total = total;
   dispatch('updateSearch', searchResult)
 };
 

@@ -118,6 +118,27 @@
 </script>
 
 <style lang="scss">
+  .mode-mobile .lyric-content-container {
+    width: 100vw !important;
+    height: calc(100vh - 30vw) !important;
+    left: 0 !important;
+    top: 15vh !important;
+
+    .lyric-list {
+      width: calc(100vh - 30vw) !important;
+
+      .lyric-item {
+        font-size: 3.5vw !important;
+        padding: 0.5vw !important;
+        min-height: 0 !important;
+
+        &.lyric-item-now {
+          font-size: 4vw !important;
+        }
+      }
+    }
+  }
+
   .lyric-content-container {
     height: calc(100% - 50px);
     overflow: hidden;
@@ -160,7 +181,6 @@
         &.lyric-item-now {
           color: rgba(255,255,255,0.8);
           font-size: 22px;
-          font-weight: bold;
         }
       }
     }

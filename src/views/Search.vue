@@ -75,7 +75,7 @@
         <div
           v-for="a in searchQuery.albums" :key="a.id" class="album-item"
         >
-          <div class="album-img-container pointer" @click="goTo(`#/album?id=${a.id}`)">
+          <div class="album-img-container pointer" @click="changeUrlQuery({ id: a.id, mid: a.mid, from: a.from }, '#/album')">
             <img :src="`${a.picUrl}?param=200y200`">
           </div>
           <div class="album-name pointer" @click="goTo(`#/album?id=${a.id}`)">{{a.name}}</div>
@@ -89,7 +89,7 @@
     <!-- 歌手 -->
     <div v-if="searchQuery.type === 100">
       <div class="singer-list result-list" v-if="searchQuery.artists && searchQuery.artists.length > 0">
-        <div v-for="s in searchQuery.artists" class="singer-item" @click="goTo(`#/singer?id=${s.id}`)">
+        <div v-for="s in searchQuery.artists" class="singer-item" @click="changeUrlQuery({ id: s.id, mid: s.mid, from: s.from }, '#/singer')">
           <img class="singer-img" :src="`${String(s.picUrl) === 'null' ? 'http://p3.music.126.net/VnZiScyynLG7atLIZ2YPkw==/18686200114669622.jpg' : s.picUrl}?param=120y120`"  />
           <div class="singer-name">{{s.name}}</div>
         </div>
@@ -102,11 +102,11 @@
     <!-- 歌单 -->
     <div v-if="searchQuery.type === 1000">
       <div class="playlist-list result-list" v-if="searchQuery.playlists && searchQuery.playlists.length > 0">
-        <div v-for="s in searchQuery.playlists" class="playlist-item" @click="goTo(`#/playlist/detail?id=${s.id}`)">
+        <div v-for="s in searchQuery.playlists" class="playlist-item" @click="changeUrlQuery({ id: s.id, from: s.from }, '#/playlist/detail')">
           <img class="playlist-img" :src="`${s.coverImgUrl}?param=120y120`"  />
           <div class="playlist-name">{{s.name}}</div>
           <div class="playlist-author">
-            <span v-if="s.creator">By: {{s.creator.nickname}}</span>
+            <span v-if="s.creator">By: {{s.creator.nickname || s.creator.name}}</span>
             <span class="pl_20"><i class="iconfont icon-yinyue" />: {{numToStr(s.playCount || 0)}}</span>
           </div>
           <div class="playlist-trackcount">{{s.trackCount}}</div>
@@ -121,7 +121,7 @@
 
 <script>
   import { searchReq, likeMusic, download } from "../assets/utils/request";
-  import { numToStr } from "../assets/utils/stringHelper";
+  import { numToStr, changeUrlQuery } from "../assets/utils/stringHelper";
   import { mapGetters } from 'vuex';
   import { messageHelp } from "../assets/utils/util";
   import $ from 'jquery';
@@ -145,18 +145,21 @@
             color: 'blue',
             icon: 'album',
             text: '专辑',
+            hasQQ: true,
           },
           {
             val: 100,
             color: 'green',
             icon: 'singer',
             text: '歌手',
+            hasQQ: true,
           },
           {
             val: 1000,
             color: 'yellow',
             icon: 'playlist',
             text: '歌单',
+            hasQQ: true,
           },
         ],
         platform: '163',
@@ -189,18 +192,15 @@
     },
     methods: {
       async search(key, val) {
-        const { searchQuery, loading, platform } = this;
+        const { searchQuery, loading } = this;
         if (loading) {
           return;
         }
-        if (key === 'platform') {
-          this.platform = val;
-          return this.search('type', 1);
-        }
+
         this.loading = true;
         searchQuery.pageNo = 1;
         searchQuery[key] = val;
-        searchQuery.platform = platform;
+        this.platform = searchQuery.platform;
         await searchReq(searchQuery);
         this.loading = false;
       },
@@ -227,6 +227,7 @@
         }
       },
       likeMusic,
+      changeUrlQuery,
       playlistTracks(tracks, op, type) {
         window.event.stopPropagation();
         this.$store.dispatch('setOperation', { data: { tracks, op }, type });
@@ -241,6 +242,55 @@
 </script>
 
 <style lang="scss" scoped>
+  .mode-mobile .search-page-container {
+    width: 100vw;
+    top: 15vw;
+    height: calc(100vh - 30vw);
+    left: 0;
+    background: none;
+
+    .search-type {
+      font-size: 2vw;
+    }
+
+    .song-list {
+      .song-item {
+        height: 15vw;
+        position: relative;
+
+        .song-order {
+          font-size: 2vw !important;
+        }
+        .song-album-img {
+          width: 10vw !important;
+          height: 10vw !important;
+          margin-top: 2.5vw;
+        }
+
+        .song-name {
+          font-size: 2.6vw !important;
+          line-height: 10vw;
+          transform: translate(9.2vw);
+        }
+        .artist-name {
+          font-size: 1.8vw !important;
+          position: absolute;
+          top: 8vw;
+          left: 25vw;
+          letter-spacing: 0;
+          opacity: 1;
+          line-height: 5vw;
+          height: 5vw;
+          margin-left: 0;
+        }
+      }
+    }
+
+    .search-input {
+      width: 60vw !important;
+      font-size: 2.5vh;
+    }
+  }
   .search-page-container {
     position: absolute;
     height: calc(100% - 30px);
@@ -635,6 +685,7 @@
           transform: translate(90px) scale(1);
           font-weight: bold;
           transition: 0.3s;
+          white-space: nowrap;
         }
         .playlist-author {
           width: 100%;

@@ -466,6 +466,66 @@
   audio {
     display: none !important;
   }
+  .mode-mobile {
+    .player-container {
+      width: 100vw;
+      height: 15vw;
+      background: #fff3;
+
+      .control-btn {
+        display: none;
+      }
+
+      .progress-container {
+        margin: 0 !important;
+        font-size: 2.5vw !important;
+        line-height: 15vw;
+        position: relative;
+        width: 90%;
+
+        .song-info {
+          vertical-align: top;
+          max-width: 40vw;
+          position: relative;
+
+          .player-song-title {
+            font-size: 3vw;
+            line-height: 10vw;
+            vertical-align: top;
+          }
+          .player-song-singer {
+            position: absolute;
+            top: 8vw;
+            line-height: 5vw;
+            font-size: 2.2vw;
+            left: 0;
+            padding-left: 0 !important;
+          }
+        }
+        .iconfont {
+          display: inline-block;
+          vertical-align: top;
+        }
+        .play-time {
+          margin-left: 5vw;
+          position: absolute;
+          right: 2vw;
+        }
+      }
+
+      .other-control {
+        display: none !important;
+      }
+
+      #player-progress {
+        display: none;
+      }
+
+      .back-icon {
+        display: none;
+      }
+    }
+  }
   .player-container {
     z-index: 1000;
     width: 100vw;

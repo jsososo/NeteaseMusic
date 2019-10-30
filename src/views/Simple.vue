@@ -49,7 +49,7 @@
     watch: {
       playNow(v) {
         this.lyricKey = 0;
-        this.startKey = 0;
+        this.startKey = -1;
         this.lyricList = Object.values(v.lyric || {}) || [];
       },
       percent() {
@@ -69,17 +69,17 @@
         let lyricKey = current;
         let startKey = 0;
         switch (key) {
-          case -1:
+          case (lyricKeys.length - 1):
             lyricKey = lyricKeys.length - 1;
-            startKey = lyricKeys.length - 3;
+            startKey = lyricKeys.length - 2;
+            break;
+          case -1:
+            lyricKey = lyricKeys.length;
+            startKey = lyricKeys.length - 1;
             break;
           case 0:
             lyricKey = 0;
             startKey = 0;
-            break;
-          case (lyricKeys.length - 1):
-            lyricKey = lyricKeys.length - 1;
-            startKey = lyricKeys.length - 3;
             break;
           default:
             lyricKey = key;

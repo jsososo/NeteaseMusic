@@ -44,6 +44,10 @@
       window.QUERY_QQ_TIMES = 1;
       loginStatus();
 
+      if(/Android|webOS|iPhone|iPod|BlackBerry/i.test(navigator.userAgent)) {
+        this.$store.dispatch('updateMode', 'mobile');
+      }
+
       // 播放顺序，qq号的一些配置
       if (!Storage.get('orderType')) {
         Storage.set('orderType', 'liebiao');

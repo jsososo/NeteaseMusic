@@ -38,7 +38,7 @@
         <div class="icon-text">下载中心</div>
       </a>
     </div>
-    <div class="nav-line">
+    <div class="nav-line nav-mode-simple">
       <a href="#/simple">
         <i class="iconfont icon-windmill"></i>
         <div class="icon-text">极简</div>
@@ -103,6 +103,56 @@
         transform: scale(1.5);
         top: -20px;
         left: -20px;
+      }
+    }
+  }
+
+  .mode-mobile {
+    .page-left-nav {
+      width: 100vw !important;
+      height: 15vw !important;
+      white-space: nowrap;
+      overflow-x: auto;
+      background: #fff5;
+      position: fixed;
+      z-index: 10;
+
+      .left-nav-bg {
+        display: none;
+      }
+
+      .avatar {
+        margin: 2.5vw !important;
+        width: 10vw !important;
+        height: 10vw;
+        .iconfont {
+          display: inline-block !important;
+        }
+        .icon-text {
+          display: none;
+        }
+      }
+
+      .nav-mode-simple {
+        display: none !important;
+      }
+
+      .nav-line {
+        display: inline-block;
+        width: 15vw;
+        vertical-align: top;
+
+        .iconfont {
+          display: none;
+        }
+
+        .icon-text {
+          width: 15vw;
+          line-height: 15vw;
+          padding-left: 0 !important;
+          text-align: center;
+          font-size: 3.4vw;
+        }
       }
     }
   }

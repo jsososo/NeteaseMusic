@@ -182,14 +182,14 @@
             api: 'QQ_SINGER_DESC',
             data: { singermid },
           }).then((res) => {
-            const name = res.data.basic.item.find((obj) => obj.key === '中文名').value;
-            const alias = res.data.basic.item.find((obj) => obj.key === '外文名').value.split(',');
+            const name = (res.data.basic.item.find((obj) => obj.key === '中文名') || { value: '' }).value;
+            const alias = (res.data.basic.item.find((obj) => obj.key === '外文名') || { value: '' }).value.split(',');
             this.baseInfo = {
               img1v1Url: `https://y.gtimg.cn/music/photo_new/T001R300x300M000${singermid}.jpg`,
               name,
               alias,
               briefDesc: res.data.desc,
-            }
+            };
             this.info.descs = (res.data.other.item || []).map((item) => ({ ti: item.key, txt: item.value }));
           });
 
