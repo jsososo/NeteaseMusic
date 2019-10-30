@@ -35,6 +35,8 @@ const apiList = {
   'GET_DJ_DETAIL': '/api/dj/detail', // 获取电台的详细信息
   'GET_DJ_SONGS': 'api/dj/program', // 获取电台的歌单
   'GET_PERSON_FM': 'api/personal_fm', // 获取私人fm
+  'GET_MV_INFO': 'api/mv/detail', // 获取 mv 信息
+  'GET_SIMI_MV': 'api/simi/mv', // 获取相似 mv
 
   'QQ_SEARCH': 'apiQ/search', // qq 音乐搜索
   'QQ_VKEY': 'apiQ/vkey', // qq音乐 vkey
@@ -53,6 +55,8 @@ const apiList = {
   'QQ_ALBUM': 'apiQ/album', // qq 专辑信息
   'QQ_ALBUM_SONGS': 'apiQ/album/songs', // qq 专辑歌曲
   'QQ_SONG_DETAIL': 'apiQ/song', // qq 歌曲详情
+  'QQ_MV_INFO': 'apiQ/mv', // qq mv 信息,
+  'QQ_MV_URL': 'apiQ/mv/url', // qq mv 播放链接
 
   '163': '//music.jsososo.com/neapi/index.php',
   'QQ_SONG_INFO': '//u.y.qq.com/cgi-bin/musicu.fcg',

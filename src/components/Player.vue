@@ -273,6 +273,7 @@
       },
     },
     mounted() {
+      window.UPDARE_PLAYING_STATUS = this.updatePlayingStatus;
       this.playerDom = document.getElementById('m-player');
       this.playerDom.volume = Storage.get('volume') || 1;
       // 初始化音量
@@ -458,7 +459,7 @@
 </script>
 
 <style lang="scss">
-  .mode-simple {
+  .mode-simple, .mode-mv {
     .player-container {
       bottom: -100px;
     }

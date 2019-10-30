@@ -40,6 +40,9 @@
           <i class="iconfont icon-comment"></i>
           <span class="pl_10 ft_12" v-if="playNow.comments">{{numberHandle(playNow.comments.total)}}</span>
         </a>
+        <a v-if="playNow.mvid" :href="changeUrlQuery({ id: playNow.mvid, from: playNow.from }, '#/mv', false)" class="btn-group-href">
+          <i class="iconfont icon-mv"></i>
+        </a>
       </div>
     </div>
   </div>
@@ -211,6 +214,10 @@
             font-size: 18px;
             transition: 0.3s;
             font-weight: bold;
+
+            &.icon-mv {
+              font-weight: normal;
+            }
           }
 
           &:hover .iconfont {

@@ -18,6 +18,26 @@ ps: qq音乐那边是需要登陆vip用户 cookie 才能获取到一些接口的
 
 项目使用 vue-cli-3 作为脚手架，用vue全家桶搭建，项目由之前的 [qq音乐播放器](https://github.com/jsososo/music-player) 改造而来，只为了一个 **最帅的音乐播放器**
 
+nginx 配置如下
+```
+#音乐播放器
+server {
+    listen      80;
+    server_name test.163.jsososo.com;
+    location /api/ {
+        proxy_pass http://39.100.111.202:3000;
+        proxy_set_header Host "163.jsososo.com";
+    }
+    location /apiQ/ {
+        proxy_pass http://39.100.111.202:80;
+        proxy_set_header Host "163.jsososo.com";
+    }
+    location / {
+        proxy_pass http://localhost:3335;
+        proxy_set_header Host "163.jsososo.com";
+    }
+}
+```
 
 ## Feature && TODO
 - [x] 听歌 （19-6-5）
@@ -49,5 +69,6 @@ ps: qq音乐那边是需要登陆vip用户 cookie 才能获取到一些接口的
 - [x] 支持QQ音乐用户歌单 (19-10-17)
 - [x] 极简模式 (19-10-18)
 - [x] 支持QQ音乐歌手、歌单、专辑搜索 (19-10-30)
+- [x] MV
 - [ ] 歌单编辑等操作
 - [ ] 电台

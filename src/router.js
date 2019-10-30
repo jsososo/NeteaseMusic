@@ -14,6 +14,7 @@ const Download = () => import('./views/Download');
 const Radio = () => import('./views/Radio');
 const SetQCookie = () => import('./views/setQCookie');
 const Simple = () => import('./views/Simple');
+const Mv = () => import('./views/Mv');
 
 Vue.use(Router);
 
@@ -97,6 +98,11 @@ const router = new Router({
       path: '/radio',
       name: 'Radio',
       component: Radio,
+    },
+    {
+      path: '/mv',
+      name: 'Mv',
+      component: Mv,
     }
   ]
 });
@@ -108,13 +114,16 @@ router.beforeEach((to, from, next) => {
     return next();
   }
   const { dispatch } = VUE_APP.$store;
-  if (to.name !== 'Simple' && VUE_APP.$store.getters.getMode === 'simple') {
-    dispatch('updateMode', '');
-  }
+  ['Simple', 'Mv'].forEach((name) => {
+    if (to.name !== name && VUE_APP.$store.getters.getMode === name.toLowerCase()) {
+      dispatch('updateMode', '');
+    }
+  });
   switch (to.name) {
     case 'user':
     case 'Download':
     case 'About':
+    case 'Mv':
       dispatch('updateShowCover', false);
       break;
     default:

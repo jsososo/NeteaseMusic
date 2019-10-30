@@ -81,8 +81,8 @@ export const getPlayList = async (id) => request({ api: 'LIST_DETAIL', data: { i
     // 请求的太多的话返回的会不详细
     const songs = tracks.map((s) => {
       if (!allSongs[s.id]) {
-        const { al = {}, ar = [], id, name } = s;
-        newSongObj[s.id] = { al, ar: ar, id, name };
+        const { al = {}, ar = [], id, name, mv, mvid } = s;
+        newSongObj[s.id] = { al, ar: ar, id, name, mvid: mv || mvid };
         allSongs[s.id] = newSongObj[s.id];
         ids.push(s.id);
       }
@@ -467,6 +467,7 @@ export const QQ2163 = (item) => {
     songid,
     songname,
     url,
+    vid,
   } = item;
   return {
     ar: singer,
@@ -477,6 +478,7 @@ export const QQ2163 = (item) => {
       name: albumname,
       picUrl: `https://y.gtimg.cn/music/photo_new/T002R300x300M000${albummid}.jpg`,
     },
+    mvid: vid,
     name: songname,
     id: songmid,
     mid: songmid,
@@ -500,6 +502,7 @@ export const handleSongs = (songs) => (
         ar: s.ar || s.artists,
         name: s.name,
         id: s.id,
+        mvid: s.mvid || s.mv,
       };
       allSongs[s.id] = obj[s.id];
       if (!allSongs[s.id].url) {
@@ -717,7 +720,7 @@ export const handleQQSongs = (list) => {
   const allSongs = window.VUE_APP.$store.getters.getAllSongs;
   const obj = {};
   const ids = [];
-  list.forEach(({ singer, mid, id, name, mv, album}) => {
+  list.forEach(({ singer, mid, id, name, mv = {}, album}) => {
     if (!allSongs[mid]) {
       album.picUrl = `https://y.gtimg.cn/music/photo_new/T002R300x300M000${album.mid}.jpg`;
       obj[mid] = {
@@ -726,7 +729,7 @@ export const handleQQSongs = (list) => {
         id: mid,
         songid: id,
         name,
-        mv,
+        mvid: mv.vid,
         from: 'qq',
         al: album,
       };
