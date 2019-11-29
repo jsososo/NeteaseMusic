@@ -182,6 +182,7 @@
             api: 'QQ_SINGER_DESC',
             data: { singermid },
           }).then((res) => {
+            if (!res.data) return;
             const name = (res.data.basic.item.find((obj) => obj.key === '中文名') || { value: '' }).value;
             const alias = (res.data.basic.item.find((obj) => obj.key === '外文名') || { value: '' }).value.split(',');
             this.baseInfo = {
@@ -198,7 +199,7 @@
             api: 'QQ_SINGER_SIM',
             data: { singermid },
           }).then((res) => {
-            this.info.simis = res.data.list.map((item) => ({ ...item, img1v1Url: item.pic }));
+            this.info.simis = (res.data.list || []).map((item) => ({ ...item, img1v1Url: item.pic }));
           });
 
           // 歌曲

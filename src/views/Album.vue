@@ -7,7 +7,7 @@
           {{baseInfo.name}}
           <div class="album-name-alia">{{(baseInfo.alias || []).join('、')}}</div>
           <div class="album-artist" v-if="baseInfo.artists">
-            <a v-for="a in baseInfo.artists" :key="a.id" :href="`#/singer?id=${a.id}`">{{a.name}} </a>
+            <a v-for="a in baseInfo.artists" :key="a.id" :href="changeUrlQuery({ id: a.id, mid: a.mid, from: a.from }, '#/singer', false)">{{a.name}} </a>
           </div>
           <div class="album-company" v-if="baseInfo.company">发行：{{baseInfo.company}}</div>
           <div class="album-pb-time">{{baseInfo.publishTime}}</div>
@@ -73,6 +73,8 @@
   import { mapGetters } from 'vuex';
   import request, { handleSongs, likeMusic, download, handleQQSongs } from '../assets/utils/request';
   import timer from '../assets/utils/timer';
+  import { changeUrlQuery } from "../assets/utils/stringHelper";
+
   export default {
     name: "Album",
     data() {
@@ -126,8 +128,8 @@
           }).then((res) => {
             this.baseInfo = {
               ...res.data,
-              picUrl: `https://y.gtimg.cn/music/photo_new/T002R300x300M000${albummid}.jpg`,
-              publishTime: res.data.time_public,
+              description: res.data.desc,
+              artists: res.data.ar.map((a) => ({ ...a, from: 'qq' }))
             }
 
           });
@@ -167,6 +169,7 @@
         dispatch('updatePlayingStatus', true);
       },
       download,
+      changeUrlQuery,
     }
   }
 </script>

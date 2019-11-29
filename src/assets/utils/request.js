@@ -625,9 +625,9 @@ export const download = async (id, songName) => {
   let url = song.url;
 
   // 别的网站下载会有跨域问题
-  url = url.replace(/^(.+)qq.com/, 'http://183.131.60.16/amobile.music.tc.qq.com');
+  url = url.replace(/^(.+)qq.com/, 'http://124.89.197.18/amobile.music.tc.qq.com');
   const downId = `${new Date().getTime()}${id}`;
-  const name = songName ? songName : `${song.ar.map((a) => a.name).join('、')}-${song.name}.${song.from === 'qq' ? 'm4a' : ((song.br > 320000) ? 'flac' : 'mp3')}`;
+  const name = songName ? songName : `${song.ar.map((a) => a.name).join('、')}-${song.name}.${(song.from === 'qq' || song.qqId) ? 'm4a' : ((song.br > 320000) ? 'flac' : 'mp3')}`;
   downReq(url, name, null, {
     init: (ajax) => {
       VUE_APP.$message.success('加入下载中');
