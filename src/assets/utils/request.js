@@ -743,4 +743,35 @@ export const handleQQSongs = (list) => {
   return ids;
 };
 
+export const getMusicData = (url) => {
+  if (!url) {
+    return;
+  }
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  window.AudioBufferSourceNode = audioCtx.createBufferSource();
+  window.AnalyserNode = audioCtx.createAnalyser();
+  window.musicDataMap = {0: [0]};
+  const { AudioBufferSourceNode, AnalyserNode } = window;
+  AnalyserNode.fftSize = 256;
+  const request = new XMLHttpRequest();
+  request.open('GET', url, true);
+  request.responseType = 'arraybuffer'; // 设置数据类型为arraybuffer
+  request.onload = function() {
+    const audioData = request.response;
+    audioCtx.decodeAudioData(
+      audioData,
+      (buffer) => {
+        AudioBufferSourceNode.buffer = buffer;
+        AudioBufferSourceNode.connect(AnalyserNode);
+        AudioBufferSourceNode.start(0);
+        console.log(buffer);
+        window.AnalyserNode = AnalyserNode;
+        window.AudioBufferSourceNode = AudioBufferSourceNode;
+      },
+      (e) => console.error("Error with decoding audio data" + e.err + '==========' + url)
+    );
+  };
+  request.send();
+}
+
 export default request;

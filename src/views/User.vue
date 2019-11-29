@@ -50,6 +50,9 @@
         <div class="user-info-txt user-info-playlist"><a :href="`#/playlist?id=${uInfo.userId}`">歌单 {{uInfo.playlistCount}} 个</a></div>
         <div class="user-info-txt user-info-level">Lv {{uInfo.level}}</div>
       </div>
+      <div class="user-setting-container">
+        <Setting />
+      </div>
 
       <div class="user-right-list">
         <div class="right-select-tab-list">
@@ -119,11 +122,13 @@
 
 <script>
   import { mapGetters } from 'vuex';
+  import Setting from '../components/Setting';
   import request, { loginStatus, likeMusic, handleSongs, download } from '../assets/utils/request';
   import Num from '../assets/utils/num';
   import $ from 'jquery';
   export default {
     name: "User",
+    components: { Setting },
     data() {
       return {
         username: '',
@@ -536,6 +541,12 @@
         padding-top: 40px;
         position: absolute;
         z-index: 2;
+      }
+      .user-setting-container {
+        position: absolute;
+        z-index: 3;
+        top: 370px;
+        left: 150px;
       }
       .user-avatar {
         width: 290px;

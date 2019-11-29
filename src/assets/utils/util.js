@@ -25,6 +25,12 @@ export const messageHelp = (id) => {
       message: '🐧 音乐歌单全方面支持啦！去歌单页面，切到🐧tab，输入企鹅号就可以啦（需要企鹅音乐主页设为公开）',
       type: 'info',
       duration: 20000,
+    },
+    6: {
+      title: '看见音乐！',
+      message: '新增了音频图的显示，如果影响到了性能和流量请点左上角头像，关闭显示！',
+      type: 'info',
+      duration: 20000,
     }
   };
 

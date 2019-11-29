@@ -117,7 +117,7 @@
   import Num from '../assets/utils/num';
   import Storage from '../assets/utils/Storage';
   import { mapGetters } from 'vuex';
-  import request, { likeMusic, download, getPersonFM, handleQQComments } from '../assets/utils/request';
+  import request, { likeMusic, download, getPersonFM, handleQQComments, getMusicData } from '../assets/utils/request';
   import { handleLyric, getQueryFromUrl, changeUrlQuery } from "../assets/utils/stringHelper";
   import ArrayHelper from '../assets/utils/arrayHelper';
 
@@ -143,6 +143,7 @@
         listId: 0,
         keys: [],
         errorId: '',
+        playingUrl: '',
       }
     },
     computed: {
@@ -165,9 +166,13 @@
     watch: {
       async playNow(v) {
         const { listId, playingId, playerInfo, isPersonFM, playingList, playingPlatform } = this;
-        const { id, lyric, name, comments, mid, songid } = v;
+        const { id, lyric, name, comments, mid, songid, url } = v;
         const trueId = v.from === 'qq' ? mid : id;
         const dispatch = this.$store.dispatch;
+        if (url !== this.playingUrl && (Storage.get('showDrawMusic') !== '0')) {
+          this.playingUrl = url;
+          getMusicData(url);
+        }
         if (isPersonFM && (playingList.index >= (playingList.raw.length - 2))) {
           this.getPersonFM();
         }

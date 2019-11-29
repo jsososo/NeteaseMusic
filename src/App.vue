@@ -2,6 +2,7 @@
   <div id="app" :class="`mode-${mode}`">
     <img src="./assets/img/bg-1.png" alt="" class="app-bg">
     <img id="play-music-bg" alt="">
+    <canvas :width="pageWidth" :height="pageHeight" id="music-data-canvas" ></canvas>
     <div class="main-container">
       <div style="display: inline-block;width: 60%;" v-if="showCover">
         <Playing />
@@ -30,6 +31,8 @@
     data() {
       return {
         defaultActive: '/',
+        pageWidth: 0,
+        pageHeight: 0,
       }
     },
     computed: {
@@ -84,8 +87,74 @@
       });
       this.$store.dispatch('updateDownload');
 
-      messageHelp(4);
-      messageHelp(5);
+      messageHelp(6);
+    },
+    mounted() {
+      const canvas = document.getElementById('music-data-canvas');
+      const ctx = canvas.getContext('2d');
+      this.pageWidth = window.innerWidth;
+      this.pageHeight = window.innerHeight;
+
+      this.ctx = ctx;
+      ctx.fillStyle = 'yellow';
+      ctx.fillRect(100, 100, 100, 100);
+
+      const pDom = document.getElementById('m-player');
+
+      window.onresize = () => {
+        this.pageWidth = window.innerWidth;
+        this.pageHeight = window.innerHeight;
+      };
+
+      const draw = () => {
+        const { musicDataMap = { 0: [] }, AnalyserNode, AudioBufferSourceNode } = window;
+        const drawMusicType = Storage.get('drawMusicType');
+        if (!AnalyserNode || !AnalyserNode.getByteFrequencyData) {
+          return;
+        }
+        let dataArr = new Uint8Array(AnalyserNode.frequencyBinCount);//用于存放音频数据的数组，其长度是fftsize的一半
+        AnalyserNode.getByteFrequencyData(dataArr);// 将音频频域数据复制到传入的Uint8Array数组
+
+        if (drawMusicType === '2') {
+          dataArr = [ ...dataArr.reverse(), ...dataArr.reverse() ].filter((v, i) => i % 2);
+        }
+        musicDataMap[AudioBufferSourceNode.context.currentTime] = [...dataArr];
+
+
+        const keys = Object.keys(musicDataMap);
+        let index = keys.findIndex((v) => v >= pDom.currentTime);
+        if (index <= 0) {
+          index = 0;
+        }
+
+        const arr = musicDataMap[keys[index]];
+        const { ctx } = this;
+        const { pageWidth, pageHeight } = this;
+        ctx.clearRect(0, 0, pageWidth, pageHeight);
+        if (arr) {
+          arr.forEach((v, i) => {
+            const linearGradient= ctx.createLinearGradient(
+              pageWidth * i / 128,
+              pageHeight,
+              pageWidth * i / 128,
+              pageHeight / 2,
+            );
+            linearGradient.addColorStop(0,"#409EFF33");
+            linearGradient.addColorStop(1,"#5cB87a33");
+            ctx.fillStyle = linearGradient;
+            ctx.fillRect(
+              pageWidth * i / 128,
+              pageHeight - 80 - v / 256 * pageHeight / 2,
+              pageWidth * 0.9 / 128,
+              v / 256 * pageHeight / 2
+            );
+          })
+        }
+      };
+
+      if (Storage.get('showDrawMusic') !== '0') {
+        setInterval(draw, 1000 / 60);
+      }
     },
     methods: {
 
@@ -114,9 +183,16 @@
     height: 100vh;
     min-width: 1200px;
 
+    #music-data-canvas {
+      position: absolute;
+      z-index: -1;
+      top: 0;
+      left: 0;
+    }
+
     #play-music-bg {
       position: absolute;
-      z-index: 0;
+      z-index: -5;
       left: -5vw;
       min-width: 110vw;
       min-height: 110vh;
@@ -130,7 +206,7 @@
 
     .app-bg {
       position: relative;
-      z-index: -1;
+      z-index: -10;
       top: 0;
       left: 0;
       min-width: 100vw;

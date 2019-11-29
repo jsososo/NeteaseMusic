@@ -14,6 +14,10 @@
           关于那些 vip 歌曲和 网易云 没有版权的歌曲，在这里当然都是能听的啦，实现方法为根据歌名 + 歌手 调用 qq 音乐接口进行搜索，
           所以可能存在搜索出来的歌曲和世纪显示的歌曲不匹配的情况，欢迎在这里进行评论，我会尽快修复 <a href="https://github.com/jsososo/NeteaseMusic/issues/1" target="_blank">#ISSUE1</a>
         </p>
+        <p>
+          音频图于 19-11-29 支持，会更消耗性能和流量，嫌弃可以关闭！另外由于读取音频所以数据相当于完整的播放一次音乐，
+          因此如果拖动进度条可能导致无法获取到音频数据，如果读取音频数据的方法卡了，比当前播放的速度要慢，也可能会出现没有数据。
+        </p>
         <p class="mt_20">GitHub: <a href="https://github.com/jsososo/NeteaseMusic" target="_blank">网易云第三方 Web 播放器</a></p>
         <p>后端：「网易云」<a href="https://github.com/Binaryify/NeteaseCloudMusicApi" target="_blank">NeteaseCloudMusicApi</a></p>
         <p>后端：「QQ音乐」<a href="https://github.com/jsososo/QQMusicApi" target="_blank">QQMusicApi</a> (也是我的项目，也欢迎支持一下)</p>
@@ -201,7 +205,11 @@
           {
             txt: '🎬 MV',
             time: '19-10-30',
-          }
+          },
+          {
+            txt: '🐙 看见音乐！',
+            time: '19-11-29',
+          },
         ],
         future: [
           '歌单编辑',
