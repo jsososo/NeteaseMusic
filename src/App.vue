@@ -131,21 +131,22 @@
         const { ctx } = this;
         const { pageWidth, pageHeight } = this;
         ctx.clearRect(0, 0, pageWidth, pageHeight);
+        const num = (Storage.get('drawMusicNum') || 64);
         if (arr) {
           arr.forEach((v, i) => {
             const linearGradient= ctx.createLinearGradient(
-              pageWidth * i / 128,
+              pageWidth * i / num,
               pageHeight,
-              pageWidth * i / 128,
+              pageWidth * i / num,
               pageHeight / 2,
             );
             linearGradient.addColorStop(0,"#409EFF33");
             linearGradient.addColorStop(1,"#5cB87a33");
             ctx.fillStyle = linearGradient;
             ctx.fillRect(
-              pageWidth * i / 128,
+              pageWidth * i / num,
               pageHeight - 80 - v / 256 * pageHeight / 2,
-              pageWidth * 0.9 / 128,
+              pageWidth * 0.9 / num,
               v / 256 * pageHeight / 2
             );
           })

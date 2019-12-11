@@ -45,6 +45,12 @@
       </a>
     </div>
     <div class="nav-line">
+      <a href="#/setting">
+        <i class="iconfont icon-setting"></i>
+        <div class="icon-text">设置</div>
+      </a>
+    </div>
+    <div class="nav-line">
       <a href="#/about">
         <i class="iconfont icon-version"></i>
         <div class="icon-text">关于</div>

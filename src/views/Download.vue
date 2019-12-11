@@ -28,7 +28,7 @@
         </div>
         <div class="item-time">{{getTime(item.startTime)}}</div>
         <div class="item-operation">
-          <div class="down-button" v-if="['init', 'progress'].indexOf(item.status) === -1" @click="download(item.songId, item.name)">重新下载</div>
+          <div class="down-button" v-if="['init', 'progress'].indexOf(item.status) === -1" @click="download(item.songId, item.name, true)">重新下载</div>
           <div class="down-button" v-if="['init', 'progress'].indexOf(item.status) > -1" @click="updateDownload({ status: 'abort', id: item.id })">取消下载</div>
         </div>
       </div>

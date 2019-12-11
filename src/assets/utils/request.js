@@ -519,7 +519,7 @@ export const handleSongs = (songs) => (
 
 // 喜欢音乐
 export const likeMusic = (id) => {
-  window.event.stopPropagation();
+  window.event && window.event.stopPropagation();
   const VUE_APP = window.VUE_APP;
   const message = VUE_APP.$message;
   const store= VUE_APP.$store;
@@ -613,8 +613,8 @@ const JSONP = (url) => {
 };
 
 // 下载
-export const download = async (id, songName) => {
-  window.event.stopPropagation();
+export const download = async (id, songName, forceReq) => {
+  window.event && window.event.stopPropagation();
   const allSongs = VUE_APP.$store.getters.getAllSongs;
   const song = allSongs[id];
   const dispatch = VUE_APP.$store.dispatch;
@@ -623,15 +623,65 @@ export const download = async (id, songName) => {
     return VUE_APP.$message.warning('没有这首歌呀');
   }
   let url = song.url;
+  let songEndType = song.br > 320000 ? 'flac' : 'mp3';
+  let br = song.br;
+
+  if (song.qqId) {
+    url = '';
+    let type = Storage.get('downSize') || 'flac';
+    const typeArr = ['flac', '320', '128'];
+    let i = typeArr.indexOf(type);
+    while (i < typeArr.length && !url)  {
+      console.log(i, url);
+      try {
+        const urlReq = await request({
+          api: 'QQ_DOWN_URL',
+          data: { id: song.qqId, type }
+        });
+        if (urlReq.result === 100) {
+          url = urlReq.data;
+          songEndType = {
+            320: 'mp3',
+            128: 'mp3',
+            flac: 'flac',
+          }[type];
+          br = {
+            320: 320000,
+            128: 128000,
+            flac: 960000,
+          }[type];
+        }
+      } catch (err) {
+        console.log(err);
+      }
+      i += 1;
+      type = typeArr[i];
+    }
+  }
+
+  if (!url) {
+    url = song.url;
+    songEndType = 'm4a';
+  }
 
   // 别的网站下载会有跨域问题
   url = url.replace(/^(.+)qq.com/, 'http://124.89.197.18/amobile.music.tc.qq.com');
   const downId = `${new Date().getTime()}${id}`;
-  const name = songName ? songName : `${song.ar.map((a) => a.name).join('、')}-${song.name}.${(song.from === 'qq' || song.qqId) ? 'm4a' : ((song.br > 320000) ? 'flac' : 'mp3')}`;
+  const name = songName ? songName : `${song.ar.map((a) => a.name).join('、')}-${song.name}.${songEndType}`;
+
+  let { repeatDown, download_info: downloadInfo } = Storage.get(['repeatDown', 'download_info']);
+  downloadInfo = JSON.parse(downloadInfo);
+  if (!repeatDown && !forceReq) {
+    const song = downloadInfo.list.find((s) => s.songId === id && s.status === 'success');
+    if (song) {
+      VUE_APP.$message.info('这首下载过啦，过滤掉了');
+      return dispatch('updateDownload', { status: 'initError', errMsg: '重复下载，自动过滤', from: (song.from || '163'), id: downId, name, songId: id, br })
+    }
+  }
   downReq(url, name, null, {
     init: (ajax) => {
       VUE_APP.$message.success('加入下载中');
-      dispatch('updateDownload', { status: 'init', from: (song.from || '163'), id: downId, ajax, name, songId: id, br: song.br });
+      dispatch('updateDownload', { status: 'init', from: (song.from || '163'), id: downId, ajax, name, songId: id, br });
     },
     success: () => dispatch('updateDownload', { status: 'success', id: downId }),
     error: () => dispatch('updateDownload', { status: 'error', id: downId }),
@@ -752,7 +802,7 @@ export const getMusicData = (url) => {
   window.AnalyserNode = audioCtx.createAnalyser();
   window.musicDataMap = {0: [0]};
   const { AudioBufferSourceNode, AnalyserNode } = window;
-  AnalyserNode.fftSize = 256;
+  AnalyserNode.fftSize = Number(Storage.get('drawMusicNum') || 64) * 2;
   const request = new XMLHttpRequest();
   request.open('GET', url, true);
   request.responseType = 'arraybuffer'; // 设置数据类型为arraybuffer
@@ -764,7 +814,6 @@ export const getMusicData = (url) => {
         AudioBufferSourceNode.buffer = buffer;
         AudioBufferSourceNode.connect(AnalyserNode);
         AudioBufferSourceNode.start(0);
-        console.log(buffer);
         window.AnalyserNode = AnalyserNode;
         window.AudioBufferSourceNode = AudioBufferSourceNode;
       },

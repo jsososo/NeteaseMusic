@@ -547,6 +547,15 @@
         z-index: 3;
         top: 370px;
         left: 150px;
+        height: calc(100vh - 450px);
+        overflow: auto;
+        min-width: 500px;
+
+        &::-webkit-scrollbar
+        {
+          width:0;
+          height:0;
+        }
       }
       .user-avatar {
         width: 290px;

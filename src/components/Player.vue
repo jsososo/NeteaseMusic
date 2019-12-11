@@ -56,7 +56,7 @@
             <div class="volume-slider" >
               <el-slider
                 v-model="volume"
-                @change="changeVolume"
+                @input="changeVolume"
                 :vertical="true"
                 height="80px"
                 :max="100"/>

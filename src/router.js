@@ -15,6 +15,7 @@ const Radio = () => import('./views/Radio');
 const SetQCookie = () => import('./views/setQCookie');
 const Simple = () => import('./views/Simple');
 const Mv = () => import('./views/Mv');
+const Setting = () => import('./views/Setting');
 
 Vue.use(Router);
 
@@ -103,6 +104,11 @@ const router = new Router({
       path: '/mv',
       name: 'Mv',
       component: Mv,
+    },
+    {
+      path: '/setting',
+      name: 'Setting',
+      component: Setting,
     }
   ]
 });

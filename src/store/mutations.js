@@ -242,15 +242,19 @@ export default {
       const { id, p, l, t, ajax, status, errMsg, name, songId, br, from } = data;
       const { downloadInfo } = state;
       const d = downloadInfo.list.find((item) => item.id === id);
+      const now = new Date().getTime();
       // 这是其他的更新下载状态
       switch (status) {
         case 'init':
-          downloadInfo.list.unshift({ status, from, id, startTime: new Date().getTime(), ajax, name, songId, br });
+          downloadInfo.list.unshift({ status, from, id, startTime: now, ajax, name, songId, br });
           downloadInfo.count++;
+          break;
+        case 'initError':
+          downloadInfo.list.unshift({ status: 'error', from, id, errMsg, name, songId, br, startTime: now, endTime: now });
           break;
         case 'success':
           d.status = 'success';
-          d.endTime = new Date().getTime();
+          d.endTime = now;
           delete d.ajax;
           delete d.p;
           delete d.t;
@@ -258,7 +262,7 @@ export default {
           break;
         case 'error':
           d.errMsg = errMsg || '未知错误';
-          d.endTime = new Date().getTime();
+          d.endTime = now;
           delete d.ajax;
           delete d.p;
           delete d.t;
@@ -279,7 +283,7 @@ export default {
         case 'abort':
           d.ajax.abort();
           d.errMsg ='主动结束';
-          d.endTime = new Date().getTime();
+          d.endTime = now;
           d.status = 'error';
           delete d.ajax;
           delete d.p;
@@ -292,13 +296,14 @@ export default {
               item.ajax.abort();
               item.errMsg ='主动结束';
               item.status = 'error';
-              item.endTime = new Date().getTime();
+              item.endTime = now;
               delete item.ajax;
               delete item.p;
               delete item.t;
               delete item.l;
             }
-          })
+          });
+          break;
         default: break;
       }
       downloadInfo.count = downloadInfo.list.filter((o) => ['init', 'progress'].indexOf(o.status) > -1).length;

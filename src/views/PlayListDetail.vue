@@ -16,9 +16,12 @@
       </div>
       <div>
         <input v-model="search" class="search-input" type="text" placeholder="找呀找呀找歌曲">
+        <div class="inline-block mt_15 pt_5">下列歌曲：</div>
         <div @click="playListShow" v-if="list.length > 0" class="inline-block mt_15 pt_5 pointer play" style="line-height: 20px;">
           <i class="iconfont icon-play pl_10 pr_10" />
-          播放下列歌曲
+        </div>
+        <div @click="downShow" v-if="list.length > 0" class="inline-block mt_15 pt_5 pointer play" style="line-height: 20px;">
+          <i class="iconfont icon-download pl_10 pr_10" />
         </div>
       </div>
     </div>
@@ -159,6 +162,24 @@
         dispatch('updatePlayingList', { list, id });
         dispatch('updatePlayingStatus', true);
       },
+      downShow() {
+        const { allSongs, list } = this;
+        const songList = list.filter((id) => !!allSongs[id].url);
+        if (!songList.length) {
+          return this.$message.info('没有歌呢');
+        }
+
+        this.$confirm(`批量下载${songList.length}首歌曲？`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          songList.forEach((id) => {
+            download(id);
+          })
+        });
+
+      },
       searchList() {
         const { search, allList, trueId: id, allSongs, platform } = this;
         const rex = search.replace(/\/|\s|\t|,|，|-|/g, '').toLowerCase();
@@ -257,7 +278,7 @@
         font-size: 20px;
         outline: none !important;
         border-bottom: 1px solid #0003;
-        width: calc(100% - 140px);
+        width: calc(100% - 170px);
         margin-left: 0;
 
         &::-webkit-input-placeholder {

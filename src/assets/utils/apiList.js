@@ -57,6 +57,7 @@ const apiList = {
   'QQ_SONG_DETAIL': 'apiQ/song', // qq 歌曲详情
   'QQ_MV_INFO': 'apiQ/mv', // qq mv 信息,
   'QQ_MV_URL': 'apiQ/mv/url', // qq mv 播放链接
+  'QQ_DOWN_URL': 'apiQ/song/url', // qq 下载歌曲链接
 
   '163': '//music.jsososo.com/neapi/index.php',
   'QQ_SONG_INFO': '//u.y.qq.com/cgi-bin/musicu.fcg',
