@@ -88,6 +88,7 @@
       this.$store.dispatch('updateDownload');
 
       messageHelp(6);
+      messageHelp(7);
     },
     mounted() {
       const canvas = document.getElementById('music-data-canvas');

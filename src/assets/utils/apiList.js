@@ -59,6 +59,16 @@ const apiList = {
   'QQ_MV_URL': 'apiQ/mv/url', // qq mv 播放链接
   'QQ_DOWN_URL': 'apiQ/song/url', // qq 下载歌曲链接
 
+  'MIGU_SEARCH': 'apiM/search', // 咪咕 搜索
+  'MIGU_URL_GET': 'apiM/song/url', // 咪咕 获取图片、播放链接
+  'MIGU_LYRIC': 'apiM/lyric', // 咪咕 歌词
+  'MIGU_SINGER_DESC': 'apiM/singer/desc', // 歌手详情
+  'MIGU_SINGER_SONGS': 'apiM/singer/songs', // 根据歌手获取歌曲
+  'MIGU_SINGER_ALBUMS': 'apiM/singer/albums', // 根据歌手获取专辑
+  'MIGU_ALBUM': 'apiM/album', // 获取专辑信息
+  'MIGU_SONG_INFO': 'apiM/song', // 咪咕 获取歌曲信息
+  'MIGU_PLAYLIST': 'apiM/playlist', // 咪咕 歌单
+
   '163': '//music.jsososo.com/neapi/index.php',
   'QQ_SONG_INFO': '//u.y.qq.com/cgi-bin/musicu.fcg',
   'QQ_LIST': '//c.y.qq.com/rsc/fcgi-bin/fcg_get_profile_homepage.fcg',

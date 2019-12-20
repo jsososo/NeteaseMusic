@@ -4,6 +4,7 @@
     <div class="platform-select">
       <i @click="search('platform', '163')" :class="`iconfont icon-163 ${platform === '163' && 'active'}`" />
       <i @click="search('platform', 'qq')" :class="`iconfont icon-qq ${platform === 'qq' && 'active'}`" />
+      <i @click="search('platform', 'migu')" :class="`iconfont icon-migu ${platform === 'migu' && 'active'}`" />
     </div>
     <div class="ml_10 mt_10 mb_20">
       <div
@@ -105,11 +106,11 @@
         <div v-for="s in searchQuery.playlists" class="playlist-item" @click="changeUrlQuery({ id: s.id, from: s.from }, '#/playlist/detail')">
           <img class="playlist-img" :src="`${s.coverImgUrl}?param=120y120`"  />
           <div class="playlist-name">{{s.name}}</div>
-          <div class="playlist-author">
+          <div class="playlist-author" v-if="s.from !== 'migu'">
             <span v-if="s.creator">By: {{s.creator.nickname || s.creator.name}}</span>
             <span class="pl_20"><i class="iconfont icon-yinyue" />: {{numToStr(s.playCount || 0)}}</span>
           </div>
-          <div class="playlist-trackcount">{{s.trackCount}}</div>
+          <div v-if="s.from !== 'migu'" class="playlist-trackcount">{{s.trackCount}}</div>
         </div>
       </div>
       <div class="empty-status" v-if="!searchQuery.playlists || searchQuery.playlists.length === 0">

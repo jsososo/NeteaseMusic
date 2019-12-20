@@ -36,7 +36,7 @@
 
       <div class="btn-group">
         <a class="btn-group-href" href="#/"><i class="iconfont icon-lyric"></i></a>
-        <a class="btn-group-href" href="#/comment">
+        <a class="btn-group-href" v-if="playNow.from !== 'migu'" href="#/comment">
           <i class="iconfont icon-comment"></i>
           <span class="pl_10 ft_12" v-if="playNow.comments">{{numberHandle(playNow.comments.total)}}</span>
         </a>

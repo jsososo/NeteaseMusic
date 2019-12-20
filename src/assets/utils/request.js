@@ -5,6 +5,7 @@ import downReq from './download';
 import timer from './timer';
 import axios from 'axios';
 import idMap from './idMap';
+import $ from 'jquery';
 
 axios.interceptors.response.use(data=> {
 //==============  所有请求完成后都要执行的操作  ==================
@@ -126,6 +127,15 @@ export const getQQPlayList = async (id) => request({ api: 'QQ_LIST_DETAIL', data
     return res.data;
   });
 
+export const getMiguPlayList = async (id, pageno) => {
+  const { data } = await request({
+    api: 'MIGU_PLAYLIST',
+    data: { id, pageno },
+  });
+  data.list = handleMiguSongs(data.list || []);
+  return data;
+};
+
 // 批量获取歌曲的url
 const querySongUrl = (id) => request({
   api: 'SONG_URL',
@@ -187,7 +197,7 @@ const querySongUrl = (id) => request({
 export const loginStatus = async () => {
   const VUE_APP = window.VUE_APP;
   const dispatch = VUE_APP.$store.dispatch;
-  const { shareId, from } = getQueryFromUrl();
+  const { shareId, shareCid, from } = getQueryFromUrl();
 
   if (shareId) {
     if (from === 'qq') {
@@ -199,6 +209,16 @@ export const loginStatus = async () => {
         const allSongs = VUE_APP.$store.getters.getAllSongs;
         dispatch('updatePlayNow', allSongs[shareId]);
         dispatch('updatePlayingList', { list: [ shareId ] });
+      })
+    } else if (from === 'migu') {
+      request({
+        api: 'MIGU_SONG_INFO',
+        data: { id: shareId.replace('migu_', ''), cid: shareCid }
+      }).then((res) => {
+        const ids = handleMiguSongs([res.data]);
+        const allSongs = VUE_APP.$store.getters.getAllSongs;
+        dispatch('updatePlayNow', allSongs[ids[0]]);
+        dispatch('updatePlayingList', { list: ids });
       })
     } else {
       getSongsDetail(shareId)
@@ -292,6 +312,163 @@ export const getMyList = async (uid = Storage.get('uid'), getFav, id) => {
   id && getPlayList(id);
 };
 
+// 咪咕搜索请求
+const searchMiguReq = async ({ keywords: keyword, type, pageNo: page }) => {
+  const VUE_APP = window.VUE_APP;
+  const dispatch = VUE_APP.$store.dispatch;
+  const search = VUE_APP.$store.getters.getSearch;
+  const allSongs = VUE_APP.$store.getters.getAllSongs;
+  if (page > (search.totalPage || 1)) {
+    return;
+  }
+  const obj = {
+    1: {
+      type: 'song',
+      key: 'songs',
+      total: 'total',
+    },
+    10: {
+      type: 'album',
+      key: 'albums',
+      total: 'total',
+    },
+    100: {
+      type: 'singer',
+      key: 'artists',
+      total: 'artistCount',
+    },
+    1000: {
+      type: 'playlist',
+      key: 'playlists'
+    }
+  }[type];
+  const res = await request({
+    api: 'MIGU_SEARCH',
+    data: {
+      type: obj.type,
+      pageno: page,
+      keyword,
+    }
+  });
+  const resultList = [];
+  const querySongIds = [];
+  const { list, totalPage } = res.data;
+  switch (obj.type) {
+    case 'song':
+      const newObj = {};
+      list.forEach((o) => {
+        const obj = migu2163(o);
+        if (!allSongs[obj.id]) {
+          newObj[obj.id] = {
+            ...allSongs[obj.id],
+            ...obj,
+          };
+          querySongIds.push({ id: obj.miguId, cid: obj.cid });
+        }
+        resultList.push(obj.id);
+      });
+      dispatch('updateAllSongs', newObj);
+      break;
+    case 'singer':
+      list.forEach((item) => {
+        resultList.push({
+          from: 'migu',
+          ...item,
+        })
+      });
+      break;
+    case 'album':
+      list.forEach((item) => {
+        resultList.push({
+          from: 'migu',
+          id: item.id,
+          name: item.name,
+          picUrl: item.picUrl,
+        })
+      });
+      break;
+    case 'playlist':
+      list.forEach((item) => {
+        resultList.push({
+          from: 'migu',
+          id: item.id,
+          name: item.name,
+          creator: {},
+          playCount: null,
+          trackCount: null,
+          coverImgUrl: item.picUrl,
+        })
+      });
+      break;
+    default: break;
+  }
+  if (querySongIds.length > 0) {
+    getMiguUrl(querySongIds);
+  }
+
+  const searchResult = {
+    loading: false,
+  };
+  searchResult[obj.key] = page > 1 ? [...(search[obj.key] || []), ...resultList] : resultList;
+  searchResult.totalPage = totalPage;
+  dispatch('updateSearch', searchResult)
+};
+
+// 获取咪咕音乐的播放链接和专辑封面
+export const getMiguUrl = async (idArr) => {
+  if (idArr.length === 0)
+    return;
+  const VUE_APP = window.VUE_APP;
+  const dispatch = VUE_APP.$store.dispatch;
+  const allSongs = VUE_APP.$store.getters.getAllSongs;
+  const miguUrlInfo = Storage.get('miguUrlInfo', true, '{}');
+  const reqIds = [];
+
+  const newObj = {};
+  idArr.forEach(({ id, cid }) => {
+    id = String(id).replace('migu_', '');
+    const uInfo = miguUrlInfo[id];
+    const miguId = `migu_${id}`;
+    if (uInfo) {
+      newObj[miguId] = {
+        ...allSongs[miguId],
+        url: uInfo['128k'],
+        br: 128000,
+        al: {
+          ...(allSongs[miguId].al || {}),
+          picUrl: uInfo.pic,
+        },
+        miguUrl: uInfo,
+      }
+    } else {
+      reqIds.push({ id, cid });
+    }
+  });
+  dispatch('updateAllSongs', newObj);
+  if (reqIds.length > 0) {
+   reqIds.forEach(({ id, cid }) => {
+     request({
+       api: 'MIGU_URL_GET',
+       data: { id, cid, needPic: 1 }
+     }).then((res) => {
+       miguUrlInfo[id] = res.data;
+       Storage.set('miguUrlInfo', miguUrlInfo, true);
+       const song = allSongs[`migu_${id}`];
+       dispatch('updateSongDetail', {
+         ...song,
+         br: 128000,
+         url: res.data['128k'],
+         miguUrl: res.data,
+         al: {
+           ...song.al,
+           picUrl: res.data.pic,
+         }
+       })
+     });
+   })
+  }
+};
+
 // 搜索请求
 export const searchReq = async ({ keywords, type = 1, pageNo = 1, platform }) => {
   const VUE_APP = window.VUE_APP;
@@ -303,6 +480,9 @@ export const searchReq = async ({ keywords, type = 1, pageNo = 1, platform }) =>
 
   if (platform === 'qq')
     return searchQQReq({ keywords, type, pageNo });
+
+  if (platform === 'migu')
+    return searchMiguReq({ keywords, type, pageNo });
 
   const allSongs = VUE_APP.$store.getters.getAllSongs;
   dispatch('updateSearch', { keywords, type, pageNo, loading: true });
@@ -486,7 +666,43 @@ export const QQ2163 = (item) => {
     from: 'qq',
     url,
   };
-}
+};
+
+export const migu2163 = ({
+  id,
+  cid,
+  name,
+  artists: ar,
+  album: al,
+}) => ({
+  from: 'migu',
+  id: `migu_${id}`,
+  miguId: id,
+  cid,
+  ar,
+  al,
+  name,
+  br: 128000,
+});
+
+// 批量处理 咪咕音乐的歌曲信息
+export const handleMiguSongs = (list) => {
+  const allSongs = window.VUE_APP.$store.getters.getAllSongs;
+  const dispatch = window.VUE_APP.$store.dispatch;
+  const obj = {};
+  const getUrlArr = [];
+  const ids = list.map(item => {
+    const newItem = migu2163(item);
+    if (!allSongs[newItem.id]) {
+      obj[newItem.id] = newItem;
+      getUrlArr.push(newItem);
+    }
+    return newItem.id;
+  });
+  dispatch('updateAllSongs', obj);
+  getMiguUrl(getUrlArr);
+  return ids;
+};
 
 // 处理获取到的歌曲，把他们存到 allSongs 并获取链接
 export const handleSongs = (songs) => (
@@ -549,37 +765,6 @@ export const likeMusic = (id) => {
   })
 };
 
-// 查询qq音乐
-const searchQQ = async (val, id, arr, length) => {
-  const { murl, guid, vkey } = Storage.get(['murl', 'guid', 'vkey']);
-  let mediaId = '';
-
-  if (idMap[id]) {
-    mediaId = idMap[id];
-  } else {
-    const res = await request({
-      api: 'QQ_SEARCH',
-      data: {
-        pageNo: 1,
-        pageSize: 1,
-        key: val,
-      }
-    });
-    const song = res.data.list[0] || {};
-    if (song.songmid && song.size128) {
-      mediaId = song.songmid;
-    }
-  }
-
-  arr.push(mediaId);
-
-  if (arr.length === length) {
-    getQQUrls(arr);
-  }
-
-  // return window.VUE_APP.$store.dispatch('updateSongDetail', { id, qqId: mediaId, br: 128000, url: `${murl}M500${mediaId}.mp3?guid=${guid}&vkey=${vkey}&fromtag=8&uin=0` });
-};
-
 export const getQQUrls = (arr, sid) => {
   const id = arr.filter((item) => !!item);
   request({
@@ -602,16 +787,6 @@ export const getQQUrls = (arr, sid) => {
   })
 };
 
-const JSONP = (url) => {
-  const jsonp = document.createElement("script");
-  jsonp.type = "text/javascript";
-  jsonp.src = url;
-  document.getElementsByTagName("head")[0].appendChild(jsonp);
-  setTimeout(() => {
-    document.getElementsByTagName("head")[0].removeChild(jsonp)
-  },500)
-};
-
 // 下载
 export const download = async (id, songName, forceReq) => {
   window.event && window.event.stopPropagation();
@@ -625,6 +800,7 @@ export const download = async (id, songName, forceReq) => {
   let url = song.url;
   let songEndType = song.br > 320000 ? 'flac' : 'mp3';
   let br = song.br;
+  let songCid = '';
 
   if (song.qqId) {
     url = '';
@@ -632,7 +808,6 @@ export const download = async (id, songName, forceReq) => {
     const typeArr = ['flac', '320', '128'];
     let i = typeArr.indexOf(type);
     while (i < typeArr.length && !url)  {
-      console.log(i, url);
       try {
         const urlReq = await request({
           api: 'QQ_DOWN_URL',
@@ -652,16 +827,37 @@ export const download = async (id, songName, forceReq) => {
           }[type];
         }
       } catch (err) {
-        console.log(err);
+        console.log(err.message);
       }
       i += 1;
       type = typeArr[i];
     }
+
+    if (!url) {
+      url = song.url;
+      songEndType = 'm4a';
+    }
   }
 
-  if (!url) {
-    url = song.url;
-    songEndType = 'm4a';
+  if (song.miguId) {
+    url = '';
+    let type = Storage.get('downSize') || 'flac';
+    const typeArr = ['flac', '320', '128'];
+    const miguUrlInfo = Storage.get('miguUrlInfo', true, '{}');
+    let i = typeArr.indexOf(type);
+    songCid = song.cid;
+    const tArr = [
+      { end: 'flac', key: 'flac', br: 960000 },
+      { end: 'mp3', key: '320k', br: 320000 },
+      { end: 'mp3', key: '128k', br: 128000 },
+    ];
+    while (i < typeArr.length && !url) {
+      url = encodeURI(miguUrlInfo[song.miguId][tArr[i].key]);
+      songEndType = tArr[i].end;
+      br = tArr[i].br;
+    }
+    // migu 的有跨域问题，所以在服务器上用 nginx 配以下代理
+    url = url.replace('tyst.migu.cn', `${window.location.host}/miguSongs`);
   }
 
   // 别的网站下载会有跨域问题
@@ -675,13 +871,14 @@ export const download = async (id, songName, forceReq) => {
     const song = downloadInfo.list.find((s) => s.songId === id && s.status === 'success');
     if (song) {
       VUE_APP.$message.info('这首下载过啦，过滤掉了');
-      return dispatch('updateDownload', { status: 'initError', errMsg: '重复下载，自动过滤', from: (song.from || '163'), id: downId, name, songId: id, br })
+      return dispatch('updateDownload', { status: 'initError', errMsg: '重复下载，自动过滤', from: (song.from || '163'), id: downId, name, songId: id, songCid, br })
     }
   }
+
   downReq(url, name, null, {
     init: (ajax) => {
       VUE_APP.$message.success('加入下载中');
-      dispatch('updateDownload', { status: 'init', from: (song.from || '163'), id: downId, ajax, name, songId: id, br });
+      dispatch('updateDownload', { status: 'init', from: (song.from || '163'), id: downId, ajax, name, songId: id, br, songCid });
     },
     success: () => dispatch('updateDownload', { status: 'success', id: downId }),
     error: () => dispatch('updateDownload', { status: 'error', id: downId }),
@@ -794,33 +991,37 @@ export const handleQQSongs = (list) => {
 };
 
 export const getMusicData = (url) => {
-  if (!url) {
-    return;
+  try {
+    if (!url) {
+      return;
+    }
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    window.AudioBufferSourceNode = audioCtx.createBufferSource();
+    window.AnalyserNode = audioCtx.createAnalyser();
+    window.musicDataMap = {0: [0]};
+    const { AudioBufferSourceNode, AnalyserNode } = window;
+    AnalyserNode.fftSize = Number(Storage.get('drawMusicNum') || 64) * 2;
+    const request = new XMLHttpRequest();
+    request.open('GET', url, true);
+    request.responseType = 'arraybuffer'; // 设置数据类型为arraybuffer
+    request.onload = function() {
+      const audioData = request.response;
+      audioCtx.decodeAudioData(
+        audioData,
+        (buffer) => {
+          AudioBufferSourceNode.buffer = buffer;
+          AudioBufferSourceNode.connect(AnalyserNode);
+          AudioBufferSourceNode.start(0);
+          window.AnalyserNode = AnalyserNode;
+          window.AudioBufferSourceNode = AudioBufferSourceNode;
+        },
+        (e) => console.error("Error with decoding audio data" + e.err + '==========' + url)
+      );
+    };
+    request.send();
+  } catch (err) {
+    console.log('sth wrong');
   }
-  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  window.AudioBufferSourceNode = audioCtx.createBufferSource();
-  window.AnalyserNode = audioCtx.createAnalyser();
-  window.musicDataMap = {0: [0]};
-  const { AudioBufferSourceNode, AnalyserNode } = window;
-  AnalyserNode.fftSize = Number(Storage.get('drawMusicNum') || 64) * 2;
-  const request = new XMLHttpRequest();
-  request.open('GET', url, true);
-  request.responseType = 'arraybuffer'; // 设置数据类型为arraybuffer
-  request.onload = function() {
-    const audioData = request.response;
-    audioCtx.decodeAudioData(
-      audioData,
-      (buffer) => {
-        AudioBufferSourceNode.buffer = buffer;
-        AudioBufferSourceNode.connect(AnalyserNode);
-        AudioBufferSourceNode.start(0);
-        window.AnalyserNode = AnalyserNode;
-        window.AudioBufferSourceNode = AudioBufferSourceNode;
-      },
-      (e) => console.error("Error with decoding audio data" + e.err + '==========' + url)
-    );
-  };
-  request.send();
-}
+};
 
 export default request;

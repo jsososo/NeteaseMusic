@@ -221,6 +221,10 @@
       },
       $route(){
         this.uid = this.$route.query.id;
+        this.info = {
+          week: [],
+          history: [],
+        };
         if (!this.uid) {
           this.uid = this.user.userId;
           this.uInfo = {};

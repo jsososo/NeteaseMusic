@@ -6,7 +6,7 @@
         <div class="singer-name">
           {{baseInfo.name}}
           <div class="singer-name-alia">{{(baseInfo.alias || []).join('、')}}</div>
-          <div class="singer-info-from">信息来源：{{{ 163: '网易云', qq: '企鹅音乐' }[platform]}}</div>
+          <div class="singer-info-from">信息来源：{{{ 163: '网易云', qq: '企鹅音乐', migu: '咪咕～' }[platform]}}</div>
         </div>
         <div class="base-desc">{{baseInfo.briefDesc}}</div>
       </div>
@@ -79,7 +79,7 @@
       <div class="descs-list" v-if="selected === 'descs'">
         <div v-for="d in info.descs" :key="d.ti">
           <div class="desc-title">{{d.ti}}</div>
-          <div class="desc-txt">{{d.txt}}</div>
+          <div class="desc-txt" v-html="d.txt"></div>
         </div>
         <div v-if="info.descs.length === 0" class="text-center mt_40">没啥消息哟</div>
       </div>
@@ -90,6 +90,7 @@
           <img class="singer-img" :src="`${String(s.img1v1Url) === 'null' ? 'http://p3.music.126.net/VnZiScyynLG7atLIZ2YPkw==/18686200114669622.jpg' : s.img1v1Url}?param=120y120`"  />
           <div class="singer-name">{{s.name}}</div>
         </div>
+        <div v-if="(info.simis || []).length === 0" class="text-center mt_40">谁也不像</div>
       </div>
     </div>
   </div>
@@ -97,7 +98,7 @@
 
 <script>
   import { mapGetters } from 'vuex';
-  import request, { handleSongs, likeMusic, download, handleQQSongs } from '../assets/utils/request';
+  import request, { handleSongs, likeMusic, download, handleQQSongs, handleMiguSongs } from '../assets/utils/request';
   import { changeUrlQuery } from "../assets/utils/stringHelper";
   import $ from 'jquery';
 
@@ -113,6 +114,7 @@
           songs: [],
           descs: [],
           albums: [],
+          sims: [],
         },
         selected: 'songs',
         tabs: [
@@ -161,6 +163,12 @@
         this.id = v.query.id;
         this.mid = v.query.mid;
         this.platform = v.query.from || '163';
+        this.info = {
+          songs: [],
+          descs: [],
+          albums: [],
+          sims: [],
+        };
         this.querySinger();
       },
     },
@@ -212,6 +220,26 @@
           return;
         }
 
+        if (platform === 'migu') {
+          // 歌手详情
+          request({ api: 'MIGU_SINGER_DESC', data: { id }})
+            .then(res => {
+              const { picUrl, name, desc } = res.data;
+              this.baseInfo = {
+                img1v1Url: picUrl,
+                name,
+              };
+              this.info.descs = [{ txt: desc.replace(/\n/g, '<br/>') }];
+            });
+
+          // 歌曲列表
+          request({ api: 'MIGU_SINGER_SONGS', data: { id }})
+            .then(res => {
+              this.info.songs = handleMiguSongs(res.data.list);
+            });
+          return;
+        }
+
         // 信息
         request({
           api: 'GET_SINGER_DESC',
@@ -241,7 +269,7 @@
       },
 
       queryAlbum(offset = 0) {
-        const { albumQ, info, platform, mid: singermid } = this;
+        const { albumQ, info, platform, mid: singermid, id } = this;
         if (offset !== 0 && albumQ.loading) {
           return;
         }
@@ -271,6 +299,28 @@
               loading: false,
             }
           })
+        }
+
+        if (platform === 'migu') {
+          return request({
+            api: 'MIGU_SINGER_ALBUMS',
+            data: { id, pageno: offset / 30 + 1 },
+          }).then(res => {
+            const albums = res.data.list.map(({ id, picUrl, name, artists}) => ({
+              id,
+              name,
+              picUrl,
+            }));
+            if (offset === 0) {
+              this.info.albums = albums;
+            } else {
+              this.info.albums = [ ...this.info.albums, ...albums ];
+            }
+            this.albumQ = {
+              offset: offset + 30,
+              loading: false,
+            }
+          });
         }
 
         request({

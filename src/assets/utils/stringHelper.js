@@ -63,7 +63,7 @@ export function handleLyric(str, type, obj) {
     if (times) {
       times.forEach((time) => {
         const timeArr = time.replace(/\[|\]/g, '').split(':');
-        const s = item.replace(times.join(''), '');
+        const s = item.replace(times.join(''), '').replace(/\/\//, '');
         if (!s) {
           return;
         }
@@ -100,34 +100,6 @@ export const formatMap = {
       s: 'F000',
       e: '.flac',
       content: 'audio/flac',
-  }
-}
-
-export function getSongUrl(v, isDown, onlyHigh) {
-  let {listen_size, murl, vkey, guid, down_size, down_high} = Storage.get(['listen_size', 'vkey_expire', 'murl', 'vkey', 'guid', 'down_size', 'down_high']);
-  let startSize = listen_size;
-  const formatArr = ['sizeflac', 'size320', 'size128'];
-  if (isDown) {
-    formatArr[0] = down_high;
-    startSize = down_size === 'high' ? down_high : down_size;
-  }
-  const startFormat = formatArr.indexOf(startSize);
-  const formatKey = formatArr.slice(startFormat, 4).find(k => v[k]);
-
-  const {s, e, content} = formatMap[formatKey];
-  if (!isDown) {
-    v.formatKey = formatKey;
-    return `${murl}${s}${v.mediamid}${e}?guid=${guid}&vkey=${vkey}&fromtag=8&uin=0`;
-  } else {
-    v.downAfter = e;
-    v.content = content;
-    // url, 歌名，是否仅下载高品质
-    return [
-      `${murl}${s}${v.mediamid}${e}?guid=${guid}&vkey=${vkey}&fromtag=8&uin=0`,
-      `${v.artist}-${v.title}${v.downAfter}`,
-      onlyHigh && (startSize !== formatKey),
-      v.content,
-    ];
   }
 }
 

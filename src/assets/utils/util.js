@@ -31,6 +31,12 @@ export const messageHelp = (id) => {
       message: '新增了音频图的显示，如果影响到了性能和流量请点左上角头像，关闭显示！',
       type: 'info',
       duration: 20000,
+    },
+    7: {
+      title: '咪咕音乐！',
+      message: '新增咪咕音乐的支持，搜索页面的最右侧！同样支持无损～',
+      type: 'info',
+      duration: 20000,
     }
   };
 

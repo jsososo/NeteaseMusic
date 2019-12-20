@@ -9,8 +9,11 @@
           <div class="list-info-creator" v-if="listInfo.creator && platform === '163'">
             By <a :href="`#/user?id=${listInfo.creator.userId}`"><span class="creator-name">{{listInfo.creator.nickname}}</span></a>
           </div>
-          <div class="list-info-creator" v-if="listInfo.creator && platform !== '163'">
+          <div class="list-info-creator" v-if="listInfo.creator && platform === 'qq'">
             By <span class="creator-name">{{listInfo.creator.nickname}}</span>
+          </div>
+          <div class="list-info-creator" v-if="listInfo.creator && platform === 'migu'">
+            By <span class="creator-name">{{listInfo.creator.name}}</span>
           </div>
         </div>
       </div>
@@ -69,7 +72,7 @@
 
 <script>
   import { getQueryFromUrl } from "../assets/utils/stringHelper";
-  import { getPlayList, likeMusic, download, getQQPlayList } from "../assets/utils/request";
+  import { getPlayList, likeMusic, download, getQQPlayList, getMiguPlayList } from "../assets/utils/request";
   import { mapGetters } from 'vuex';
 
   export default {
@@ -109,35 +112,49 @@
     },
     created() {
       const { allList, id, userList, platform } = this;
-      this.trueId = `${platform === '163' ? '' : 'qq'}${id}`;
+      this.trueId = `${{163: '', qq: 'qq', migu: 'migu'}[platform] || ''}${id}`;
       this.list = allList[this.trueId] || [];
       this.listInfo = (userList && userList.obj && userList.obj[id]) || null;
       this.init();
     },
     methods: {
-      init() {
+       init() {
         if (this.id === 'daily') {
           return this.list = this.allList.daily || [];
         }
         this.loading = true;
-        if (this.platform === 'qq') {
-          getQQPlayList(this.id)
-            .then(({ dissname, nickname, logo }) => {
-              this.listInfo = {
-                name: dissname,
-                creator: { nickname },
-                coverImgUrl: logo,
-                platform: 'qq',
-              };
-              this.loading = false;
-            });
-        } else {
-          getPlayList(this.id)
-            .then(({ playlist }) => {
-              const { name, creator, coverImgUrl, playCount } = playlist;
-              this.listInfo = { name, creator, coverImgUrl, playCount, platform: '163' };
-              this.loading = false;
-            })
+        switch (this.platform) {
+          case 'qq':
+            getQQPlayList(this.id)
+              .then(({ dissname, nickname, logo }) => {
+                this.listInfo = {
+                  name: dissname,
+                  creator: { nickname },
+                  coverImgUrl: logo,
+                  platform: 'qq',
+                };
+                this.loading = false;
+              });
+            break;
+          case 'migu':
+            getMiguPlayList(this.id, 1)
+              .then(async ({ totalPage, list, name, creator, picUrl: coverImgUrl, playCount }) => {
+                this.$store.dispatch('query163List', { songs: list, listId: this.trueId });
+                this.listInfo = { name, creator, coverImgUrl, playCount, platform: 'migu' };
+                this.loading = false;
+                for (let i = 2; i <= totalPage; i++) {
+                  const { list } = await getMiguPlayList(this.id, i);
+                  this.$store.dispatch('query163List', { songs: [ ...this.allList[this.trueId], ...list ], listId: this.trueId });
+                }
+              });
+            break;
+          default:
+            getPlayList(this.id)
+              .then(({ playlist }) => {
+                const { name, creator, coverImgUrl, playCount } = playlist;
+                this.listInfo = { name, creator, coverImgUrl, playCount, platform: '163' };
+                this.loading = false;
+              })
         }
       },
       playMusic(id) {

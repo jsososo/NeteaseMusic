@@ -39,7 +39,7 @@
 <script>
   import timer from '../assets/utils/timer';
   import { mapGetters } from 'vuex';
-  import { download, getSongsDetail, getQQUrls } from "../assets/utils/request";
+  import {download, getSongsDetail, getQQUrls, getMiguUrl} from "../assets/utils/request";
 
   export default {
     name: "Download",
@@ -58,17 +58,22 @@
       if (this.downloadInfo.list.length > 0) {
         const list = [];
         const qList = [];
+        const mList = [];
         this.downloadInfo.list.forEach((item) => {
-          if ((item.from || '163') === '163') {
-            list.push(item.songId)
-          }
-          if (item.from === 'qq') {
-            qList.push(item.songId);
+          switch (item.from) {
+            case 'qq':
+              qList.push(item.songId);
+              break;
+            case 'migu':
+              mList.push({ id: item.songId.replace('migu_', ''), cid: item.songCid });
+              break;
+            default: list.push(item.songId);
           }
          });
 
         qList.length > 0 && getQQUrls(qList);
         list.length > 0 && getSongsDetail(list);
+        mList.length > 0 && getMiguUrl(mList);
       }
     },
     methods: {

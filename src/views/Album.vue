@@ -11,9 +11,9 @@
           </div>
           <div class="album-company" v-if="baseInfo.company">发行：{{baseInfo.company}}</div>
           <div class="album-pb-time">{{baseInfo.publishTime}}</div>
-          <div class="album-info-from">信息来源：{{{ 163: '网易云', qq: '企鹅音乐' }[platform]}}</div>
+          <div class="album-info-from">信息来源：{{{ 163: '网易云', qq: '企鹅音乐', migu: '咪咕～' }[platform]}}</div>
         </div>
-        <div class="base-desc" v-if="baseInfo.description">{{baseInfo.description}}</div>
+        <div class="base-desc" v-if="baseInfo.description" v-html="baseInfo.description"></div>
       </div>
     </div>
     <div class="album-right-list">
@@ -71,7 +71,7 @@
 
 <script>
   import { mapGetters } from 'vuex';
-  import request, { handleSongs, likeMusic, download, handleQQSongs } from '../assets/utils/request';
+  import request, {handleSongs, likeMusic, download, handleQQSongs, handleMiguSongs} from '../assets/utils/request';
   import timer from '../assets/utils/timer';
   import { changeUrlQuery } from "../assets/utils/stringHelper";
 
@@ -131,7 +131,6 @@
               description: res.data.desc,
               artists: res.data.ar.map((a) => ({ ...a, from: 'qq' }))
             }
-
           });
 
           return request({
@@ -139,6 +138,20 @@
             data: { albummid },
           }).then((res) => {
             this.info.songs = handleQQSongs(res.data.list);
+          })
+        }
+
+        if (platform === 'migu') {
+          return request({
+            api: 'MIGU_ALBUM',
+            data: { id: this.id },
+          }).then(res => {
+            this.baseInfo = {
+              ...res.data,
+              description: res.data.desc.replace(/\n/g, '<br/>'),
+              artists: res.data.artists.map((a) => ({ ...a, from: 'migu' })),
+            };
+            this.info.songs = handleMiguSongs(res.data.songList);
           })
         }
         request({

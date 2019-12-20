@@ -92,7 +92,7 @@
           </span>
         </div>
 
-        <input id="cp-share-input" :value="changeUrlQuery({ shareId: playNow.id, from: playNow.from }, 'http://music.jsososo.com/#/', false)">
+        <input id="cp-share-input" :value="changeUrlQuery({ shareId: playNow.id, from: playNow.from, shareCid: playNow.cid }, 'http://music.jsososo.com/#/', false)">
         <!-- 分享 -->
         <div class="inline-block ml_5 pd_5">
           <span @click="copyUrl">
@@ -166,7 +166,7 @@
     watch: {
       async playNow(v) {
         const { listId, playingId, playerInfo, isPersonFM, playingList, playingPlatform } = this;
-        const { id, lyric, name, comments, mid, songid, url } = v;
+        const { id, lyric, name, comments, mid, songid, url, cid } = v;
         const trueId = v.from === 'qq' ? mid : id;
         const dispatch = this.$store.dispatch;
         if (url !== this.playingUrl && (Storage.get('showDrawMusic') !== '0')) {
@@ -208,71 +208,90 @@
         // 更新后面的背景
         document.getElementById('play-music-bg').src = (this.allSongs[id] && this.allSongs[id].al && (`${this.allSongs[id].al.picUrl}?param=1440y1440`)) || '';
 
+        if (v.miguId && this.playing) {
+          setTimeout(() => this.playerDom.play(), 1);
+        }
         // 没有歌词的拿歌词
         if (!lyric) {
-          if (v.from === 'qq') {
-            request({
-              api: 'QQ_LYRIC',
-              data: { songmid: mid },
-            }).then((res) => {
-              const { lyric, trans } = res.data;
-              const lyricObj = {};
-              handleLyric(lyric, 'str', lyricObj);
-              handleLyric(trans, 'trans', lyricObj);
-              dispatch('updateSongDetail', { id: trueId, lyric: lyricObj });
-            })
-          } else {
-            request({ api: 'GET_LYRIC', data: { id }, cache: true })
-              .then((res) => {
-                const { nolyric, lrc = {}, tlyric = {} } = res;
-                let lyric = {};
-                if (nolyric) {
-                  lyric = {
-                    0: {
-                      str: '没有歌词哟，好好享受',
-                    },
-                  }
-                } else {
-                  handleLyric(lrc.lyric, 'str', lyric);
-                  handleLyric(tlyric.lyric, 'trans', lyric);
-                }
-                dispatch('updateSongDetail', { id, lyric });
-              })
+          switch (v.from) {
+            case 'qq':
+              request({
+                api: 'QQ_LYRIC',
+                data: { songmid: mid },
+              }).then((res) => {
+                const { lyric, trans } = res.data;
+                const lyricObj = {};
+                handleLyric(lyric, 'str', lyricObj);
+                handleLyric(trans, 'trans', lyricObj);
+                dispatch('updateSongDetail', { id: trueId, lyric: lyricObj });
+              });
+              break;
+            case 'migu':
+              request({
+                api: 'MIGU_LYRIC',
+                data: { cid },
+              }).then((res) => {
+                const lyricObj = {};
+                handleLyric(res.data, 'str', lyricObj);
+                dispatch('updateSongDetail', { id, lyric: lyricObj });
+              });
+              break;
+            default:
+              request({ api: 'GET_LYRIC', data: { id }, cache: true })
+                .then((res) => {
+                    const { nolyric, lrc = {}, tlyric = {} } = res;
+                    let lyric = {};
+                    if (nolyric) {
+                      lyric = {
+                        0: {
+                          str: '没有歌词哟，好好享受',
+                        },
+                      }
+                    } else {
+                      handleLyric(lrc.lyric, 'str', lyric);
+                      handleLyric(tlyric.lyric, 'trans', lyric);
+                    }
+                    dispatch('updateSongDetail', { id, lyric });
+                  });
           }
         }
 
         // 没有评论的拿评论
         if (!comments) {
-          if (v.from === 'qq') {
-            request({
-              api: 'QQ_GET_COMMENT',
-              data: { id: songid },
-            }).then((res) => {
-              const comments = {
-                hot: handleQQComments(res.data.hotComment.commentlist),
-                latest: handleQQComments(res.data.comment.commentlist),
-                total: res.data.comment.commenttotal,
-                offset: 20,
-              };
-              dispatch('updateSongDetail', { id: trueId, comments });
-            })
-          } else {
-            request({
-              api: 'MUSIC_COMMENTS',
-              data: {
-                offset: 0,
-                limit: 20,
-                id,
-              }
-            }).then((res) => {
-              const comments = {
-                hot: res.hotComments || [],
-                latest: res.comments || [],
-                total: res.total,
-                offset: 20,
-              };
-              dispatch('updateSongDetail', { id, comments });
-            })
+          switch (v.from) {
+            case 'qq':
+              request({
+                api: 'QQ_GET_COMMENT',
+                data: { id: songid },
+              }).then((res) => {
+                const comments = {
+                  hot: handleQQComments(res.data.hotComment.commentlist),
+                  latest: handleQQComments(res.data.comment.commentlist),
+                  total: res.data.comment.commenttotal,
+                  offset: 20,
+                };
+                dispatch('updateSongDetail', { id: trueId, comments });
+              });
+              break;
+            case 'migu':
+              break;
+            default:
+              request({
+                api: 'MUSIC_COMMENTS',
+                data: {
+                  offset: 0,
+                  limit: 20,
+                  id,
+                }
+              }).then((res) => {
+                const comments = {
+                  hot: res.hotComments || [],
+                  latest: res.comments || [],
+                  total: res.total,
+                  offset: 20,
+                };
+                dispatch('updateSongDetail', { id, comments });
+              })
           }
         }
       },
@@ -301,7 +320,7 @@
         dispatch('updatePlayingPercent', 0);
       };
       // 如果不播放了可能是url过期了
-      pDom.onerror = () => {
+      pDom.onerror = (err) => {
         const { id, mid, url } = this.playNow;
         if (!id) {
           return;
@@ -311,23 +330,27 @@
         }
         this.errorId = id;
         dispatch('setDownLoading', true);
-        if (this.playNow.from === 'qq') {
-          request({
-            api: 'QQ_GET_URLS',
-            data: { id: mid }
-          }).then((res) => {
-            dispatch('updateSongDetail', { id, url: res.data[mid] });
-          });
-
-        } else {
-          request({ api: 'SONG_URL', data: { id }})
-            .then((res) => {
-              const { url, br } = res.data[0];
-              if (!url) {
-                return this.cutSong('playNext');
-              }
-              dispatch('updateSongDetail', { url, br, id });
+        switch (this.playNow.from) {
+          case 'qq':
+            request({
+              api: 'QQ_GET_URLS',
+              data: { id: mid }
+            }).then((res) => {
+              dispatch('updateSongDetail', { id, url: res.data[mid] });
             });
+            break;
+          case 'migu':
+            console.log('migumigu');
+            break;
+          default:
+            request({ api: 'SONG_URL', data: { id }})
+              .then((res) => {
+                const { url, br } = res.data[0];
+                if (!url) {
+                  return this.cutSong('playNext');
+                }
+                dispatch('updateSongDetail', { url, br, id });
+              });
         }
       };
       // audio正在加载音乐

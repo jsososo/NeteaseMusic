@@ -21,6 +21,7 @@
         <p class="mt_20">GitHub: <a href="https://github.com/jsososo/NeteaseMusic" target="_blank">网易云第三方 Web 播放器</a></p>
         <p>后端：「网易云」<a href="https://github.com/Binaryify/NeteaseCloudMusicApi" target="_blank">NeteaseCloudMusicApi</a></p>
         <p>后端：「QQ音乐」<a href="https://github.com/jsososo/QQMusicApi" target="_blank">QQMusicApi</a> (也是我的项目，也欢迎支持一下)</p>
+        <p>后端：「咪咕音乐」<a href="https://github.com/jsososo/MiguMusicApi" target="_blank">MiguMusicApi</a> (还是是我的项目，也欢迎支持一下)</p>
       </div>
     </div>
 
@@ -213,6 +214,10 @@
           {
             txt: '🍣 歌单下载、企鹅高品质音乐下载',
             time: '19-12-11',
+          },
+          {
+            txt: '🍜 咪咕！',
+            time: '19-12-20',
           }
         ],
         future: [

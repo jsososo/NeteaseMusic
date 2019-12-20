@@ -239,18 +239,18 @@ export default {
       });
       state.downloadInfo = downloadInfo;
     } else {
-      const { id, p, l, t, ajax, status, errMsg, name, songId, br, from } = data;
+      const { id, p, l, t, ajax, status, errMsg, name, songId, br, from, songCid } = data;
       const { downloadInfo } = state;
       const d = downloadInfo.list.find((item) => item.id === id);
       const now = new Date().getTime();
       // 这是其他的更新下载状态
       switch (status) {
         case 'init':
-          downloadInfo.list.unshift({ status, from, id, startTime: now, ajax, name, songId, br });
+          downloadInfo.list.unshift({ status, from, id, startTime: now, ajax, name, songId, songCid, br });
           downloadInfo.count++;
           break;
         case 'initError':
-          downloadInfo.list.unshift({ status: 'error', from, id, errMsg, name, songId, br, startTime: now, endTime: now });
+          downloadInfo.list.unshift({ status: 'error', from, id, errMsg, name, songId, songCid, br, startTime: now, endTime: now });
           break;
         case 'success':
           d.status = 'success';
