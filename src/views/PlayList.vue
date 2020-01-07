@@ -1,10 +1,11 @@
 <template>
   <div :class="`playlist-container ${show && 'show'}`">
 
-    <div class="right-select-tab-list" v-if="hash === 'playlist'">
+    <div class="right-select-tab-list">
       <div
         :class="`tab-item-${i} c-${t.color} ${selected === t.key && 'selected'}`"
         v-for="(t, i) in tabs"
+        v-if="t.hide !== hash"
         :key="t.icon"
         @click="selected = t.key"
       >
@@ -13,14 +14,14 @@
       </div>
     </div>
 
-    <div v-if="selected === '163' || hash === 'recommend'" class="playlist-list hide-scroll">
+    <div v-if="selected === '163'" class="playlist-list hide-scroll">
       <div v-if="!user.userId && hash === 'playlist' && !$route.query.id" class="text-center fc_fff ft_20" style="padding-top: 100px;opacity: 0.8;letter-spacing: 2px;">
         登陆后可以查看个人歌单
       </div>
 
       <!-- 日推-->
       <div
-        v-if="allList.daily && (hash === 'playlist' || hash === 'recommend') && !$route.query.id"
+        v-if="allList.daily && !$route.query.id"
         :class="`playlist-item ${playingListId === 'daily' && 'playing'}`"
         @click="goTo('daily')"
       >
@@ -38,7 +39,7 @@
 
       <!-- 私人 FM -->
       <div
-        v-if="allList.daily && (hash === 'playlist' || hash === 'recommend') && !$route.query.id"
+        v-if="allList.daily && !$route.query.id"
         :class="`playlist-item ${playingListId === 'daily' && 'playing'}`"
         @click="playPersonFM"
       >
@@ -55,7 +56,6 @@
       </div>
       <!-- 歌单列表 -->
       <div
-        v-if="hash === 'playlist' || hash === 'recommend'"
         :class="`playlist-item ${playingListId == item.id && 'playing'}`"
         v-for="item in pagePlayList"
         :key="`playlist-${item.id}`"
@@ -78,22 +78,22 @@
       </div>
     </div>
 
-    <div v-if="selected === 'qq' && hash === 'playlist'" class="playlist-list hide-scroll">
-      <div class="input-qq mb_20">
+    <div v-if="selected === 'qq'" class="playlist-list hide-scroll">
+      <div class="input-qq mb_20" v-if="hash === 'playlist'">
         <input type="text" placeholder="输入QQ号吧" v-model="inputQQ" />
         <div class="update-btn" v-if="inputQQ !== qqId" @click="updateQQNum">更新</div>
       </div>
-      <div v-if="!qqId" class="text-center fc_fff ft_20" style="padding-top: 100px;opacity: 0.8;letter-spacing: 2px;">
+      <div v-if="!qqId && hash === 'playlist'" class="text-center fc_fff ft_20" style="padding-top: 100px;opacity: 0.8;letter-spacing: 2px;">
         输入 QQ 号可查看个人歌单
       </div>
-      <div v-if="qqId && qUserList.list.length === 0" class="text-center fc_fff ft_20" style="padding-top: 100px;opacity: 0.8;letter-spacing: 2px;">
+      <div v-if="qqId && qUserList.list.length === 0 && hash === 'playlist'" class="text-center fc_fff ft_20" style="padding-top: 100px;opacity: 0.8;letter-spacing: 2px;">
         没有歌单呢
       </div>
 
       <!-- 歌单列表 -->
       <div
         :class="`playlist-item ${playingListId == `qq${item.id}` && 'playing'}`"
-        v-for="item in qUserList.list"
+        v-for="item in pagePlayList"
         :key="`playlist-q-${item.id}`"
         @click="goTo(item.id, 'qq')"
       >
@@ -105,7 +105,36 @@
         <img :src="`${item.coverImgUrl}?param=50y50`" class="list-bg-img" />
         <img :src="`${item.coverImgUrl}?param=200y200`" class="list-img" />
         <span class="list-name">{{item.name}}</span>
+        <span class="list-creator">
+          <span v-if="item.playCount"><i class="iconfont icon-yinyue" />: {{numToStr(item.playCount)}}</span>
+        </span>
         <span class="list-count">{{item.trackCount}}</span>
+
+      </div>
+    </div>
+
+    <div v-if="selected === 'migu'" class="playlist-list hide-scroll">
+      <!-- 歌单列表 -->
+      <div
+        :class="`playlist-item ${playingListId == `migu${item.id}` && 'playing'}`"
+        v-for="item in pagePlayList"
+        :key="`playlist-m-${item.id}`"
+        @click="goTo(item.id, 'migu')"
+      >
+        <div v-if="playingListId == `migu${item.id}` && isPlaying" class="playing-item-bg">
+          <div v-for="(o, i) in new Array(100)" :key="`bg-item-${i}`" :class="`playing-bg-${i}`">
+            <div class="bg-item-inside"></div>
+          </div>
+        </div>
+        <img :src="`${item.picUrl}`" class="list-bg-img" />
+        <img :src="`${item.picUrl}`" class="list-img" />
+        <span class="list-name">{{item.name}}</span>
+        <span class="list-creator">
+          By: <span>{{item.creator.name}}</span>
+          <span class="pl_20" v-if="item.playCount"><i class="iconfont icon-yinyue" />: {{numToStr(item.playCount)}}</span>
+        </span>
+        <span class="list-count">{{item.songCount}}</span>
+
       </div>
     </div>
   </div>
@@ -135,7 +164,14 @@
             key: 'qq',
             color: 'green',
             val: '企鹅'
-          }
+          },
+          {
+            icon: 'migu',
+            key: 'migu',
+            color: 'yellow',
+            hide: 'playlist',
+            val: '咪咕',
+          },
         ],
         selected: '163',
         inputQQ: Storage.get('qqId'),
@@ -167,6 +203,10 @@
       },
       selected(v) {
         Storage.set('playlist_from', v);
+        this.hashChange();
+      },
+      recommendList() {
+        this.hashChange();
       }
     },
     created() {
@@ -184,12 +224,46 @@
       hashChange() {
         const hashs = ['playlist', 'recommend'];
         this.hash = hashs.find((h) => document.location.hash.indexOf(h) > -1);
-        switch (this.hash) {
-          case 'recommend':
+        const { selected, hash } = this;
+        this.pagePlayList = [];
+        switch (`${hash}-${selected}`) {
+          case 'recommend-qq':
+            return !this.recommendList.qqList ? this.getQQRecommend() : (this.pagePlayList = this.recommendList.qqList);
+          case 'recommend-migu':
+            return !this.recommendList.miguList ? this.getMiguRecommend() : (this.pagePlayList = this.recommendList.miguList);
+          case 'recommend-163':
             return this.pagePlayList = this.recommendList.list;
-          case 'playlist':
+          case 'playlist-qq':
+            return this.pagePlayList = this.qUserList && this.qUserList.list || [];
+          case 'playlist-163':
             return (this.$route.query.id ? this.queryPlayList() : (this.pagePlayList = this.userList.list));
+          case 'playlist-migu':
+            return this.selected = '163';
         }
+      },
+      getQQRecommend() {
+        request('QQ_RECOMMEND_PLAYLIST')
+          .then(res => {
+            const { recommendList } = this;
+            recommendList.qqList = res.data.list.map(({ cover_url_medium, song_ids, access_num, creator_info, title, tid }) => ({
+              from: 'qq',
+              id: tid,
+              name: title,
+              creator: creator_info,
+              playCount: access_num,
+              trackCount: song_ids.length,
+              coverImgUrl: cover_url_medium,
+            }));
+            this.hashChange();
+          })
+      },
+      getMiguRecommend() {
+        request('MIGU_RECOMMEND_PLAYLIST')
+          .then(res => {
+            const { recommendList } = this;
+            recommendList.miguList = res.data.list;
+            this.hashChange();
+          })
       },
       queryPlayList() {
         const { id } = this.$route.query;

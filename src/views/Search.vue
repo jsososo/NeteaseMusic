@@ -106,11 +106,11 @@
         <div v-for="s in searchQuery.playlists" class="playlist-item" @click="changeUrlQuery({ id: s.id, from: s.from }, '#/playlist/detail')">
           <img class="playlist-img" :src="`${s.coverImgUrl}?param=120y120`"  />
           <div class="playlist-name">{{s.name}}</div>
-          <div class="playlist-author" v-if="s.from !== 'migu'">
+          <div class="playlist-author">
             <span v-if="s.creator">By: {{s.creator.nickname || s.creator.name}}</span>
             <span class="pl_20"><i class="iconfont icon-yinyue" />: {{numToStr(s.playCount || 0)}}</span>
           </div>
-          <div v-if="s.from !== 'migu'" class="playlist-trackcount">{{s.trackCount}}</div>
+          <div class="playlist-trackcount">{{s.trackCount}}</div>
         </div>
       </div>
       <div class="empty-status" v-if="!searchQuery.playlists || searchQuery.playlists.length === 0">

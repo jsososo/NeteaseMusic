@@ -13,6 +13,8 @@ ps: qq音乐那边是需要登陆vip用户 cookie 才能获取到一些接口的
 
 [QQMusicApi](https://github.com/jsososo/QQMusicApi)
 
+[MiguMusicApi](https://github.com/jsososo/MiguMusicApi)
+
 
 ## 前端
 
@@ -29,6 +31,10 @@ server {
         proxy_set_header Host "163.jsososo.com";
     }
     location /apiQ/ {
+        proxy_pass http://39.100.111.202:80;
+        proxy_set_header Host "163.jsososo.com";
+    }
+    location /apiM/ {
         proxy_pass http://39.100.111.202:80;
         proxy_set_header Host "163.jsososo.com";
     }

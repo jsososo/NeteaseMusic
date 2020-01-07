@@ -363,7 +363,7 @@ const searchMiguReq = async ({ keywords: keyword, type, pageNo: page }) => {
             ...allSongs[obj.id],
             ...obj,
           };
-          querySongIds.push({ id: obj.miguId, cid: obj.cid });
+          querySongIds.push({ id: obj.miguId, cid: obj.cid, url: obj.url });
         }
         resultList.push(obj.id);
       });
@@ -371,6 +371,7 @@ const searchMiguReq = async ({ keywords: keyword, type, pageNo: page }) => {
       break;
     case 'singer':
       list.forEach((item) => {
+        item.picUrl = item.picUrl || 'http://p3.music.126.net/VnZiScyynLG7atLIZ2YPkw==/18686200114669622.jpg?param=120y120';
         resultList.push({
           from: 'migu',
           ...item,
@@ -383,7 +384,7 @@ const searchMiguReq = async ({ keywords: keyword, type, pageNo: page }) => {
           from: 'migu',
           id: item.id,
           name: item.name,
-          picUrl: item.picUrl,
+          picUrl: item.picUrl || 'http://p2.music.126.net/ftPcA5oCeIQxhiNmEpmtKw==/109951163926974610.jpg?param=300y300',
         })
       });
       break;
@@ -393,10 +394,9 @@ const searchMiguReq = async ({ keywords: keyword, type, pageNo: page }) => {
           from: 'migu',
           id: item.id,
           name: item.name,
-          creator: {},
-          playCount: null,
-          trackCount: null,
-          coverImgUrl: item.picUrl,
+          playCount: item.playCount,
+          trackCount: item.songCount,
+          coverImgUrl: item.picUrl || 'http://p2.music.126.net/ftPcA5oCeIQxhiNmEpmtKw==/109951163926974610.jpg?param=300y300',
         })
       });
       break;
@@ -425,19 +425,21 @@ export const getMiguUrl = async (idArr) => {
   const reqIds = [];
 
   const newObj = {};
-  idArr.forEach(({ id, cid }) => {
+  idArr.forEach(({ id, cid, url }) => {
     id = String(id).replace('migu_', '');
     const uInfo = miguUrlInfo[id];
     const miguId = `migu_${id}`;
-    if (uInfo) {
+    if (url || uInfo) {
+      const al = {
+        picUrl: uInfo && uInfo.pic,
+        ...(allSongs[miguId].al || {}),
+      };
+      al.picUrl = al.picUrl || 'http://p2.music.126.net/ftPcA5oCeIQxhiNmEpmtKw==/109951163926974610.jpg';
       newObj[miguId] = {
         ...allSongs[miguId],
-        url: uInfo['128k'],
+        url: url || uInfo['128k'],
         br: 128000,
-        al: {
-          ...(allSongs[miguId].al || {}),
-          picUrl: uInfo.pic,
-        },
+        al,
         miguUrl: uInfo,
       }
     } else {
@@ -463,7 +465,8 @@ export const getMiguUrl = async (idArr) => {
            ...song.al,
            picUrl: res.data.pic,
          }
-       })
+       });
+
      });
    })
   }
@@ -673,14 +676,20 @@ export const migu2163 = ({
   cid,
   name,
   artists: ar,
+  url,
+  picUrl = 'http://p2.music.126.net/ftPcA5oCeIQxhiNmEpmtKw==/109951163926974610.jpg',
   album: al,
 }) => ({
   from: 'migu',
   id: `migu_${id}`,
   miguId: id,
+  url,
   cid,
   ar,
-  al,
+  al: {
+    picUrl,
+    ...(al || {}),
+  },
   name,
   br: 128000,
 });
@@ -844,6 +853,13 @@ export const download = async (id, songName, forceReq) => {
     let type = Storage.get('downSize') || 'flac';
     const typeArr = ['flac', '320', '128'];
     const miguUrlInfo = Storage.get('miguUrlInfo', true, '{}');
+    let urlInfo = miguUrlInfo[song.miguId];
+    if (!urlInfo) {
+      urlInfo = await request({
+        api: 'MIGU_URL_GET',
+        data: { id: song.miguId, cid: song.cid }
+      });
+    }
     let i = typeArr.indexOf(type);
     songCid = song.cid;
     const tArr = [
@@ -852,7 +868,7 @@ export const download = async (id, songName, forceReq) => {
       { end: 'mp3', key: '128k', br: 128000 },
     ];
     while (i < typeArr.length && !url) {
-      url = encodeURI(miguUrlInfo[song.miguId][tArr[i].key]);
+      url = encodeURI(urlInfo[tArr[i].key]);
       songEndType = tArr[i].end;
       br = tArr[i].br;
     }

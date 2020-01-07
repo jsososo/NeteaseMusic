@@ -1,8 +1,8 @@
 <template>
   <div class="list-detail-container">
     <div v-if="!listInfo && loading && list.length === 0" class="text-center fc_fff ft_20" style="padding-top: 100px;opacity: 0.8;letter-spacing: 2px;">拼命查找了！</div>
-    <div v-if="listInfo" class="list-info-detail">
-      <div>
+    <div v-if="!loading" class="list-info-detail">
+      <div v-if="listInfo">
         <img class="list-info-cover" :src="`${listInfo.coverImgUrl}?param=100y100`">
         <div class="list-info-txt">
           <div class="list-info-name">{{listInfo.name}}</div>
@@ -28,7 +28,7 @@
         </div>
       </div>
     </div>
-    <div class="song-list" v-if="allList[trueId]">
+    <div class="song-list" v-if="allList[trueId] || id === 'playing'">
       <div
         :class="`song-item ${playNow.id === s && 'played'} ${!allSongs[s].url && 'disabled'}`"
         v-for="(s, i) in list"
@@ -45,12 +45,12 @@
         <span class="song-artist">{{allSongs[s].ar.map((a) => a.name).join('/')}}</span>
         <div class="icon-container">
           <i
-            v-if="allList[userList.favId] && (id != userList.favId) && platform === '163'"
+            v-if="allList[userList.favId] && (id != userList.favId) && ((allSongs[s].from || '163') === '163')"
             @click="likeMusic(s)"
             :class="`operation-icon operation-icon-1 iconfont icon-${allList[userList.favId].indexOf(s) > -1 ? 'like' : 'unlike'}`"
           />
           <i
-            v-if="platform === '163'"
+            v-if="(allSongs[s].from || '163') === '163'"
             @click="playlistTracks(s, id, 'add', 'ADD_SONG_2_LIST')"
             class="operation-icon operation-icon-2 iconfont icon-add"
           />
@@ -90,6 +90,7 @@
     },
     computed: {
       ...mapGetters({
+        playingList: 'getPlayingList',
         userList: 'getUserList',
         allList: 'getAllList',
         allSongs: 'getAllSongs',
@@ -108,7 +109,15 @@
         this.id = this.$route.query.id;
         this.platform = this.$route.query.from || '163';
         this.init();
-      }
+      },
+      playingList: {
+        handler() {
+          if (this.id === 'playing') {
+            this.init();
+          }
+        },
+        deep: true,
+      },
     },
     created() {
       const { allList, id, userList, platform } = this;
@@ -119,8 +128,12 @@
     },
     methods: {
        init() {
+         this.loading = false;
         if (this.id === 'daily') {
           return this.list = this.allList.daily || [];
+        }
+        if (this.id === 'playing') {
+          return this.list = this.playingList.trueList || [];
         }
         this.loading = true;
         switch (this.platform) {
@@ -200,10 +213,23 @@
       searchList() {
         const { search, allList, trueId: id, allSongs, platform } = this;
         const rex = search.replace(/\/|\s|\t|,|，|-|/g, '').toLowerCase();
-        if (!rex) {
-          return this.list = allList[id];
+        let rawList = [];
+        switch (this.id) {
+          case 'playing':
+            rawList = this.playingList.trueList;
+            break;
+          case 'daily':
+            rawList = this.allList.daily;
+            break;
+          default:
+            rawList = allList[id];
+            break;
         }
-        this.list = (allList[id] || []).filter((s) => (
+        rawList = rawList || [];
+        if (!rex) {
+          return this.list = rawList;
+        }
+        this.list = rawList.filter((s) => (
           `${allSongs[s].name}
           ${allSongs[s].ar.map((a) => a.name)}
           ${allSongs[s].al.name}

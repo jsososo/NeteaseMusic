@@ -79,26 +79,40 @@
         </div>
 
          <!--下载-->
-        <div class="inline-block ml_5 pd_5">
-          <span @click="down(playNow.id)">
-            <i class="iconfont icon-download ft_16 pointer" />
-          </span>
-        </div>
+        <el-tooltip class="item" effect="dark" content="下载" placement="top">
+          <div class="inline-block ml_5 pd_5">
+            <span @click="down(playNow.id)">
+              <i class="iconfont icon-download ft_16 pointer" />
+            </span>
+          </div>
+        </el-tooltip>
 
         <!-- 添加到歌单 -->
-        <div class="inline-block ml_5 pd_5" v-if="!playNow.from">
-          <span @click="playlistTracks(playNow.id, 'add', 'ADD_SONG_2_LIST')">
-            <i class="iconfont icon-add ft_16 pointer" />
-          </span>
-        </div>
+        <el-tooltip class="item" effect="dark" content="添加到歌单" placement="top">
+          <div class="inline-block ml_5 pd_5" v-if="!playNow.from">
+            <span @click="playlistTracks(playNow.id, 'add', 'ADD_SONG_2_LIST')">
+              <i class="iconfont icon-add ft_16 pointer" />
+            </span>
+          </div>
+        </el-tooltip>
 
         <input id="cp-share-input" :value="changeUrlQuery({ shareId: playNow.id, from: playNow.from, shareCid: playNow.cid }, 'http://music.jsososo.com/#/', false)">
         <!-- 分享 -->
-        <div class="inline-block ml_5 pd_5">
-          <span @click="copyUrl">
-            <i class="iconfont icon-share ft_16 pointer" />
-          </span>
-        </div>
+        <el-tooltip class="item" effect="dark" content="分享" placement="top">
+          <div class="inline-block ml_5 pd_5">
+            <span @click="copyUrl">
+              <i class="iconfont icon-share ft_16 pointer" />
+            </span>
+          </div>
+        </el-tooltip>
+
+        <el-tooltip class="item" effect="dark" content="正在播放" placement="top">
+          <div @click="goTo('#/playlist/detail?id=playing')" class="inline-block ml_5 pd_5">
+            <span>
+              <i class="iconfont icon-list ft_16 pointer" />
+            </span>
+          </div>
+        </el-tooltip>
 
 
 
@@ -206,7 +220,11 @@
         this.listId = this.playingListId;
 
         // 更新后面的背景
-        document.getElementById('play-music-bg').src = (this.allSongs[id] && this.allSongs[id].al && (`${this.allSongs[id].al.picUrl}?param=1440y1440`)) || '';
+        try {
+          document.getElementById('play-music-bg').src = `${this.allSongs[id].al.picUrl || 'http://p2.music.126.net/ftPcA5oCeIQxhiNmEpmtKw==/109951163926974610.jpg'}?param=1440y1440`;
+        } catch (err) {
+          document.getElementById('play-music-bg').src = 'http://p2.music.126.net/ftPcA5oCeIQxhiNmEpmtKw==/109951163926974610.jpg';
+        }
 
         if (v.miguId && this.playing) {
           setTimeout(() => this.playerDom.play(), 1);

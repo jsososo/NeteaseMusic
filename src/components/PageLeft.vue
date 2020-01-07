@@ -35,7 +35,7 @@
         <el-badge :value="downloadInfo.count" :hidden="downloadInfo.count === 0" class="item">
           <i class="iconfont icon-down"></i>
         </el-badge>
-        <div class="icon-text">下载中心</div>
+        <div class="icon-text">下载</div>
       </a>
     </div>
     <div class="nav-line nav-mode-simple">
