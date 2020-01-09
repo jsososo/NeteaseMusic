@@ -16,7 +16,7 @@
 
     <div v-if="selected === '163'" class="playlist-list hide-scroll">
       <div v-if="!user.userId && hash === 'playlist' && !$route.query.id" class="text-center fc_fff ft_20" style="padding-top: 100px;opacity: 0.8;letter-spacing: 2px;">
-        登陆后可以查看个人歌单
+        登录后可以查看个人歌单
       </div>
 
       <!-- 日推-->
@@ -197,9 +197,7 @@
         this.hashChange();
       },
       userList(v) {
-        if (this.hash === 'playlist') {
-          this.pagePlayList = v.list;
-        }
+        // this.hashChange();
       },
       selected(v) {
         Storage.set('playlist_from', v);
@@ -213,15 +211,12 @@
       this.hashChange();
       setTimeout(() => this.show = true);
       this.selected = Storage.get('playlist_from') || '163';
-      if (this.inputQQ) {
-        this.updateQQNum();
-      }
     },
     destroyed() {
       this.show = false;
     },
     methods: {
-      hashChange() {
+      async hashChange() {
         const hashs = ['playlist', 'recommend'];
         this.hash = hashs.find((h) => document.location.hash.indexOf(h) > -1);
         const { selected, hash } = this;
@@ -234,7 +229,7 @@
           case 'recommend-163':
             return this.pagePlayList = this.recommendList.list;
           case 'playlist-qq':
-            return this.pagePlayList = this.qUserList && this.qUserList.list || [];
+            return this.updateQQNum();
           case 'playlist-163':
             return (this.$route.query.id ? this.queryPlayList() : (this.pagePlayList = this.userList.list));
           case 'playlist-migu':
@@ -283,7 +278,7 @@
         window.event.stopPropagation();
         const { userList, allList, allSongs, user } = this;
         if (!user.userId) {
-          return this.$message.warning('登陆后才可以开启心动模式');
+          return this.$message.warning('登录后才可以开启心动模式');
         }
         const favList = allList[userList.favId].length > 0 ? allList[userList.favId] : allList.daily;
         const randomId = favList[Math.floor(Math.random(favList.length))];
@@ -330,7 +325,10 @@
         const { inputQQ } = this;
         this.qqId = inputQQ;
         Storage.set('qqId', inputQQ);
-        queryQQUserDetail(inputQQ);
+        queryQQUserDetail(inputQQ)
+          .then(() => {
+            this.pagePlayList = this.qUserList && this.qUserList.list || []
+          });
       },
 
       numToStr,

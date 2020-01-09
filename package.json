@@ -25,6 +25,7 @@
     "@vue/cli-service": "^3.0.0-rc.12",
     "element-ui": "^2.4.5",
     "node-sass": "^4.12.0",
+    "vudio.js": "^1.0.3",
     "vue-resource": "^1.5.1",
     "vue-template-compiler": "^2.5.17"
   },

@@ -4,7 +4,7 @@
     <div class="avatar nav-line">
       <img class="avatar-img iconfont" @click="goToUser" v-if="user.avatarUrl" :src="user.avatarUrl" />
       <img class="avatar-img iconfont" @click="goToUser" src="../assets/img/u-no-avatar.png" v-if="!user.avatarUrl">
-      <div class="icon-text" @click="goToUser">{{user.userId ? user.nickname : '来登陆呀'}}</div>
+      <div class="icon-text" @click="goToUser">{{user.userId ? user.nickname : '来登录呀'}}</div>
     </div>
     <div class="nav-line">
       <a href="#/search">

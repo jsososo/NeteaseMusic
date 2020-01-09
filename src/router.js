@@ -16,6 +16,7 @@ const SetQCookie = () => import('./views/setQCookie');
 const Simple = () => import('./views/Simple');
 const Mv = () => import('./views/Mv');
 const Setting = () => import('./views/Setting');
+const Feedback = () => import('./views/Feedback');
 
 Vue.use(Router);
 
@@ -109,6 +110,11 @@ const router = new Router({
       path: '/setting',
       name: 'Setting',
       component: Setting,
+    },
+    {
+      path: '/feedback',
+      name: 'Feedback',
+      component: Feedback,
     }
   ]
 });
@@ -130,6 +136,7 @@ router.beforeEach((to, from, next) => {
     case 'Download':
     case 'About':
     case 'Mv':
+    case 'Feedback':
       dispatch('updateShowCover', false);
       break;
     default:

@@ -114,11 +114,12 @@
           </div>
         </el-tooltip>
 
-
-
-        <div class="back-icon pointer" @click="goBack">
-          <i class="iconfont icon-arrow-left" />
-          BACK
+        <div class="back-container">
+          <a class="iconfont icon-feedback" href="#/feedback" />
+          <div class="back-icon pointer" @click="goBack">
+            <i class="iconfont icon-arrow-left" />
+            BACK
+          </div>
         </div>
 
       </div>
@@ -358,7 +359,6 @@
             });
             break;
           case 'migu':
-            console.log('migumigu');
             break;
           default:
             request({ api: 'SONG_URL', data: { id }})
@@ -746,33 +746,54 @@
       white-space: nowrap;
     }
 
-    .back-icon {
+    .back-container {
       position: absolute;
-      right: 25px;
-      bottom: 20px;
-      width: 150px;
+      right: 0;
+      width: 200px;
       height: 40px;
-      line-height: 40px;
-      background: #fff1;
-      transition: 0.3s;
-      box-shadow: 0 0 0 #fff5;
-      color: #fff5;
-      font-size: 20px;
-      transform: translate(110px);
+      bottom: 20px;
 
-      .iconfont {
-        font-size: 20px;
-        color: #fff5;
+      .icon-feedback {
+        position: absolute;
+        left: 20px;
+        top: 10px;
+        color: #fff3;
         transition: 0.3s;
-        margin: 0 10px;
-      }
-      
-      &:hover {
-        box-shadow: 0 0 20px #fff5;
-        transform: translate(30px);
-        color: #fff8;
-        .iconfont {
+        cursor: pointer;
+
+        &:hover {
           color: #fff8;
+        }
+      }
+
+      .back-icon {
+        position: absolute;
+        right: 25px;
+        bottom: 0;
+        width: 150px;
+        height: 40px;
+        line-height: 40px;
+        background: #fff1;
+        transition: 0.3s;
+        box-shadow: 0 0 0 #fff5;
+        color: #fff5;
+        font-size: 20px;
+        transform: translate(110px);
+
+        .iconfont {
+          font-size: 20px;
+          color: #fff5;
+          transition: 0.3s;
+          margin: 0 10px;
+        }
+
+        &:hover {
+          box-shadow: 0 0 20px #fff5;
+          transform: translate(30px);
+          color: #fff8;
+          .iconfont {
+            color: #fff8;
+          }
         }
       }
     }

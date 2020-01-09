@@ -87,8 +87,7 @@
       });
       this.$store.dispatch('updateDownload');
 
-      messageHelp(6);
-      messageHelp(7);
+      messageHelp(8);
     },
     mounted() {
       const canvas = document.getElementById('music-data-canvas');
@@ -108,7 +107,7 @@
       };
 
       const draw = () => {
-        const { musicDataMap = { 0: [] }, AnalyserNode, AudioBufferSourceNode } = window;
+        const { musicDataMap = { 0: [] }, AnalyserNode, AudioBufferSourceNode, readNewMusic, trueStartTime = 0 } = window;
         const drawMusicType = Storage.get('drawMusicType');
         if (!AnalyserNode || !AnalyserNode.getByteFrequencyData) {
           return;
@@ -119,16 +118,37 @@
         if (drawMusicType === '2') {
           dataArr = [ ...dataArr.reverse(), ...dataArr.reverse() ].filter((v, i) => i % 2);
         }
-        musicDataMap[AudioBufferSourceNode.context.currentTime] = [...dataArr];
-
+        // 发现解析有延迟，这里就当作解析到第一个有音频信号的时候再播放
+        if (readNewMusic) {
+          pDom.pause();
+          let i = dataArr.findIndex((v) => v !== 0);
+          if (i === -1) {
+            const { ctx } = this;
+            const { pageWidth, pageHeight } = this;
+            ctx.clearRect(0, 0, pageWidth, pageHeight);
+            return;
+          }
+          if (i > -1) {
+            window.readNewMusic = false;
+            window.trueStartTime = AudioBufferSourceNode.context.currentTime;
+            if (VUE_APP.$store.getters.isPlaying) {
+              setTimeout(() => pDom.play(), 300);
+            }
+          }
+        }
+        musicDataMap[AudioBufferSourceNode.context.currentTime - (window.trueStartTime || 0)] = [...dataArr];
 
         const keys = Object.keys(musicDataMap);
         let index = keys.findIndex((v) => v >= pDom.currentTime);
+
         if (index <= 0) {
           index = 0;
         }
 
         const arr = musicDataMap[keys[index]];
+        if (index === 0) {
+          arr.fill(0);
+        }
         const { ctx } = this;
         const { pageWidth, pageHeight } = this;
         ctx.clearRect(0, 0, pageWidth, pageHeight);

@@ -4,6 +4,9 @@
       <h2>一起听音乐呀 <a href="https://github.com/jsososo/NeteaseMusic" class="ml_20" target="_blank"><i class="iconfont icon-git" style="font-size: 24px;" /></a></h2>
       <div class="mt_20">
         <p>
+          如果有什么想说的！请戳👉 <a class="pl_5" href="#/feedback" >反馈<i class="iconfont pl_10 icon-feedback"></i></a>
+        </p>
+        <p>
           项目使用 vue-cli-3 作为脚手架，用vue全家桶搭建，项目由之前的 <a href="https://github.com/jsososo/music-player" target="_blank">qq音乐播放器</a> 改造而来，
           仅兼容最新版 Chrome
         </p>
@@ -17,6 +20,7 @@
         <p>
           音频图于 19-11-29 支持，会更消耗性能和流量，嫌弃可以关闭！另外由于读取音频所以数据相当于完整的播放一次音乐，
           因此如果拖动进度条可能导致无法获取到音频数据，如果读取音频数据的方法卡了，比当前播放的速度要慢，也可能会出现没有数据。
+          同时，因为音频图读取最初数据时需要一两秒的时间，所以切歌时会有短暂的停顿。
         </p>
         <p class="mt_20">GitHub: <a href="https://github.com/jsososo/NeteaseMusic" target="_blank">网易云第三方 Web 播放器</a></p>
         <p>后端：「网易云」<a href="https://github.com/Binaryify/NeteaseCloudMusicApi" target="_blank">NeteaseCloudMusicApi</a></p>
@@ -29,8 +33,7 @@
       <h2>关于网易云无版权音乐</h2>
       <p>
         原先（19-10-11之前）从企鹅音乐获取音乐播放链接的方法被企鹅 ban 了，换了一种方法，目前ok，但是有一个条件，
-        如果需要仅 vip 可听的歌曲，那是需要 企鹅vip 的登陆账号 Cookie 的，当然，我会在服务器上不定期的更新我自己的 Cookie 【所以大家还是要支持正版，这里只是为了方便和学习呀】
-        如果服务器上的 cookie 信息没有即时更新，那你们自己手动更新一下前端这边的 cookie，只要把 y.qq.com 里已登陆 vip 账号的 cookie 全挪过来就好啦～
+        如果需要仅 vip 可听的歌曲，那是需要 企鹅vip 的登录账号 Cookie 的，当然，我会在服务器上不定期的更新我自己的 Cookie 【所以大家还是要支持正版，这里只是为了方便和学习呀】
       </p>
     </div>
 
@@ -75,7 +78,7 @@
             time: '19-6-5',
           },
           {
-            txt: '🦌 登陆，获取歌单',
+            txt: '🦌 登录，获取歌单',
             time: '19-6-5',
             icon: ''
           },
@@ -222,6 +225,10 @@
           {
             txt: '💣 正在播放、更多的推荐歌单',
             time: '20-01-07',
+          },
+          {
+            txt: '🕶️ 反馈、音频图延迟优化',
+            time: '20-01-09',
           }
         ],
         future: [

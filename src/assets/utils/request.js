@@ -34,7 +34,7 @@ axios.interceptors.response.use(data=> {
     return window.VUE_APP.$message.warning('ta 不公开听歌排行哟');
   }
   if (url.indexOf('/api/simi/artist') > -1) {
-    return window.VUE_APP.$message.warning('登陆后可查看相似歌手');
+    return window.VUE_APP.$message.warning('登录后可查看相似歌手');
   }
   return Promise.reject(err.response.data);
 });
@@ -193,7 +193,7 @@ const querySongUrl = (id) => request({
   }
 });
 
-// 登陆状态
+// 登录状态
 export const loginStatus = async () => {
   const VUE_APP = window.VUE_APP;
   const dispatch = VUE_APP.$store.dispatch;
@@ -230,10 +230,10 @@ export const loginStatus = async () => {
     }
   }
 
-  // 查询登陆情况
+  // 查询登录情况
   const res = await request('LOGIN_STATUS');
   if (!res) {
-    // 没有登陆的情况
+    // 没有登录的情况
     request('RECOMMEND_LIST')
       .then(({ result }) => {
         const listObj = {};
@@ -432,7 +432,7 @@ export const getMiguUrl = async (idArr) => {
     if (url || uInfo) {
       const al = {
         picUrl: uInfo && uInfo.pic,
-        ...(allSongs[miguId].al || {}),
+        ...((allSongs[miguId] || {}).al || {}),
       };
       al.picUrl = al.picUrl || 'http://p2.music.126.net/ftPcA5oCeIQxhiNmEpmtKw==/109951163926974610.jpg';
       newObj[miguId] = {
@@ -912,7 +912,7 @@ export const handleQQComments = (list) => (list || []).map((obj) => ({
   commentId: obj.commentid,
   content: obj.middlecommentcontent ?
     (obj.middlecommentcontent.map((r) => `回复 ${r.replyednick}：${r.subcommentcontent.replace(/\\n/g, '<br/>')}`).join(' //')) :
-    obj.rootcommentcontent.replace(/\\n/g, '<br/>'),
+    (obj.rootcommentcontent || '').replace(/\\n/g, '<br/>'),
   time: obj.time * 1000,
   beReplied: obj.middlecommentcontent ? [
     {
@@ -976,7 +976,7 @@ export const queryQQUserDetail = async (id) => {
   });
 
   window.VUE_APP.$store.dispatch('updateQUserList', qUserList);
-
+  return qUserList;
 };
 
 export const handleQQSongs = (list) => {
@@ -1015,6 +1015,7 @@ export const getMusicData = (url) => {
     window.AudioBufferSourceNode = audioCtx.createBufferSource();
     window.AnalyserNode = audioCtx.createAnalyser();
     window.musicDataMap = {0: [0]};
+    window.readNewMusic = true;
     const { AudioBufferSourceNode, AnalyserNode } = window;
     AnalyserNode.fftSize = Number(Storage.get('drawMusicNum') || 64) * 2;
     const request = new XMLHttpRequest();
@@ -1027,16 +1028,29 @@ export const getMusicData = (url) => {
         (buffer) => {
           AudioBufferSourceNode.buffer = buffer;
           AudioBufferSourceNode.connect(AnalyserNode);
-          AudioBufferSourceNode.start(0);
+          AudioBufferSourceNode.start();
           window.AnalyserNode = AnalyserNode;
           window.AudioBufferSourceNode = AudioBufferSourceNode;
         },
-        (e) => console.error("Error with decoding audio data" + e.err + '==========' + url)
-      );
+        (e) => {
+          window.readNewMusic = false;
+          if (VUE_APP.$store.getters.isPlaying) {
+            document.getElementById('m-player').play();
+          }
+        });
     };
+    request.onerror = function () {
+      window.readNewMusic = false;
+      if (VUE_APP.$store.getters.isPlaying) {
+        document.getElementById('m-player').play();
+      }
+    }
     request.send();
   } catch (err) {
-    console.log('sth wrong');
+    window.readNewMusic = false;
+    if (VUE_APP.$store.getters.isPlaying) {
+      document.getElementById('m-player').play();
+    }
   }
 };
 

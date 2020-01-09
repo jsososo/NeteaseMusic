@@ -63,7 +63,6 @@
   export default {
     name: "Setting",
     data() {
-      console.log(Storage.get('showDrawMusic'));
       return {
         showDrawMusic: Storage.get('showDrawMusic') !== '0',
         drawMusicType: Storage.get('drawMusicType') || '1',

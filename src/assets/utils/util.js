@@ -37,6 +37,11 @@ export const messageHelp = (id) => {
       message: '新增咪咕音乐的支持，搜索页面的最右侧！同样支持无损～',
       type: 'info',
       duration: 20000,
+    },
+    8: {
+      message: '反馈可以戳右下面👇',
+      type: 'info',
+      duration: 20000,
     }
   };
 

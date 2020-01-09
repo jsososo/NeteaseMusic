@@ -15,7 +15,7 @@ const apiList = {
   'GET_QQ_VKEY': '//u.y.qq.com/cgi-bin/musicu.fcg?callback=jQuery331015138042840240584_1544498679284&data=%7B%22req_0%22%3A%7B%22module%22%3A%22vkey.GetVkeyServer%22%2C%22method%22%3A%22CgiGetVkey%22%2C%22param%22%3A%7B%22guid%22%3A%225339940689%22%2C%22songmid%22%3A%5B%220039MnYb0qxYhV%22%5D%2C%22songtype%22%3A%5B0%5D%2C%22uin%22%3A%22%22%2C%22platform%22%3A%2220%22%7D%7D%7D&jsonpCallback=getQQMusicUrl&callback=getQQMusicUrl&_=1544498679292',
   'DAILY_RECOMMEND_SONGS': '/api/recommend/songs', // 日推
   'DAILY_RECOMMEND_LIST': '/api/recommend/resource', // 日推歌单
-  'RECOMMEND_LIST': '/api/personalized', // 未登陆用户的推荐歌单
+  'RECOMMEND_LIST': '/api/personalized', // 未登录用户的推荐歌单
   'LIKE_MUSIC': '/api/like', // 喜欢音乐
   'LIKE_COMMENT': '/api/comment/like', // 评论点赞
   'PLAYLIST_TRACKS': '/api/playlist/tracks', // 歌单的增减操作
@@ -70,6 +70,10 @@ const apiList = {
   'MIGU_SONG_INFO': 'apiM/song', // 咪咕 获取歌曲信息
   'MIGU_PLAYLIST': 'apiM/playlist', // 咪咕 歌单
   'MIGU_RECOMMEND_PLAYLIST': 'apiM/recommend/playlist', // 咪咕 推荐歌单
+
+  'COMMON_GET_FEEDBACK': 'apiQ/feedback', // 获取反馈
+  'COMMON_ADD_FEEDBACK': 'apiQ/feedback/add', // 增加反馈
+  'COMMON_DELETE_FEEDBACK': 'apiQ/feedback/delete', // 删除反馈
 
   '163': '//music.jsososo.com/neapi/index.php',
   'QQ_SONG_INFO': '//u.y.qq.com/cgi-bin/musicu.fcg',
