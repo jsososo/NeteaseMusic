@@ -22,6 +22,18 @@
       </div>
     </div>
     <div class="input-row" v-if="showDrawMusic">
+      <div class="input-label">音频样式：</div>
+      <div class="input-content">
+        <el-radio-group v-model="drawMusicStyle">
+          <el-radio-button label="rect">柱状图</el-radio-button>
+          <el-radio-button label="line">曲线</el-radio-button>
+          <el-radio-button label="line2">曲线2</el-radio-button>
+          <el-radio-button label="particle">泡泡</el-radio-button>
+          <el-radio-button label="particle2">粒子</el-radio-button>
+        </el-radio-group>
+      </div>
+    </div>
+    <div class="input-row" v-if="showDrawMusic">
       <div class="input-label">音频数量：</div>
       <div class="input-content">
         <el-radio-group v-model="drawMusicNum">
@@ -69,6 +81,7 @@
         drawMusicNum: Storage.get('drawMusicNum') || '64',
         repeatDown: Storage.get('repeatDown') || '0',
         downSize: Storage.get('downSize') || 'flac',
+        drawMusicStyle: Storage.get('drawMusicStyle') || 'rect',
       }
     },
     watch: {
@@ -87,7 +100,10 @@
       },
       downSize(v) {
         Storage.set('downSize', v);
-      }
+      },
+      drawMusicStyle(v) {
+        Storage.set('drawMusicStyle', v);
+      },
     }
   }
 </script>

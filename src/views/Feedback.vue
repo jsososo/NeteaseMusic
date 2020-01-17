@@ -110,7 +110,7 @@
       addFeedback() {
         const { content, nick, email, replyId, replyNick, replyContent } = this;
         if (!content) {
-          this.$message.warning('说点啥呀');
+          return this.$message.warning('说点啥呀');
         }
         request({
           api: 'COMMON_ADD_FEEDBACK',

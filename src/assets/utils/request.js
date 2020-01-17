@@ -122,7 +122,7 @@ export const getQQPlayList = async (id) => request({ api: 'QQ_LIST_DETAIL', data
     dispatch('query163List', { songs, listId: `qq${id}` });
     dispatch('updateAllSongs', newSongObj);
     while (ids.length > 0) {
-      getQQUrls(ids.splice(-200));
+      getQQUrls(ids.splice(-100));
     }
     return res.data;
   });

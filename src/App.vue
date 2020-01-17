@@ -87,13 +87,24 @@
       });
       this.$store.dispatch('updateDownload');
 
-      messageHelp(8);
+      messageHelp('newInfo');
     },
     mounted() {
       const canvas = document.getElementById('music-data-canvas');
       const ctx = canvas.getContext('2d');
       this.pageWidth = window.innerWidth;
       this.pageHeight = window.innerHeight;
+
+      const initWindowOtherData = () => {
+        window.musicOtherData = {
+          musicRandomMap: {0: []},
+          musicRandomMap2: {0: []},
+          musicParticleList: [],
+          musicBeforeData: {},
+        };
+      };
+
+      initWindowOtherData();
 
       this.ctx = ctx;
       ctx.fillStyle = 'yellow';
@@ -107,8 +118,12 @@
       };
 
       const draw = () => {
-        const { musicDataMap = { 0: [] }, AnalyserNode, AudioBufferSourceNode, readNewMusic, trueStartTime = 0 } = window;
+        const { musicDataMap = { 0: [] }, AnalyserNode, AudioBufferSourceNode, readNewMusic, trueStartTime = 0  } = window;
+        const { musicRandomMap, musicRandomMap2, musicParticleList, musicBeforeData } = window.musicOtherData;
         const drawMusicType = Storage.get('drawMusicType');
+        const num = (Storage.get('drawMusicNum') || 64);
+        const { ctx, pageWidth, pageHeight } = this;
+
         if (!AnalyserNode || !AnalyserNode.getByteFrequencyData) {
           return;
         }
@@ -126,17 +141,80 @@
             const { ctx } = this;
             const { pageWidth, pageHeight } = this;
             ctx.clearRect(0, 0, pageWidth, pageHeight);
+            initWindowOtherData();
             return;
           }
           if (i > -1) {
             window.readNewMusic = false;
             window.trueStartTime = AudioBufferSourceNode.context.currentTime;
             if (VUE_APP.$store.getters.isPlaying) {
-              setTimeout(() => pDom.play(), 300);
+              setTimeout(() => pDom.play(), 500);
             }
           }
         }
-        musicDataMap[AudioBufferSourceNode.context.currentTime - (window.trueStartTime || 0)] = [...dataArr];
+        const t = AudioBufferSourceNode.context.currentTime - (window.trueStartTime || 0);
+        musicDataMap[t] = [...dataArr];
+        switch (Storage.get('drawMusicStyle') || 'rect') {
+          case 'line':
+            musicRandomMap[t] = dataArr.map((v) =>  {
+              if (v === 0)
+                return 0;
+              let n = v + Math.random() * 30 - 12;
+              if (n < 0)
+                return 0;
+              if (n > 255)
+                return 255;
+              return n;
+            });
+            musicRandomMap2[t] = dataArr.map((v) =>  {
+              if (v === 0)
+                return 0;
+              let n = v + Math.random() * 30 - 18;
+              if (n < 0)
+                return 0;
+              if (n > 255)
+                return 255;
+              return n;
+            });
+            break;
+          case 'particle':
+            let arr = [];
+            musicParticleList.forEach((o) => {
+              if (typeof o !== 'object' && o.type !== 'particle') {
+                return;
+              }
+              if (o.t < 1 || o.r < 2) {
+                return;
+              }
+              o.x += o.vx;
+              o.y -= o.vy;
+              o.t = Math.min(o.t - 0.4, o.t * 0.99);
+              o.r *= 0.99;
+              if (Math.abs(o.vx) > 3) {
+                o.tx = !o.tx;
+              }
+              o.vx += ( Number(o.tx) * 2 - 1) * 0.1;
+              arr.push({...o});
+            });
+            dataArr.map((v, i) => {
+              // 取 2% 的幸运儿
+              if (v > 0 && Math.random() < 0.02) {
+                arr.push({
+                  x: pageWidth * i / num,
+                  y: pageHeight,
+                  r: Math.random() * 5 + (v / 256 * 7),
+                  t: v / 256 * 100, // 透明度
+                  vx: Math.random() * 5 - 3, // 横向速度
+                  tx: Math.random() > 0.5, // 向左还是向右
+                  vy: Math.random() * 2 + 2, // 垂直速度
+                  type: 'particle',
+                })
+              }
+            });
+            window.musicOtherData.musicParticleList = arr;
+            musicDataMap[t] = arr;
+            break;
+        }
 
         const keys = Object.keys(musicDataMap);
         let index = keys.findIndex((v) => v >= pDom.currentTime);
@@ -146,31 +224,195 @@
         }
 
         const arr = musicDataMap[keys[index]];
+
         if (index === 0) {
           arr.fill(0);
         }
-        const { ctx } = this;
-        const { pageWidth, pageHeight } = this;
         ctx.clearRect(0, 0, pageWidth, pageHeight);
-        const num = (Storage.get('drawMusicNum') || 64);
+
+        const drawMusicStyle = Storage.get('drawMusicStyle') || 'rect';
         if (arr) {
+          let prevObj = {};
+          const randomArr = musicRandomMap[keys[index]] || [];
+          const randomArr2 = musicRandomMap2[keys[index]] || [];
           arr.forEach((v, i) => {
-            const linearGradient= ctx.createLinearGradient(
-              pageWidth * i / num,
-              pageHeight,
-              pageWidth * i / num,
-              pageHeight / 2,
-            );
-            linearGradient.addColorStop(0,"#409EFF33");
-            linearGradient.addColorStop(1,"#5cB87a33");
-            ctx.fillStyle = linearGradient;
-            ctx.fillRect(
+            ctx.lineCap = 'butt';
+            // 泡泡特效
+            if (drawMusicStyle === 'particle') {
+              if (typeof v !== 'object' && v.type !== 'particle') {
+                return;
+              }
+              ctx.beginPath();
+              ctx.arc(v.x,v.y,v.r,0,2*Math.PI);
+              ctx.fillStyle = `rgba(255,255,255,${v.t / 100})`;
+              ctx.fill();
+              return;
+            }
+
+            // 曲线、柱状、粒子
+            if (typeof v !== 'number') {
+              return;
+            }
+            let [x, y, w, h, y1, y2] = [
               pageWidth * i / num,
               pageHeight - 80 - v / 256 * pageHeight / 2,
               pageWidth * 0.9 / num,
-              v / 256 * pageHeight / 2
-            );
-          })
+              v / 256 * pageHeight / 2,
+              pageHeight - 80 - (randomArr[i] || 0) / 256 * pageHeight / 2,
+              pageHeight - 80 - (randomArr2[i] || 0) / 256 * pageHeight / 2,
+            ];
+            switch (drawMusicStyle) {
+              case 'line':
+                if (i === 0) {
+                  prevObj = {
+                    px: x,
+                    py: y,
+                    cx: x,
+                    cy: y,
+                    cy1: y1,
+                    cy2: y2,
+                    py1: y1,
+                    py2: y2,
+                  };
+                } else {
+                  const { px, py, py1, cx, cy, cy1, py2, cy2 } = prevObj;
+                  ctx.strokeStyle = '#409EFF33';
+                  ctx.beginPath();
+                  ctx.lineWidth = 10;
+                  ctx.moveTo(cx, cy);
+                  ctx.quadraticCurveTo(px, py, (x + px) / 2, (y + py) / 2);
+                  ctx.stroke();
+
+                  ctx.strokeStyle = '#5cB87a33';
+                  ctx.beginPath();
+                  ctx.lineWidth = 3;
+                  ctx.moveTo(cx, cy1);
+                  ctx.quadraticCurveTo(px, py1, (x + px) / 2, (y1 + py1) / 2);
+                  ctx.stroke();
+
+                  ctx.strokeStyle = '#E6A23C33';
+                  ctx.beginPath();
+                  ctx.lineWidth = 5;
+                  ctx.moveTo(cx, cy2);
+                  ctx.quadraticCurveTo(px, py2, (x + px) / 2, (y2 + py2) / 2);
+                  ctx.stroke();
+                  prevObj = {
+                    px: x,
+                    py: y,
+                    cx: (x + px) / 2,
+                    cy: (y + py) / 2,
+                    cy1: (y1 + py1) / 2,
+                    cy2: (y2 + py2) / 2,
+                    py1: y1,
+                    py2: y2,
+                  };
+                }
+                break;
+              case 'line2':
+                y1 = pageHeight * 0.5 + v / 256 * pageHeight * 0.1;
+                y = pageHeight * 0.5 - v / 256 * pageHeight * 0.3;
+                if (i === 0) {
+                  prevObj = {
+                    px: x,
+                    py: y,
+                    cx: x,
+                    cy: y,
+                    cy1: y1,
+                    py1: y1,
+                  };
+                } else if (i === 1) {
+                  let { px, py, py1 } = prevObj;
+                  prevObj = {
+                    px: x,
+                    py: y,
+                    cx: (x + px) / 2,
+                    cy: (y + py) / 2,
+                    cy1: (y1 + py1) / 2,
+                    py1: y1,
+                  };
+                } else {
+                  let color = '#409EFF22';
+                  if (y === y1) {
+                    color = '#409EFF10'
+                  }
+                  let { px, py, py1, cx, cy, cy1 } = prevObj;
+                  ctx.strokeStyle = color;
+                  ctx.beginPath();
+                  ctx.lineWidth = 5;
+                  ctx.moveTo(cx, cy);
+                  ctx.quadraticCurveTo(px, py, (x + px) / 2, (y + py) / 2);
+                  ctx.stroke();
+
+
+                  ctx.beginPath();
+                  ctx.strokeStyle = color;
+                  ctx.lineWidth = 5;
+                  ctx.moveTo(cx, cy1);
+                  ctx.quadraticCurveTo(px, py1, (x + px) / 2, (y1 + py1) / 2);
+                  ctx.stroke();
+
+                  if (cy1 - cy > 5) {
+                    const gradient = ctx.createLinearGradient(x,y,x,y1);
+                    gradient.addColorStop(0,'#409EFF00');
+                    gradient.addColorStop(0.5,'#409EFF44');
+                    gradient.addColorStop(1,'#409EFF00');
+                    ctx.strokeStyle = gradient;
+                    ctx.beginPath();
+                    ctx.lineWidth = 5;
+                    ctx.moveTo(cx, cy + 2);
+                    ctx.lineTo(cx, cy1 - 2);
+                    ctx.stroke();
+                  }
+                  prevObj = {
+                    px: x,
+                    py: y,
+                    cx: (x + px) / 2,
+                    cy: (y + py) / 2,
+                    cy1: (y1 + py1) / 2,
+                    py1: y1,
+                  };
+                }
+                break;
+              case 'particle2':
+                ctx.beginPath();
+                ctx.arc(x, y, 5, 0, 2*Math.PI);
+                ctx.fillStyle = '#409EFF66';
+                ctx.fill();
+                if (index > 2) {
+                  let y2 = pageHeight - 80 - musicDataMap[keys[index-2]][i] / 256 * pageHeight / 2;
+                  y2 = (y2 - y) * (y2 - y > 20 ? 1.5 : 2.5) + y;
+
+                  if (y2 < 0)
+                    y2 = 0;
+                  if (y2 > pageHeight - 80)
+                    y2 = pageHeight - 80;
+                  ctx.beginPath();
+                  ctx.moveTo(x, y2);
+                  ctx.lineTo(x, y);
+                  const gradient = ctx.createLinearGradient(x,y,x,y2);
+                  gradient.addColorStop(0, '#409EFF66');
+                  gradient.addColorStop(0.8,'#409EFF33');
+                  gradient.addColorStop(1,'#409EFF00');
+                  ctx.strokeStyle = gradient;
+                  ctx.lineWidth = 8;
+                  ctx.lineCap = 'round';
+                  ctx.stroke();
+                }
+                break;
+              default:
+                const linearGradient= ctx.createLinearGradient(
+                  x,
+                  pageHeight,
+                  x,
+                  pageHeight / 2,
+                );
+                linearGradient.addColorStop(0,"#409EFF33");
+                linearGradient.addColorStop(1,"#5cB87a33");
+                ctx.fillStyle = linearGradient;
+                ctx.fillRect(x, y, w, h);
+                break;
+            }
+          });
         }
       };
 

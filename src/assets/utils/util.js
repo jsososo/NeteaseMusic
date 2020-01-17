@@ -44,6 +44,33 @@ export const messageHelp = (id) => {
       duration: 20000,
     }
   };
+  const newMessage = [
+    {
+      content: '',
+      time: '',
+    },
+    {
+      content: '反馈可以戳右下面👇',
+      time: '20-01-09',
+    },
+    {
+      content: '增加了新的频谱图样式！去设置里看看呀',
+      time: '20-01-10',
+    },
+  ];
+  if (id === 'newInfo') {
+    const newInfoIndex = Number(Storage.get('notify-new-index') || 0);
+    if (newInfoIndex < (newMessage.length - 1)) {
+      Storage.set('notify-new-index', newMessage.length - 1);
+      window.VUE_APP.$notify({
+        title: '有更新呀！',
+        message: newMessage.slice(newInfoIndex + 1).map((v) => `${v.content} (${v.time})`).join('<br/>'),
+        duration: (newMessage.length - newInfoIndex) * 20000,
+        dangerouslyUseHTMLString: true,
+      })
+    }
+    return;
+  }
 
   if (!Storage.get(`notify-${id}`)) {
     window.VUE_APP.$notify(message[id]);
