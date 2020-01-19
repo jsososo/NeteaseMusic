@@ -78,14 +78,7 @@
       });
 
       // 初始化一下下载记录
-      const downList = Storage.get('down_list_info', true, '[]');
-      downList.forEach((item) => {
-        // 一般是之前没有下载完就关掉了页面
-        if (item.status !== 'success') {
-          item.status = 'abort';
-        }
-      });
-      this.$store.dispatch('updateDownload');
+      this.$store.dispatch('updateDownload', { status: 'abortAll'});
 
       messageHelp('newInfo');
     },
@@ -117,6 +110,7 @@
         this.pageHeight = window.innerHeight;
       };
 
+      // 这个在定时器里运行，捕捉歌曲的音频数据和绘制canvas
       const draw = () => {
         const { musicDataMap = { 0: [] }, AnalyserNode, AudioBufferSourceNode, readNewMusic, trueStartTime = 0  } = window;
         const { musicRandomMap, musicRandomMap2, musicParticleList, musicBeforeData } = window.musicOtherData;

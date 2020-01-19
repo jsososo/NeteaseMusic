@@ -281,7 +281,7 @@ export default {
           downloadInfo.list = downloadInfo.list.filter((o) => o.status !== 'error');
           break;
         case 'abort':
-          d.ajax.abort();
+          d.ajax && d.ajax.abort();
           d.errMsg ='主动结束';
           d.endTime = now;
           d.status = 'error';
@@ -293,7 +293,7 @@ export default {
         case 'abortAll':
           downloadInfo.list.forEach((item) => {
             if (['init', 'progress'].indexOf(item.status) > 0) {
-              item.ajax.abort();
+              item.ajax && item.ajax.abort();
               item.errMsg ='主动结束';
               item.status = 'error';
               item.endTime = now;

@@ -818,9 +818,11 @@ export const download = async (id, songName, forceReq) => {
     let i = typeArr.indexOf(type);
     while (i < typeArr.length && !url)  {
       try {
+        const mediaIdMatch = song.url.match(/C400(.+)\.m4a/);
+        const mediaId = mediaIdMatch ? mediaIdMatch[1] : '';
         const urlReq = await request({
           api: 'QQ_DOWN_URL',
-          data: { id: song.qqId, type }
+          data: { id: song.qqId, type, mediaId }
         });
         if (urlReq.result === 100) {
           url = urlReq.data;
@@ -877,7 +879,7 @@ export const download = async (id, songName, forceReq) => {
   }
 
   // 别的网站下载会有跨域问题
-  url = url.replace(/^(.+)qq.com/, 'http://124.89.197.18/amobile.music.tc.qq.com');
+  url = url.replace(/^(.+)qq.com/, 'http://122.226.161.16/amobile.music.tc.qq.com');
   const downId = `${new Date().getTime()}${id}`;
   const name = songName ? songName : `${song.ar.map((a) => a.name).join('、')}-${song.name}.${songEndType}`;
 
