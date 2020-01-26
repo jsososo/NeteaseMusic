@@ -19,7 +19,7 @@
       <div class="inline-block progress-container">
         <!-- 歌曲信息 -->
         <div class="song-info">
-          <i class="el-icon-loading mr_10" v-if="loading || downloading" />
+          <i class="el-icon-loading mr_10" v-if="loading || Boolean(isReading)" />
           <span class="player-song-title pointer" @click="goTo('#/')">{{playNow.name}}</span>
           <span class="player-song-singer pl_20 pointer">
             <a v-for="a in allSongs[playNow.id].ar" :key="a.id" :href="changeUrlQuery({ id: a.id, mid: a.mid, from: playNow.from }, '#/singer', false)">{{a.name}} </a>
@@ -124,7 +124,7 @@
 
       </div>
     </div>
-    <audio id="m-player" :src="playNow.url || '/error'" controls></audio>
+    <audio id="m-player" :src="playingUrl || ''" controls></audio>
   </div>
 </template>
 
@@ -132,7 +132,14 @@
   import Num from '../assets/utils/num';
   import Storage from '../assets/utils/Storage';
   import { mapGetters } from 'vuex';
-  import request, { likeMusic, download, getPersonFM, handleQQComments, getMusicData } from '../assets/utils/request';
+  import request, {
+    likeMusic,
+    download,
+    getPersonFM,
+    handleQQComments,
+    getMusicData,
+    getHighQualityUrl
+  } from '../assets/utils/request';
   import { handleLyric, getQueryFromUrl, changeUrlQuery } from "../assets/utils/stringHelper";
   import ArrayHelper from '../assets/utils/arrayHelper';
 
@@ -159,6 +166,7 @@
         keys: [],
         errorId: '',
         playingUrl: '',
+        isUpdating: false,
       }
     },
     computed: {
@@ -176,22 +184,53 @@
         isPersonFM: 'isPersonFM',
         playingList: 'getPlayingList',
         mode: 'getMode',
+        isReading: 'isReading',
       }),
     },
     watch: {
       async playNow(v) {
-        const { listId, playingId, playerInfo, isPersonFM, playingList, playingPlatform } = this;
-        const { id, lyric, name, comments, mid, songid, url, cid } = v;
+        const { listId, playingId, playerInfo, isPersonFM, playingList, playingPlatform, isUpdating, pDom } = this;
+        const { id, lyric, name, comments, mid, songid, cid, qqId, miguId, br, pUrl } = v;
+        let { url } = v;
         const trueId = v.from === 'qq' ? mid : id;
         const dispatch = this.$store.dispatch;
-        if (url !== this.playingUrl && (Storage.get('showDrawMusic') !== '0')) {
-          this.playingUrl = url;
-          getMusicData(url);
+        const listenSize = Storage.get('listenSize') || '128';
+        const needRead = Storage.get('showDrawMusic') !== '0'
+        if (isUpdating)
+          return;
+        // 这是刚切歌的时候需要判断下用户选择的播放品质并更新一下，同时如果已经在查询
+        if ((pUrl !== this.playingUrl || !this.playingUrl) && url) {
+          dispatch('setLoading', true);
+          if (needRead)
+            dispatch('setReading', true);
+          this.isUpdating = true;
+          const listenBr = {128: 128000, 320: 320000, flac: 960000}[listenSize];
+          let [nUrl, nBr] = [url, br]; // 默认原始的信息
+          if (pUrl && Number(br) === listenBr) { // 有 pUrl 且与当前选择的品质相同
+            nUrl = pUrl;
+            nBr = listenBr;
+          } else if (qqId || miguId) { // 如果是qq音乐或者咪咕音乐，获取播放链接
+            const result = await getHighQualityUrl(id, listenSize);
+            nUrl = result.url;
+            nBr = result.br;
+          }
+          this.isUpdating = false;
+          this.playingUrl = nUrl;
+          pDom && pDom.pause();
+          dispatch('updateSongDetail', {
+            pUrl: nUrl,
+            br: nBr,
+            id,
+          });
+          if (needRead) {
+            getMusicData(url);
+          }
+          return;
         }
         if (isPersonFM && (playingList.index >= (playingList.raw.length - 2))) {
           this.getPersonFM();
         }
-        if (id == playingId) {
+        if (String(id) === String(playingId)) {
            // 如果是因为评论、歌词的更新，就不在走下面的步骤了
           return;
         }
@@ -331,16 +370,26 @@
 
       // audio加载完成
       pDom.oncanplaythrough = () => {
-        if (this.playing && this.playNow.url === pDom.src) {
-          pDom.play();
+        if (this.playingUrl === this.playNow.pUrl) {
+          dispatch('setLoading', false);
+
+          if (this.playing) {
+            const playDom = () => {
+              if (!this.isReading) {
+                pDom.play();
+              } else {
+                setTimeout(() => playDom(), 500);
+              }
+            };
+            playDom();
+          }
         }
-        dispatch('setDownLoading', false);
         this.playerInfo = { duration: pDom.duration, current: 0 };
         dispatch('updatePlayingPercent', 0);
       };
       // 如果不播放了可能是url过期了
       pDom.onerror = (err) => {
-        const { id, mid, url } = this.playNow;
+        const { id } = this.playNow;
         if (!id) {
           return;
         }
@@ -348,17 +397,17 @@
           return this.cutSong('playNext');
         }
         this.errorId = id;
-        dispatch('setDownLoading', true);
+        dispatch('setLoading', true);
+        setTimeout(() => {
+          console.log(pDom.error, 'hello world');
+          if (pDom.error) {
+            this.cutSong('playNext');
+          }
+        }, 50000);
         switch (this.playNow.from) {
           case 'qq':
-            request({
-              api: 'QQ_GET_URLS',
-              data: { id: mid }
-            }).then((res) => {
-              dispatch('updateSongDetail', { id, url: res.data[mid] });
-            });
-            break;
           case 'migu':
+            dispatch('updateSongDetail', { id, purl: '' });
             break;
           default:
             request({ api: 'SONG_URL', data: { id }})
@@ -367,12 +416,12 @@
                 if (!url) {
                   return this.cutSong('playNext');
                 }
-                dispatch('updateSongDetail', { url, br, id });
+                dispatch('updateSongDetail', { url, br, id, pUrl: url });
               });
         }
       };
       // audio正在加载音乐
-      pDom.onwaiting = () => dispatch('setDownLoading', true);
+      // pDom.onwaiting = () => console.log('waiting');
       // audio放完了
       pDom.onended = () => {
         if (this.orderType !== 'danquxunhuan') {

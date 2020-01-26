@@ -114,6 +114,7 @@
       const draw = () => {
         const { musicDataMap = { 0: [] }, AnalyserNode, AudioBufferSourceNode, readNewMusic, trueStartTime = 0  } = window;
         const { musicRandomMap, musicRandomMap2, musicParticleList, musicBeforeData } = window.musicOtherData;
+        const dispatch = this.$store.dispatch;
         const drawMusicType = Storage.get('drawMusicType');
         const num = (Storage.get('drawMusicNum') || 64);
         const { ctx, pageWidth, pageHeight } = this;
@@ -129,7 +130,6 @@
         }
         // 发现解析有延迟，这里就当作解析到第一个有音频信号的时候再播放
         if (readNewMusic) {
-          pDom.pause();
           let i = dataArr.findIndex((v) => v !== 0);
           if (i === -1) {
             const { ctx } = this;
@@ -139,10 +139,10 @@
             return;
           }
           if (i > -1) {
-            window.readNewMusic = false;
-            window.trueStartTime = AudioBufferSourceNode.context.currentTime;
-            if (VUE_APP.$store.getters.isPlaying) {
-              setTimeout(() => pDom.play(), 500);
+            if (VUE_APP.$store.getters.isReading) {
+              window.readNewMusic = false;
+              window.trueStartTime = AudioBufferSourceNode.context.currentTime;
+              setTimeout(() => dispatch('setReading', false), 1000);
             }
           }
         }

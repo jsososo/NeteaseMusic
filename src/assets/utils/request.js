@@ -796,6 +796,92 @@ export const getQQUrls = (arr, sid) => {
   })
 };
 
+// 获取高品质歌曲的
+export const getHighQualityUrl = async (id, type, updateSong) => {
+  const allSongs = VUE_APP.$store.getters.getAllSongs;
+  const song = allSongs[id];
+  if (!song.url) {
+    return '';
+  }
+  let [url, br, songEndType] = ['', song.br, br > 320000 ? 'flac' : 'mp3'];
+
+  if (String(type) !== '128') {
+    if (song.qqId) {
+      const typeArr = ['flac', '320', '128'];
+      let i = typeArr.indexOf(type);
+      while (i < typeArr.length && !url)  {
+        try {
+          const mediaIdMatch = song.url.match(/(C4|F0|M8|M5|A0)00(.+)\.(m4a|flac|mp3)/);
+          const mediaId = mediaIdMatch ? mediaIdMatch[2] : '';
+          const urlReq = await request({
+            api: 'QQ_DOWN_URL',
+            data: { id: song.qqId, type, mediaId }
+          });
+          if (urlReq.result === 100) {
+            url = urlReq.data;
+            songEndType = {
+              320: 'mp3',
+              128: 'mp3',
+              flac: 'flac',
+            }[type];
+            br = {
+              320: 320000,
+              128: 128000,
+              flac: 960000,
+            }[type];
+          }
+        } catch (err) {
+          // console.error(`获取歌曲高品质链接错误${err.message}`);
+        }
+        i += 1;
+        type = typeArr[i];
+      }
+    }
+    // 别的网站下载会有跨域问题
+    url = url.replace(/^(.+)qq.com/, 'http://122.226.161.16/amobile.music.tc.qq.com');
+
+    if (song.miguId) {
+      url = '';
+      const typeArr = ['flac', '320', '128'];
+      const miguUrlInfo = Storage.get('miguUrlInfo', true, '{}');
+      let urlInfo = miguUrlInfo[song.miguId];
+      if (!urlInfo) {
+        urlInfo = await request({
+          api: 'MIGU_URL_GET',
+          data: { id: song.miguId, cid: song.cid }
+        });
+        urlInfo = urlInfo.data;
+      }
+      let i = typeArr.indexOf(type);
+      const tArr = [
+        { end: 'flac', key: 'flac', br: 960000 },
+        { end: 'mp3', key: '320k', br: 320000 },
+        { end: 'mp3', key: '128k', br: 128000 },
+      ];
+      while (i < typeArr.length && !url) {
+        url = urlInfo[tArr[i].key];
+        songEndType = tArr[i].end;
+        br = tArr[i].br;
+      }
+      url = encodeURI(url);
+      // migu 的有跨域问题，所以在服务器上用 nginx 配以下代理
+      url = url.replace('tyst.migu.cn', `${window.location.host}/miguSongs`);
+    }
+  }
+  url = url || song.url;
+  if (updateSong) {
+    VUE_APP.$store.dispatch('updateSongDetail', {
+      url,
+      br,
+    })
+  }
+  return {
+    url,
+    songEndType,
+    br,
+  }
+};
+
 // 下载
 export const download = async (id, songName, forceReq) => {
   window.event && window.event.stopPropagation();
@@ -806,80 +892,10 @@ export const download = async (id, songName, forceReq) => {
   if (!song.url) {
     return VUE_APP.$message.warning('没有这首歌呀');
   }
-  let url = song.url;
-  let songEndType = song.br > 320000 ? 'flac' : 'mp3';
-  let br = song.br;
-  let songCid = '';
+  let songCid = song.cid;
 
-  if (song.qqId) {
-    url = '';
-    let type = Storage.get('downSize') || 'flac';
-    const typeArr = ['flac', '320', '128'];
-    let i = typeArr.indexOf(type);
-    while (i < typeArr.length && !url)  {
-      try {
-        const mediaIdMatch = song.url.match(/C400(.+)\.m4a/);
-        const mediaId = mediaIdMatch ? mediaIdMatch[1] : '';
-        const urlReq = await request({
-          api: 'QQ_DOWN_URL',
-          data: { id: song.qqId, type, mediaId }
-        });
-        if (urlReq.result === 100) {
-          url = urlReq.data;
-          songEndType = {
-            320: 'mp3',
-            128: 'mp3',
-            flac: 'flac',
-          }[type];
-          br = {
-            320: 320000,
-            128: 128000,
-            flac: 960000,
-          }[type];
-        }
-      } catch (err) {
-        console.log(err.message);
-      }
-      i += 1;
-      type = typeArr[i];
-    }
+  let { url, songEndType, br } = await getHighQualityUrl(id, Storage.get('downSize') || 'flac');
 
-    if (!url) {
-      url = song.url;
-      songEndType = 'm4a';
-    }
-  }
-
-  if (song.miguId) {
-    url = '';
-    let type = Storage.get('downSize') || 'flac';
-    const typeArr = ['flac', '320', '128'];
-    const miguUrlInfo = Storage.get('miguUrlInfo', true, '{}');
-    let urlInfo = miguUrlInfo[song.miguId];
-    if (!urlInfo) {
-      urlInfo = await request({
-        api: 'MIGU_URL_GET',
-        data: { id: song.miguId, cid: song.cid }
-      });
-    }
-    let i = typeArr.indexOf(type);
-    songCid = song.cid;
-    const tArr = [
-      { end: 'flac', key: 'flac', br: 960000 },
-      { end: 'mp3', key: '320k', br: 320000 },
-      { end: 'mp3', key: '128k', br: 128000 },
-    ];
-    while (i < typeArr.length && !url) {
-      url = encodeURI(urlInfo[tArr[i].key]);
-      songEndType = tArr[i].end;
-      br = tArr[i].br;
-    }
-    // migu 的有跨域问题，所以在服务器上用 nginx 配以下代理
-    url = url.replace('tyst.migu.cn', `${window.location.host}/miguSongs`);
-  }
-
-  // 别的网站下载会有跨域问题
-  url = url.replace(/^(.+)qq.com/, 'http://122.226.161.16/amobile.music.tc.qq.com');
   const downId = `${new Date().getTime()}${id}`;
   const name = songName ? songName : `${song.ar.map((a) => a.name).join('、')}-${song.name}.${songEndType}`;
 
@@ -913,16 +929,16 @@ export const getPersonFM = () => (
 export const handleQQComments = (list) => (list || []).map((obj) => ({
   commentId: obj.commentid,
   content: obj.middlecommentcontent ?
-    (obj.middlecommentcontent.map((r) => `回复 ${r.replyednick}：${r.subcommentcontent.replace(/\\n/g, '<br/>')}`).join(' //')) :
+    (obj.middlecommentcontent.map((r) => `回复 ${r.replyednick}：${(r.subcommentcontent || '').replace(/\\n/g, '<br/>')}`).join(' //')) :
     (obj.rootcommentcontent || '').replace(/\\n/g, '<br/>'),
   time: obj.time * 1000,
   beReplied: obj.middlecommentcontent ? [
     {
-      content: obj.rootcommentcontent.replace(/\\n/g, '<br/>'),
+      content: (obj.rootcommentcontent || '').replace(/\\n/g, '<br/>'),
       user: {
         avatarUrl: '',
         userId: obj.rootcommentuin,
-        nickname: obj.rootcommentnick.replace('@', ''),
+        nickname: (obj.rootcommentnick || '').replace('@', ''),
       }
     }
   ] : [],
@@ -1044,14 +1060,14 @@ export const getMusicData = (url) => {
     request.onerror = function () {
       window.readNewMusic = false;
       if (VUE_APP.$store.getters.isPlaying) {
-        document.getElementById('m-player').play();
+        VUE_APP.$store.dispatch('setReading', false);
       }
-    }
+    };
     request.send();
   } catch (err) {
     window.readNewMusic = false;
     if (VUE_APP.$store.getters.isPlaying) {
-      document.getElementById('m-player').play();
+      VUE_APP.$store.dispatch('setReading', false);
     }
   }
 };

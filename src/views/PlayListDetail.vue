@@ -1,5 +1,5 @@
 <template>
-  <div class="list-detail-container">
+  <div class="list-detail-container" @scroll="getShowIndex">
     <div v-if="!listInfo && loading && list.length === 0" class="text-center fc_fff ft_20" style="padding-top: 100px;opacity: 0.8;letter-spacing: 2px;">拼命查找了！</div>
     <div v-if="!loading" class="list-info-detail">
       <div v-if="listInfo">
@@ -30,7 +30,7 @@
     </div>
     <div class="song-list" v-if="allList[trueId] || id === 'playing'">
       <div
-        :class="`song-item ${playNow.id === s && 'played'} ${!allSongs[s].url && 'disabled'}`"
+        :class="`song-item ${playNow.id === s ? 'played' : ''} ${!allSongs[s].url ? 'disabled' : ''} ${((i < smallIndex) || (i > bigIndex)) ? 'hidden' : ''}`"
         v-for="(s, i) in list"
         :key="`${s}-${i}`"
         @click="playMusic(s)"
@@ -86,6 +86,8 @@
         listInfo: null,
         loading: true,
         platform: getQueryFromUrl('from') || '163',
+        smallIndex: 0,
+        bigIndex: 0,
       }
     },
     computed: {
@@ -101,6 +103,9 @@
     watch: {
       allList() {
         this.searchList();
+      },
+      list() {
+        this.$nextTick(this.getShowIndex);
       },
       search() {
         this.searchList();
@@ -127,15 +132,19 @@
       this.init();
     },
     methods: {
-       init() {
-         this.loading = false;
-        if (this.id === 'daily') {
+      init() {
+        const { id, platform } = this;
+        this.loading = false;
+        if (id === 'daily') {
+          this.listInfo = null;
           return this.list = this.allList.daily || [];
         }
-        if (this.id === 'playing') {
+        if (id === 'playing') {
+          this.listInfo = null;
           return this.list = this.playingList.trueList || [];
         }
         this.loading = true;
+        this.trueId = `${{163: '', qq: 'qq', migu: 'migu'}[platform] || ''}${id}`;
         switch (this.platform) {
           case 'qq':
             getQQPlayList(this.id)
@@ -146,6 +155,7 @@
                   coverImgUrl: logo,
                   platform: 'qq',
                 };
+                this.list = this.allList[this.trueId] || [];
                 this.loading = false;
               });
             break;
@@ -154,6 +164,7 @@
               .then(async ({ totalPage, list, name, creator, picUrl: coverImgUrl, playCount }) => {
                 this.$store.dispatch('query163List', { songs: list, listId: this.trueId });
                 this.listInfo = { name, creator, coverImgUrl, playCount, platform: 'migu' };
+                this.list = this.allList[this.trueId] || [];
                 this.loading = false;
                 for (let i = 2; i <= totalPage; i++) {
                   const { list } = await getMiguPlayList(this.id, i);
@@ -177,8 +188,11 @@
         if (!song.url) {
           return;
         }
+        let list = allList[trueId];
+        if (trueId === 'playing')
+          list = this.playingList.trueList;
         dispatch('updatePlayNow', song);
-        dispatch('updatePlayingList', { list: allList[trueId], id: trueId });
+        dispatch('updatePlayingList', { list, id: trueId });
         dispatch('updatePlayingStatus', true);
       },
       playListShow() {
@@ -248,6 +262,13 @@
         this.$store.dispatch('setOperation', { data: { tracks, pid, op }, type });
       },
       download,
+      getShowIndex() {
+        const dom = document.getElementsByClassName('list-detail-container')[0];
+        const smallHeight = Math.max(dom.scrollTop - 500, 0);
+        this.smallIndex = smallHeight / 71;
+        const bigHeight = dom.clientHeight + dom.scrollTop + 300;
+        this.bigIndex = bigHeight / 71;
+      }
     }
   }
 </script>
@@ -354,6 +375,12 @@
           .song-order {
             color: #409EFF80;
             text-shadow: 0 0 5px #409EFF;
+          }
+        }
+
+        &.hidden {
+          span, img, div {
+            display: none !important;
           }
         }
 

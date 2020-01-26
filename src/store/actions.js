@@ -75,5 +75,11 @@ export default {
   },
   updateMode: ({ commit }, data) => {
     commit(types.UPDATE_MODE, data);
+  },
+  setLoading: ({ commit }, data) => {
+    commit(types.SET_LOADING, data);
+  },
+  setReading: ({ commit }, data) => {
+    commit(types.SET_READING, data);
   }
 }

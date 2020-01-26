@@ -46,6 +46,7 @@ export default {
     open: false,
   },
   loading: false,
+  reading: false,
   downloadInfo: { // 下载信息
     count: 0,
     list: [],

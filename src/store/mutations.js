@@ -337,5 +337,11 @@ export default {
 
   [types.UPDATE_MODE](state, data) {
     state.mode = data;
+  },
+  [types.SET_LOADING](state, data) {
+    state.loading = data;
+  },
+  [types.SET_READING](state, data) {
+    state.reading = data;
   }
 }

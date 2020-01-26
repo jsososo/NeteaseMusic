@@ -45,6 +45,21 @@
       </div>
     </div>
 
+    <div class="setting-title">播放设置</div>
+    <div class="input-row">
+      <div class="input-row">
+        <div class="input-label">默认品质：</div>
+        <div class="input-content">
+          <el-radio-group v-model="listenSize">
+            <el-radio-button label="128">128k</el-radio-button>
+            <el-radio-button label="320">320k</el-radio-button>
+            <el-radio-button label="flac">无损</el-radio-button>
+          </el-radio-group>
+          <div class="input-explain">限定企鹅/咪咕音乐！</div>
+        </div>
+      </div>
+    </div>
+
     <div class="setting-title">下载设置</div>
     <div class="input-row">
       <div class="input-label">默认品质：</div>
@@ -54,7 +69,7 @@
           <el-radio-button label="320">320k</el-radio-button>
           <el-radio-button label="flac">无损</el-radio-button>
         </el-radio-group>
-        <div class="input-explain">限定企鹅音乐！</div>
+        <div class="input-explain">限定企鹅/咪咕音乐！</div>
       </div>
     </div>
     <div class="input-row">
@@ -82,6 +97,7 @@
         repeatDown: Storage.get('repeatDown') || '0',
         downSize: Storage.get('downSize') || 'flac',
         drawMusicStyle: Storage.get('drawMusicStyle') || 'rect',
+        listenSize: Storage.get('listenSize') || '128',
       }
     },
     watch: {
@@ -100,6 +116,9 @@
       },
       downSize(v) {
         Storage.set('downSize', v);
+      },
+      listenSize(v) {
+        Storage.set('listenSize', v);
       },
       drawMusicStyle(v) {
         Storage.set('drawMusicStyle', v);

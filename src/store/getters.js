@@ -39,25 +39,13 @@ export default {
   getPlayingPercent: (state) => {
     return state.playingPercent;
   },
-  // 是否显示评论
-  getShowComment: (state) => {
-    return state.showComment;
-  },
   // 获取电台信息
   getRadioInfo: (state) => {
     return state.radioInfo;
   },
-  // 获取下载列表信息
-  getDownList: (state) => {
-    return state.downloadList;
-  },
   // 获取全部的歌曲
   getAllSongs(state) {
     return state.allSongs;
-  },
-  // 获取展示列表
-  getShowList(state) {
-    return state.showList;
   },
   // 是否正在下载歌曲
   isDownloading(state) {
@@ -75,14 +63,6 @@ export default {
   isLoading(state) {
     return state.loading;
   },
-  // 获取右侧内容名
-  getListContent(state) {
-    return state.listContent;
-  },
-  // 获取是搜索列表哪还是qq音乐
-  getSearchKey(state) {
-    return state.searchKey;
-  },
   isShowCoverImg(state) {
     return state.showCoverImg;
   },
@@ -94,5 +74,8 @@ export default {
   },
   isPersonFM(state) {
     return state.isPersonFM;
+  },
+  isReading(state) {
+    return state.reading;
   }
 }

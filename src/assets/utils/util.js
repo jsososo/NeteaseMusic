@@ -57,6 +57,10 @@ export const messageHelp = (id) => {
       content: '增加了新的频谱图样式！去设置里看看呀',
       time: '20-01-10',
     },
+    {
+      content: '播放也支持音质选择啦！(企鹅/咪咕限定)',
+      time: '20-01-26',
+    }
   ];
   if (id === 'newInfo') {
     const newInfoIndex = Number(Storage.get('notify-new-index') || 0);
