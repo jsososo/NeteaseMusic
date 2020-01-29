@@ -179,7 +179,14 @@
     },
     watch: {
       keywords(v) {
-        this.search('keywords', v);
+        const checkKeys = () => {
+          setTimeout(() => {
+            if (v === this.keywords) {
+              this.search('keywords', v);
+            }
+          }, 500);
+        };
+        checkKeys();
       }
     },
     created() {

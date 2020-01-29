@@ -104,6 +104,54 @@
       ctx.fillRect(100, 100, 100, 100);
 
       const pDom = document.getElementById('m-player');
+      // 贝塞尔曲线
+      const quadraticCurve = ({ x = [], y = [], strokeStyle, lineWidth }) => {
+        let px = 0, py = 0, phx, phy, hx, hy;
+        const hxArr = [];
+        const hyArr = [];
+        ctx.strokeStyle = strokeStyle;
+        ctx.lineWidth = lineWidth;
+        x.forEach((v, i) => {
+          hx = (px + v) / 2;
+          hy = (py + y[i]) / 2;
+          switch (i) {
+            case 0:
+              break;
+            case 1:
+              ctx.beginPath();
+              ctx.moveTo(hx, hy);
+              break;
+            default:
+              ctx.quadraticCurveTo(px, py, hx, hy);
+              break;
+          }
+          px = v;
+          py = y[i];
+          phx = hx;
+          phy = hy;
+          if (hx === hx) {
+            hxArr.push(hx);
+            hyArr.push(hy);
+          }
+        });
+        ctx.stroke();
+        return {
+          x: hxArr,
+          y: hyArr,
+        }
+
+      };
+      // 画各种直线
+      const drawLines = (lines, { strokeStyle: commonStrokeStyle, lineWidth: commonLineWidth } = {}) => {
+        lines.forEach(({x, y, x1, y1, strokeStyle, lineWidth}) => {
+          ctx.strokeStyle = strokeStyle || commonStrokeStyle;
+          ctx.lineWidth = lineWidth || commonLineWidth;
+          ctx.beginPath();
+          ctx.moveTo(x, y);
+          ctx.lineTo(x1, y1);
+          ctx.stroke();
+        });
+      };
 
       window.onresize = () => {
         this.pageWidth = window.innerWidth;
@@ -247,59 +295,105 @@
             if (typeof v !== 'number') {
               return;
             }
-            let [x, y, w, h, y1, y2] = [
+            let [x, y, w, h, y1, y2, a, r] = [
               pageWidth * i / num,
               pageHeight - 80 - v / 256 * pageHeight / 2,
               pageWidth * 0.9 / num,
               v / 256 * pageHeight / 2,
               pageHeight - 80 - (randomArr[i] || 0) / 256 * pageHeight / 2,
               pageHeight - 80 - (randomArr2[i] || 0) / 256 * pageHeight / 2,
+              Math.PI / (num / 4 * 3),
+              pageHeight / 4,
             ];
+            let angle = {
+              1: a * i,
+              2: a * (i - num / 8),
+            }[drawMusicType];
+            let gradient = null;
             switch (drawMusicStyle) {
+              case 'circle':
+                r *= 0.8;
+                if (angle > Math.PI || angle < 0)
+                  return;
+                if (angle === 0) {
+                  prevObj = {
+                    lines: [],
+                  }
+                }
+                prevObj.lines.push({
+                  x: pageWidth / 2 + Math.sin(angle) * (r - 10 - h / 20 * (i % 2 * 2 -1)),
+                  y: pageHeight / 2 - Math.cos(angle) * (r - 10 - h / 20 * (i % 2 * 2 -1)),
+                  x1: pageWidth / 2 + Math.sin(angle) * (r + h / 6 * (i % 2 * 2 -1)),
+                  y1: pageHeight / 2 - Math.cos(angle) * (r + h / 6 * (i % 2 * 2 -1)),
+                });
+                if (angle > 0 && angle < Math.PI) {
+                  prevObj.lines.push({
+                    x: pageWidth / 2 - Math.sin(angle) * (r - 10 - h / 20 * (i % 2 * 2 -1)),
+                    y: pageHeight / 2 - Math.cos(angle) * (r - 10 - h / 20 * (i % 2 * 2 -1)),
+                    x1: pageWidth / 2 - Math.sin(angle) * (r + h / 6 * (i % 2 * 2 -1)),
+                    y1: pageHeight / 2 - Math.cos(angle) * (r + h / 6 * (i % 2 * 2 -1)),
+                  });
+                }
+                if (angle === Math.PI) {
+                  gradient = ctx.createRadialGradient(pageWidth / 2,pageHeight / 2, 0,pageWidth / 2,pageHeight / 2, r * 1.2);
+                  gradient.addColorStop(0, '#409EFF00');
+                  gradient.addColorStop(0.5,'#409EFF66');
+                  gradient.addColorStop(1,'#5cB87a66');
+                  drawLines(prevObj.lines, { lineWidth: 3 * 128 / num, strokeStyle: gradient });
+                }
+                break;
+              case 'circle2':
+                r *= 0.8 * (1 - i / arr.length) * (1 - i / arr.length);
+                angle *= 4;
+                if (angle > 4 * Math.PI || angle < 0)
+                  return;
+                if (angle === 0) {
+                  prevObj = {
+                    lines: [],
+                    max: 0,
+                  }
+                }
+                if (angle > 0 && angle < Math.PI * 4) {
+                  prevObj.max = Math.max(prevObj.max, v);
+                  const l = {
+                    x: pageWidth / 2 + Math.sin(angle) * (r + 2 + v / 256 * r * 1.2),
+                    y: pageHeight / 2 - Math.cos(angle) * (r + 2 + v / 256 * r * 1.2),
+                    x1: pageWidth / 2 + Math.sin(angle) * r,
+                    y1: pageHeight / 2 - Math.cos(angle) * r,
+                    lineWidth: Math.max(Math.PI * 4 * r / num, 1),
+                  };
+                  gradient = ctx.createLinearGradient(l.x, l.y, l.x1, l.y1);
+                  gradient.addColorStop(1,'#409EFF66');
+                  gradient.addColorStop(0,'#5cB87a66');
+                  l.strokeStyle = gradient;
+                  prevObj.lines.push(l);
+                }
+                if (angle === 4 * Math.PI) {
+                  gradient = ctx.createRadialGradient(pageWidth / 2,pageHeight / 2, 0,pageWidth / 2,pageHeight / 2, r * 1.5);
+                  gradient.addColorStop(0, '#409EFF00');
+                  gradient.addColorStop(0.5,'#409EFF66');
+                  gradient.addColorStop(1,'#5cB87a66');
+                  drawLines(prevObj.lines, { strokeStyle: gradient });
+                }
+                break;
               case 'line':
                 if (i === 0) {
                   prevObj = {
-                    px: x,
-                    py: y,
-                    cx: x,
-                    cy: y,
-                    cy1: y1,
-                    cy2: y2,
-                    py1: y1,
-                    py2: y2,
+                    x: [],
+                    y: [],
+                    y1: [],
+                    y2: [],
                   };
                 } else {
-                  const { px, py, py1, cx, cy, cy1, py2, cy2 } = prevObj;
-                  ctx.strokeStyle = '#409EFF33';
-                  ctx.beginPath();
-                  ctx.lineWidth = 10;
-                  ctx.moveTo(cx, cy);
-                  ctx.quadraticCurveTo(px, py, (x + px) / 2, (y + py) / 2);
-                  ctx.stroke();
-
-                  ctx.strokeStyle = '#5cB87a33';
-                  ctx.beginPath();
-                  ctx.lineWidth = 3;
-                  ctx.moveTo(cx, cy1);
-                  ctx.quadraticCurveTo(px, py1, (x + px) / 2, (y1 + py1) / 2);
-                  ctx.stroke();
-
-                  ctx.strokeStyle = '#E6A23C33';
-                  ctx.beginPath();
-                  ctx.lineWidth = 5;
-                  ctx.moveTo(cx, cy2);
-                  ctx.quadraticCurveTo(px, py2, (x + px) / 2, (y2 + py2) / 2);
-                  ctx.stroke();
-                  prevObj = {
-                    px: x,
-                    py: y,
-                    cx: (x + px) / 2,
-                    cy: (y + py) / 2,
-                    cy1: (y1 + py1) / 2,
-                    cy2: (y2 + py2) / 2,
-                    py1: y1,
-                    py2: y2,
-                  };
+                  prevObj.x.push(x);
+                  prevObj.y.push(y);
+                  prevObj.y1.push(y1);
+                  prevObj.y2.push(y2);
+                  if (i === arr.length - 1) {
+                    quadraticCurve({ x: prevObj.x, y: prevObj.y, lineWidth: 8, strokeStyle: '#409EFF33' });
+                    quadraticCurve({ x: prevObj.x, y: prevObj.y1, lineWidth: 3, strokeStyle: '#5cB87a33' });
+                    quadraticCurve({ x: prevObj.x, y: prevObj.y2, lineWidth: 5, strokeStyle: '#E6A23C33' });
+                  }
                 }
                 break;
               case 'line2':
@@ -307,64 +401,35 @@
                 y = pageHeight * 0.5 - v / 256 * pageHeight * 0.3;
                 if (i === 0) {
                   prevObj = {
-                    px: x,
-                    py: y,
-                    cx: x,
-                    cy: y,
-                    cy1: y1,
-                    py1: y1,
-                  };
-                } else if (i === 1) {
-                  let { px, py, py1 } = prevObj;
-                  prevObj = {
-                    px: x,
-                    py: y,
-                    cx: (x + px) / 2,
-                    cy: (y + py) / 2,
-                    cy1: (y1 + py1) / 2,
-                    py1: y1,
-                  };
+                    x: [],
+                    y: [],
+                    y1: [],
+                  }
                 } else {
-                  let color = '#409EFF22';
-                  if (y === y1) {
-                    color = '#409EFF10'
+                  prevObj.x.push(x);
+                  prevObj.y.push(y);
+                  prevObj.y1.push(y1);
+
+                  if (i === arr.length - 1) {
+                    const data1 = quadraticCurve({ x: prevObj.x, y: prevObj.y, strokeStyle: '#409EFF22', lineWidth: 5 });
+                    const data2 = quadraticCurve({ x: prevObj.x, y: prevObj.y1, strokeStyle: '#409EFF22', lineWidth: 5 });
+                    const lines = [];
+                    data1.x.forEach((x, i) => {
+                      let y = data1.y[i],
+                        y1 = data2.y[i];
+                      if (y1 - y > 5) {
+                        const gradient = ctx.createLinearGradient(0, y, 0, y1);
+                        gradient.addColorStop(0, '#409EFF00');
+                        gradient.addColorStop(0.5, '#409EFF99');
+                        gradient.addColorStop(1, '#409EFF00');
+                        lines.push({
+                          x, y, x1: x, y1, strokeStyle: gradient,
+                        });
+                      }
+                    });
+                    lines.shift();
+                    drawLines(lines, { lineWidth: 3 });
                   }
-                  let { px, py, py1, cx, cy, cy1 } = prevObj;
-                  ctx.strokeStyle = color;
-                  ctx.beginPath();
-                  ctx.lineWidth = 5;
-                  ctx.moveTo(cx, cy);
-                  ctx.quadraticCurveTo(px, py, (x + px) / 2, (y + py) / 2);
-                  ctx.stroke();
-
-
-                  ctx.beginPath();
-                  ctx.strokeStyle = color;
-                  ctx.lineWidth = 5;
-                  ctx.moveTo(cx, cy1);
-                  ctx.quadraticCurveTo(px, py1, (x + px) / 2, (y1 + py1) / 2);
-                  ctx.stroke();
-
-                  if (cy1 - cy > 5) {
-                    const gradient = ctx.createLinearGradient(x,y,x,y1);
-                    gradient.addColorStop(0,'#409EFF00');
-                    gradient.addColorStop(0.5,'#409EFF44');
-                    gradient.addColorStop(1,'#409EFF00');
-                    ctx.strokeStyle = gradient;
-                    ctx.beginPath();
-                    ctx.lineWidth = 5;
-                    ctx.moveTo(cx, cy + 2);
-                    ctx.lineTo(cx, cy1 - 2);
-                    ctx.stroke();
-                  }
-                  prevObj = {
-                    px: x,
-                    py: y,
-                    cx: (x + px) / 2,
-                    cy: (y + py) / 2,
-                    cy1: (y1 + py1) / 2,
-                    py1: y1,
-                  };
                 }
                 break;
               case 'particle2':

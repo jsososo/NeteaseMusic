@@ -30,6 +30,8 @@
           <el-radio-button label="line2">曲线2</el-radio-button>
           <el-radio-button label="particle">泡泡</el-radio-button>
           <el-radio-button label="particle2">粒子</el-radio-button>
+          <el-radio-button label="circle">圈圈</el-radio-button>
+          <el-radio-button label="circle2">海螺</el-radio-button>
         </el-radio-group>
       </div>
     </div>
@@ -147,6 +149,7 @@
       .input-content {
         display: inline-block;
         vertical-align: top;
+        max-width: 400px;
       }
       .input-explain {
         font-size: 12px;

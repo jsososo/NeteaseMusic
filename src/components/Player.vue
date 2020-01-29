@@ -399,7 +399,6 @@
         this.errorId = id;
         dispatch('setLoading', true);
         setTimeout(() => {
-          console.log(pDom.error, 'hello world');
           if (pDom.error) {
             this.cutSong('playNext');
           }

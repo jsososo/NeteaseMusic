@@ -60,6 +60,10 @@ export const messageHelp = (id) => {
     {
       content: '播放也支持音质选择啦！(企鹅/咪咕限定)',
       time: '20-01-26',
+    },
+    {
+      content: '音频图更新啦！！',
+      time: '20-01-29',
     }
   ];
   if (id === 'newInfo') {
