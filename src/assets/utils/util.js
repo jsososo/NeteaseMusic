@@ -64,6 +64,10 @@ export const messageHelp = (id) => {
     {
       content: '音频图更新啦！！',
       time: '20-01-29',
+    },
+    {
+      content: '可以前往设置页，自行加入企鹅音乐Cookie啦，未来会支持更多操作',
+      time: '20-01-31',
     }
   ];
   if (id === 'newInfo') {

@@ -21,9 +21,10 @@
   import PageLeft from './components/PageLeft';
   import Playing from './components/Playing';
   import Operation from './components/Operation';
-  import { loginStatus } from './assets/utils/request';
+  import { loginStatus, getCookie } from './assets/utils/request';
   import { messageHelp } from "./assets/utils/util";
   import { mapGetters } from 'vuex';
+  import {getQueryFromUrl} from "./assets/utils/stringHelper";
 
   export default {
     name: 'App',
@@ -45,6 +46,10 @@
     created() {
       window.VUE_APP = this;
       window.QUERY_QQ_TIMES = 1;
+      const quin = getQueryFromUrl('q');
+      if (quin && (Storage.get('openSetQCookie') || '0') !== '0') {
+        getCookie(getQueryFromUrl('q'));
+      }
       loginStatus();
 
       if(/Android|webOS|iPhone|iPod|BlackBerry/i.test(navigator.userAgent)) {
@@ -74,7 +79,8 @@
           PLAY: '32',
           QUIT_SIMPLE: '27',
           TO_SIMPLE: ''
-        })
+        }),
+        openSetQCookie: 0,
       });
 
       // 初始化一下下载记录
@@ -310,6 +316,8 @@
               2: a * (i - num / 8),
             }[drawMusicType];
             let gradient = null;
+            const isLast = (i === arr.length - 1);
+            const isFirst = i === 0;
             switch (drawMusicStyle) {
               case 'circle':
                 r *= 0.8;
@@ -321,17 +329,17 @@
                   }
                 }
                 prevObj.lines.push({
-                  x: pageWidth / 2 + Math.sin(angle) * (r - 10 - h / 20 * (i % 2 * 2 -1)),
-                  y: pageHeight / 2 - Math.cos(angle) * (r - 10 - h / 20 * (i % 2 * 2 -1)),
-                  x1: pageWidth / 2 + Math.sin(angle) * (r + h / 6 * (i % 2 * 2 -1)),
-                  y1: pageHeight / 2 - Math.cos(angle) * (r + h / 6 * (i % 2 * 2 -1)),
+                  x: pageWidth / 2 + Math.sin(angle) * (r - 10 - h / 20),
+                  y: pageHeight / 2 - Math.cos(angle) * (r - 10 - h / 20),
+                  x1: pageWidth / 2 + Math.sin(angle) * (r + h / 6),
+                  y1: pageHeight / 2 - Math.cos(angle) * (r + h / 6),
                 });
                 if (angle > 0 && angle < Math.PI) {
                   prevObj.lines.push({
-                    x: pageWidth / 2 - Math.sin(angle) * (r - 10 - h / 20 * (i % 2 * 2 -1)),
-                    y: pageHeight / 2 - Math.cos(angle) * (r - 10 - h / 20 * (i % 2 * 2 -1)),
-                    x1: pageWidth / 2 - Math.sin(angle) * (r + h / 6 * (i % 2 * 2 -1)),
-                    y1: pageHeight / 2 - Math.cos(angle) * (r + h / 6 * (i % 2 * 2 -1)),
+                    x: pageWidth / 2 - Math.sin(angle) * (r - 10 - h / 20),
+                    y: pageHeight / 2 - Math.cos(angle) * (r - 10 - h / 20),
+                    x1: pageWidth / 2 - Math.sin(angle) * (r + h / 6),
+                    y1: pageHeight / 2 - Math.cos(angle) * (r + h / 6),
                   });
                 }
                 if (angle === Math.PI) {
@@ -343,7 +351,7 @@
                 }
                 break;
               case 'circle2':
-                r *= 0.8 * (1 - i / arr.length) * (1 - i / arr.length);
+                r *= 0.8 * (1 - (angle / a) / arr.length) * (1 - (angle / a) / arr.length);
                 angle *= 4;
                 if (angle > 4 * Math.PI || angle < 0)
                   return;
@@ -356,8 +364,8 @@
                 if (angle > 0 && angle < Math.PI * 4) {
                   prevObj.max = Math.max(prevObj.max, v);
                   const l = {
-                    x: pageWidth / 2 + Math.sin(angle) * (r + 2 + v / 256 * r * 1.2),
-                    y: pageHeight / 2 - Math.cos(angle) * (r + 2 + v / 256 * r * 1.2),
+                    x: pageWidth / 2 + Math.sin(angle) * (r + 2 + v / 256 * r * (a / angle + 1)),
+                    y: pageHeight / 2 - Math.cos(angle) * (r + 2 + v / 256 * r * (a / angle + 1)),
                     x1: pageWidth / 2 + Math.sin(angle) * r,
                     y1: pageHeight / 2 - Math.cos(angle) * r,
                     lineWidth: Math.max(Math.PI * 4 * r / num, 1),
@@ -376,60 +384,90 @@
                   drawLines(prevObj.lines, { strokeStyle: gradient });
                 }
                 break;
+              case 'circle3':
+                angle *= 2;
+                if (angle < 0 || angle > Math.PI * 2)
+                  return;
+                if (angle === 0) {
+                  prevObj = {
+                    val: [],
+                    v: 0,
+                    count: 0,
+                  }
+                }
+                prevObj.v += v;
+                prevObj.count += 1;
+                if ((angle / a / 2) % 4 === 3) {
+                  prevObj.val.push(prevObj.v / prevObj.count);
+                  prevObj.v = 0;
+                  prevObj.count = 0;
+                }
+                if (angle === Math.PI * 2) {
+                  let newAngle = Math.PI * 2 / prevObj.val.length;
+                  gradient = ctx.createRadialGradient(pageWidth / 2,pageHeight / 2, 0,pageWidth / 2,pageHeight / 2, r * 1.5);
+                  gradient.addColorStop(0, '#409EFF00');
+                  gradient.addColorStop(0.5,'#409EFF66');
+                  gradient.addColorStop(1,'#5cB87a66');
+                  prevObj.val.forEach((v, i) => {
+                    ctx.lineWidth = Math.max(v / 300 * r, 5);
+                    ctx.strokeStyle = gradient;
+                    ctx.beginPath();
+                    ctx.arc(pageWidth / 2, pageHeight / 2, r, newAngle * i - Math.PI / 2, newAngle * (i + 1) - Math.PI / 2);
+                    ctx.stroke();
+                  })
+                }
+                break;
               case 'line':
-                if (i === 0) {
+                if (isFirst) {
                   prevObj = {
                     x: [],
                     y: [],
                     y1: [],
                     y2: [],
                   };
-                } else {
-                  prevObj.x.push(x);
-                  prevObj.y.push(y);
-                  prevObj.y1.push(y1);
-                  prevObj.y2.push(y2);
-                  if (i === arr.length - 1) {
-                    quadraticCurve({ x: prevObj.x, y: prevObj.y, lineWidth: 8, strokeStyle: '#409EFF33' });
-                    quadraticCurve({ x: prevObj.x, y: prevObj.y1, lineWidth: 3, strokeStyle: '#5cB87a33' });
-                    quadraticCurve({ x: prevObj.x, y: prevObj.y2, lineWidth: 5, strokeStyle: '#E6A23C33' });
-                  }
+                }
+                prevObj.x.push(x);
+                prevObj.y.push(y);
+                prevObj.y1.push(y1);
+                prevObj.y2.push(y2);
+                if (i === arr.length - 1) {
+                  quadraticCurve({ x: prevObj.x, y: prevObj.y, lineWidth: 8, strokeStyle: '#409EFF33' });
+                  quadraticCurve({ x: prevObj.x, y: prevObj.y1, lineWidth: 3, strokeStyle: '#5cB87a33' });
+                  quadraticCurve({ x: prevObj.x, y: prevObj.y2, lineWidth: 5, strokeStyle: '#E6A23C33' });
                 }
                 break;
               case 'line2':
                 y1 = pageHeight * 0.5 + v / 256 * pageHeight * 0.1;
                 y = pageHeight * 0.5 - v / 256 * pageHeight * 0.3;
-                if (i === 0) {
+                if (isFirst) {
                   prevObj = {
                     x: [],
                     y: [],
                     y1: [],
                   }
-                } else {
-                  prevObj.x.push(x);
-                  prevObj.y.push(y);
-                  prevObj.y1.push(y1);
-
-                  if (i === arr.length - 1) {
-                    const data1 = quadraticCurve({ x: prevObj.x, y: prevObj.y, strokeStyle: '#409EFF22', lineWidth: 5 });
-                    const data2 = quadraticCurve({ x: prevObj.x, y: prevObj.y1, strokeStyle: '#409EFF22', lineWidth: 5 });
-                    const lines = [];
-                    data1.x.forEach((x, i) => {
-                      let y = data1.y[i],
-                        y1 = data2.y[i];
-                      if (y1 - y > 5) {
-                        const gradient = ctx.createLinearGradient(0, y, 0, y1);
-                        gradient.addColorStop(0, '#409EFF00');
-                        gradient.addColorStop(0.5, '#409EFF99');
-                        gradient.addColorStop(1, '#409EFF00');
-                        lines.push({
-                          x, y, x1: x, y1, strokeStyle: gradient,
-                        });
-                      }
-                    });
-                    lines.shift();
-                    drawLines(lines, { lineWidth: 3 });
-                  }
+                }
+                prevObj.x.push(x);
+                prevObj.y.push(y);
+                prevObj.y1.push(y1);
+                if (isLast) {
+                  const data1 = quadraticCurve({ x: prevObj.x, y: prevObj.y, strokeStyle: '#409EFF22', lineWidth: 5 });
+                  const data2 = quadraticCurve({ x: prevObj.x, y: prevObj.y1, strokeStyle: '#409EFF22', lineWidth: 5 });
+                  const lines = [];
+                  data1.x.forEach((x, i) => {
+                    let y = data1.y[i],
+                      y1 = data2.y[i];
+                    if (y1 - y > 5) {
+                      const gradient = ctx.createLinearGradient(0, y, 0, y1);
+                      gradient.addColorStop(0, '#409EFF00');
+                      gradient.addColorStop(0.5, '#409EFF99');
+                      gradient.addColorStop(1, '#409EFF00');
+                      lines.push({
+                        x, y, x1: x, y1, strokeStyle: gradient,
+                      });
+                    }
+                  });
+                  lines.shift();
+                  drawLines(lines, { lineWidth: 3 });
                 }
                 break;
               case 'particle2':

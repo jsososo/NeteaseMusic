@@ -32,6 +32,7 @@
           <el-radio-button label="particle2">粒子</el-radio-button>
           <el-radio-button label="circle">圈圈</el-radio-button>
           <el-radio-button label="circle2">海螺</el-radio-button>
+          <el-radio-button label="circle3">圆环</el-radio-button>
         </el-radio-group>
       </div>
     </div>
@@ -44,6 +45,44 @@
           <el-radio-button label="128">128</el-radio-button>
         </el-radio-group>
         <div class="input-explain">看自己的性能来定</div>
+      </div>
+    </div>
+
+    <div class="setting-title">企鹅音乐Cookie</div>
+    <div class="input-row">
+      <div class="input-label">开启：</div>
+      <div class="input-content">
+        <el-switch v-model="openSetQCookie" />
+        <div class="input-explain">开启并设置Cookie后可以获得更多操作</div>
+      </div>
+    </div>
+    <div class="input-row" v-if="openSetQCookie">
+      <div class="input-label">手动输入：</div>
+      <div class="input-content">
+        <el-input
+          style="width: 450px"
+          type="text"
+          placeholder="在 y.qq.com 控制台输入 document.cookie，将打印的字符串粘贴进来"
+          v-model="inputCookie"
+        />
+        <el-button class="mt_10" @click="setCookie">设置</el-button>
+        <span class="input-explain pl_20">Cookie 数据仅存储在本地</span>
+      </div>
+    </div>
+    <div class="input-row"  v-if="openSetQCookie">
+      <div class="input-label">半自动获取：</div>
+      <div class="input-content">
+        <div>
+          <div>1、下载并解压 <a href="http://music.jsososo.com/download/qqmusic_cookie_porter_0_1.zip" target="_blank" >获取企鹅音乐Cookie的 Chrome 插件</a></div>
+          <div class="mt_5">
+            2、打开新标签页输入 <i>chrome://extensions</i>，钩上右上角开发者模式，
+            点击左上角加载已解压的插件，选择刚才解压出的文件夹
+          </div>
+          <div class="mt_5">
+            3、打开 <a href="https://y.qq.com?forceUpdateCookie=1" target="_blank">https://y.qq.com</a> 并登陆企鹅号即可自动获取
+          </div>
+        </div>
+        <div class="input-explain">Cookie 数据会存储于服务器</div>
       </div>
     </div>
 
@@ -89,6 +128,7 @@
 
 <script>
   import Storage from '../assets/utils/Storage';
+  import { checkCookie } from "../assets/utils/request";
   export default {
     name: "Setting",
     data() {
@@ -100,12 +140,17 @@
         downSize: Storage.get('downSize') || 'flac',
         drawMusicStyle: Storage.get('drawMusicStyle') || 'rect',
         listenSize: Storage.get('listenSize') || '128',
+        openSetQCookie: Storage.get('openSetQCookie') !== '0',
+        inputCookie: '',
       }
     },
     watch: {
       showDrawMusic(v) {
         Storage.set('showDrawMusic', Number(v));
         this.$message.info('刷新生效！');
+      },
+      openSetQCookie(v) {
+        Storage.set('openSetQCookie', Number(v));
       },
       drawMusicType(v) {
         Storage.set('drawMusicType', v);
@@ -125,6 +170,25 @@
       drawMusicStyle(v) {
         Storage.set('drawMusicStyle', v);
       },
+    },
+    methods: {
+      setCookie() {
+        const expireTime = new Date(Date.now() + 86400000).toString();
+        try {
+          let uin = this.inputCookie.match(/uin=(\d+)(;|$)/);
+          if (uin) {
+            uin = uin[1];
+          } else {
+            throw({ message: 'no uin'});
+          }
+          this.inputCookie.split('; ').forEach((c) => {
+            document.cookie=`${c}; expires=${expireTime}; `;
+          });
+          checkCookie();
+        } catch (err) {
+          this.$message.error('cookie 格式错误')
+        }
+      }
     }
   }
 </script>
@@ -149,7 +213,12 @@
       .input-content {
         display: inline-block;
         vertical-align: top;
-        max-width: 400px;
+        max-width: 450px;
+
+        a {
+          font-size: 14px;
+          text-decoration: underline  ;
+        }
       }
       .input-explain {
         font-size: 12px;

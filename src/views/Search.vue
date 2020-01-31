@@ -47,9 +47,9 @@
           <span class="operation-btns">
             <i
               v-show="platform === '163'"
-              v-if="allList[userList.favId]"
+              v-if="favSongMap[platform]"
               @click="likeMusic(s)"
-              :class="`operation-icon operation-icon-1 iconfont icon-${allList[userList.favId].indexOf(s) > -1 ? 'like' : 'unlike'}`"
+              :class="`operation-icon operation-icon-1 iconfont icon-${(favSongMap[platform][s]) ? 'like' : 'unlike'}`"
             />
             <i
               v-show="platform === '163'"
@@ -62,8 +62,7 @@
             />
           </span>
           <div
-            v-show="platform === '163'"
-            v-if="allList[userList.favId] && (allList[userList.favId].indexOf(s) > -1)"
+            v-if="(favSongMap[platform] && favSongMap[platform][s])"
             class="liked-item"
           />
         </div>
@@ -175,6 +174,7 @@
         playingPercent: 'getPlayingPercent',
         allList: 'getAllList',
         userList: 'getUserList',
+        favSongMap: 'getFavSongMap',
       })
     },
     watch: {

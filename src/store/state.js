@@ -51,5 +51,9 @@ export default {
     count: 0,
     list: [],
   },
-  isPersonFM: false, // 是否为私人fm
+  isPersonFM: false, // 是否为私人fm,
+  favSongMap: { // 喜欢的歌曲 id map
+    163: {},
+    qq: {},
+  },
 };

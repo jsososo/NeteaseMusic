@@ -73,13 +73,17 @@ export const getPlayList = async (id) => request({ api: 'LIST_DETAIL', data: { i
   .then(async (res) => {
     const { playlist } = res;
     const VUE_APP = window.VUE_APP;
-    const dispatch = VUE_APP.$store.dispatch;
-    const allSongs = VUE_APP.$store.getters.getAllSongs;
+    const store = VUE_APP.$store;
+    const dispatch = store.dispatch;
+    const allSongs = store.getters.getAllSongs;
+    const userList = store.getters.getUserList;
+    const isFav = String(id) === String(userList.favId);
     const { tracks } = playlist;
     const ids = [];
     const newSongObj = {};
 
     // 请求的太多的话返回的会不详细
+    const favMap = {};
     const songs = tracks.map((s) => {
       if (!allSongs[s.id]) {
         const { al = {}, ar = [], id, name, mv, mvid } = s;
@@ -87,8 +91,10 @@ export const getPlayList = async (id) => request({ api: 'LIST_DETAIL', data: { i
         allSongs[s.id] = newSongObj[s.id];
         ids.push(s.id);
       }
+      isFav && (favMap[s.id] = 1);
       return s.id;
     });
+    isFav && dispatch('updateFavSongMap', { 163: favMap });
     dispatch('query163List', { songs, listId: id });
     dispatch('updateAllSongs', newSongObj);
 
@@ -105,13 +111,17 @@ export const getQQPlayList = async (id) => request({ api: 'QQ_LIST_DETAIL', data
     const VUE_APP = window.VUE_APP;
     const dispatch = VUE_APP.$store.dispatch;
     const allSongs = VUE_APP.$store.getters.getAllSongs;
+    const qUserList = VUE_APP.$store.getters.getQUserList;
     const newSongObj = {};
     const ids = [];
+    const isFav = id === VUE_APP.$store.getters.getQUserList;
+    const favMap = {};
     const songs = res.data.songlist.map((item) => {
       const obj = {
         ...QQ2163(item),
         ...(allSongs[item.songmid] || {}),
       };
+      isFav && (favMap[item.songmid] = 1);
       if (!obj.url) {
         ids.push(obj.id);
       }
@@ -121,6 +131,7 @@ export const getQQPlayList = async (id) => request({ api: 'QQ_LIST_DETAIL', data
 
     dispatch('query163List', { songs, listId: `qq${id}` });
     dispatch('updateAllSongs', newSongObj);
+    isFav && dispatch('updateFavSongMap', { qq: favMap });
     while (ids.length > 0) {
       getQQUrls(ids.splice(-100));
     }
@@ -308,7 +319,7 @@ export const getMyList = async (uid = Storage.get('uid'), getFav, id) => {
   window.VUE_APP.$store.dispatch('setUserList', { list, obj: listObj, favId: list[0].id });
 
   // 获取我喜欢的歌单
-  getFav && getPlayList(playlist[0].id);
+  getFav && getPlayList(playlist[0].id, true);
   id && getPlayList(id);
 };
 
@@ -748,9 +759,10 @@ export const likeMusic = (id) => {
   const VUE_APP = window.VUE_APP;
   const message = VUE_APP.$message;
   const store= VUE_APP.$store;
+  const favSongMap = store.getters.getFavSongMap;
   const allList = store.getters.getAllList;
   const userList = store.getters.getUserList;
-  const like = allList[userList.favId].indexOf(id) === -1;
+  const like = !Boolean(favSongMap['163'][id]);
   request({
     api: 'LIKE_MUSIC',
     data: { id, like },
@@ -760,10 +772,14 @@ export const likeMusic = (id) => {
       if (like) {
         message.success('爱上！');
         songs.unshift(id);
+        favSongMap['163'][id] = 1;
         store.dispatch('query163List', { songs, listId: userList.favId });
+        store.dispatch('updateFavSongMap', favSongMap);
       } else {
         message.success('爱过～');
+        favSongMap['163'][id] = 0;
         store.dispatch('query163List', { songs: songs.filter((s) => s !== id), listId: userList.favId });
+        store.dispatch('updateFavSongMap', favSongMap);
       }
       getMyList(Storage.get('uid'), true);
     } else {
@@ -954,7 +970,7 @@ export const handleQQComments = (list) => (list || []).map((obj) => ({
 export const queryQQUserDetail = async (id) => {
   const res = await request({
     api: 'QQ_USER_DETAIL',
-    data: { id }
+    data: { id, ownCookie: Storage.get('openSetQCookie') || '0' }
   });
   if (res.result === 301) {
     return this.$message.error('嗨呀，服务器上的企鹅音乐 cookie 过期了，联系 jsososo@outlook.com 吧');
@@ -1069,6 +1085,47 @@ export const getMusicData = (url) => {
     if (VUE_APP.$store.getters.isPlaying) {
       VUE_APP.$store.dispatch('setReading', false);
     }
+  }
+};
+
+// 校验 Cookie 是否过期
+export const checkCookie = async () => {
+  const message = window.VUE_APP.$message;
+  let uin = document.cookie.match(/uin=(\d+)(;|$)/);
+  if (uin && uin[1]) {
+    uin = uin[1];
+  } else {
+    uin = null;
+  }
+  if (!uin) {
+    return message.error('cookie 格式有误');
+  }
+  request({
+    api: 'QQ_USER_DETAIL',
+    data: {
+      id: uin,
+      ownCookie: 1,
+    }
+  }).then((res) => {
+    message.success('cookie 设置成功！');
+    Storage.set('qqId', uin);
+  }, (err) => {
+    if (err.data.result === 301) {
+      message.error('cookie 错误或过期');
+    }
+  })
+};
+
+// 从服务器获取 Cookie
+export const getCookie = async (id) => {
+  const res = await request({
+    api: 'QQ_GET_COOKIE',
+    data: {
+      id,
+    }
+  });
+  if (res && res.result === 100) {
+    return checkCookie();
   }
 };
 

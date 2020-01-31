@@ -93,3 +93,6 @@ export const UPDATE_Q_USER_LIST = 'UPDATE_Q_USER_LIST';
 
 // 更新全局的 ui 模式
 export const UPDATE_MODE = 'UPDATE_MODE';
+
+// 更新 喜欢的歌曲
+export const UPDATE_FAV_SONG_MAP = 'UPDATE_FAV_SONG_MAP';

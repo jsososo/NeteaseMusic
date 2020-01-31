@@ -59,6 +59,7 @@ const apiList = {
   'QQ_MV_URL': 'apiQ/mv/url', // qq mv 播放链接
   'QQ_DOWN_URL': 'apiQ/song/url', // qq 下载歌曲链接
   'QQ_RECOMMEND_PLAYLIST': 'apiQ/recommend/playlist', // qq 推荐歌单
+  'QQ_GET_COOKIE': 'apiQ/user/getCookie', // qq 获取cookie
 
   'MIGU_SEARCH': 'apiM/search', // 咪咕 搜索
   'MIGU_URL_GET': 'apiM/song/url', // 咪咕 获取图片、播放链接

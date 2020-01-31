@@ -81,5 +81,8 @@ export default {
   },
   setReading: ({ commit }, data) => {
     commit(types.SET_READING, data);
+  },
+  updateFavSongMap: ({ commit }, data) => {
+    commit(types.UPDATE_FAV_SONG_MAP, data);
   }
 }

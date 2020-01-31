@@ -258,6 +258,7 @@
 
         .content {
           padding: 10px 12px;
+          word-break: break-all;
         }
         .time {
           font-size: 12px;

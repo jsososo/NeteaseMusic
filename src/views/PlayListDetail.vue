@@ -45,9 +45,9 @@
         <span class="song-artist">{{allSongs[s].ar.map((a) => a.name).join('/')}}</span>
         <div class="icon-container">
           <i
-            v-if="allList[userList.favId] && (id != userList.favId) && ((allSongs[s].from || '163') === '163')"
+            v-if="favSongMap['163'] && (id != userList.favId) && ((allSongs[s].from || '163') === '163')"
             @click="likeMusic(s)"
-            :class="`operation-icon operation-icon-1 iconfont icon-${allList[userList.favId].indexOf(s) > -1 ? 'like' : 'unlike'}`"
+            :class="`operation-icon operation-icon-1 iconfont icon-${!!favSongMap['163'][s] ? 'like' : 'unlike'}`"
           />
           <i
             v-if="(allSongs[s].from || '163') === '163'"
@@ -98,6 +98,7 @@
         allSongs: 'getAllSongs',
         playNow: 'getPlaying',
         playingPercent: 'getPlayingPercent',
+        favSongMap: 'getFavSongMap',
       })
     },
     watch: {

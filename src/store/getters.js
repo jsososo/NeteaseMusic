@@ -77,5 +77,8 @@ export default {
   },
   isReading(state) {
     return state.reading;
+  },
+  getFavSongMap(state) {
+    return state.favSongMap;
   }
 }

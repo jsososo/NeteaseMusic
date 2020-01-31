@@ -37,7 +37,7 @@
           class="song-item"
           @click="playMusic(s)"
         >
-          <div v-if="(allList[userList.favId] && allList[userList.favId].indexOf(s) > -1)" class="liked-item"></div>
+          <div v-if="(favSongMap[platform] && favSongMap[platform][s])" class="liked-item"></div>
           <div class="playing-bg" v-if="playNow.id === s" :style="`width: ${playingPercent * 100}%`">
             <div class="wave-bg"></div>
             <div class="wave-bg2"></div>
@@ -47,9 +47,9 @@
             <div class="song-ar">{{allSongs[s].ar.map((a) => a.name).join('/')}}</div>
             <div class="song-operation">
               <i
-                v-if="allList[userList.favId] && platform === '163'"
+                v-if="favSongMap[platform] && platform === '163'"
                 @click="likeMusic(s)"
-                :class="`operation-icon operation-icon-1 iconfont icon-${allList[userList.favId].indexOf(s) > -1 ? 'like' : 'unlike'}`"
+                :class="`operation-icon operation-icon-1 iconfont icon-${Boolean(favSongMap[platform][s]) ? 'like' : 'unlike'}`"
               />
               <i
                 v-if="platform === '163'"
@@ -99,11 +99,10 @@
     },
     computed: {
       ...mapGetters({
-        allList: 'getAllList',
-        userList: 'getUserList',
         allSongs: 'getAllSongs',
         playNow: 'getPlaying',
-        playingPercent: 'getPlayingPercent'
+        playingPercent: 'getPlayingPercent',
+        favSongMap: 'getFavSongMap',
       })
     },
     watch: {

@@ -22,10 +22,16 @@
           因此如果拖动进度条可能导致无法获取到音频数据，如果读取音频数据的方法卡了，比当前播放的速度要慢，也可能会出现没有数据。
           同时，因为音频图读取最初数据时需要一两秒的时间，所以切歌时会有短暂的停顿。
         </p>
+        <p>
+          设置页可以选择输入自己的 qq 音乐 Cookie 获取更多的一些操作，可以借助这个 Chrome 插件
+          <a href="https://github.com/jsososo/qqmusic-cookie-porter" target="_blank">qqmusic-cookie-porter</a>
+          实现半自动化的获取 Cookie，模拟用户登陆
+        </p>
         <p class="mt_20">GitHub: <a href="https://github.com/jsososo/NeteaseMusic" target="_blank">网易云第三方 Web 播放器</a></p>
         <p>后端：「网易云」<a href="https://github.com/Binaryify/NeteaseCloudMusicApi" target="_blank">NeteaseCloudMusicApi</a></p>
         <p>后端：「QQ音乐」<a href="https://github.com/jsososo/QQMusicApi" target="_blank">QQMusicApi</a> (也是我的项目，也欢迎支持一下)</p>
-        <p>后端：「咪咕音乐」<a href="https://github.com/jsososo/MiguMusicApi" target="_blank">MiguMusicApi</a> (还是是我的项目，也欢迎支持一下)</p>
+        <p>后端：「咪咕音乐」<a href="https://github.com/jsososo/MiguMusicApi" target="_blank">MiguMusicApi</a> (还是我的项目，也欢迎支持一下)</p>
+        <p>Chrome插件：「QQ音乐Cookie搬运工」<a href="https://github.com/jsososo/qqmusic-cookie-porter" target="_blank">qqmusic-cookie-porter</a>  (又是我的项目，也欢迎支持一下)</p>
       </div>
     </div>
 
@@ -245,6 +251,10 @@
           {
             txt:'🐚 加入圈圈、海螺音频图，搜索增加防抖',
             time: '20-01-29',
+          },
+          {
+            txt: '🐑 配合 chrome 插件自动获取存储 cookie',
+            time: '20-01-31',
           }
         ],
         future: [
