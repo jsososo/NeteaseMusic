@@ -47,13 +47,13 @@
             <div class="song-ar">{{allSongs[s].ar.map((a) => a.name).join('/')}}</div>
             <div class="song-operation">
               <i
-                v-if="favSongMap[platform] && platform === '163'"
+                v-if="favSongMap[platform]"
                 @click="likeMusic(s)"
                 :class="`operation-icon operation-icon-1 iconfont icon-${Boolean(favSongMap[platform][s]) ? 'like' : 'unlike'}`"
               />
               <i
-                v-if="platform === '163'"
-                @click="playlistTracks(s, 'add', 'ADD_SONG_2_LIST')"
+                v-if="platform !== 'migu'"
+                @click="playlistTracks(s, 'add', 'ADD_SONG_2_LIST', platform)"
                 class="operation-icon operation-icon-2 iconfont icon-add"
               />
               <i
@@ -165,9 +165,9 @@
         })
       },
       likeMusic: likeMusic,
-      playlistTracks(tracks, op, type) {
+      playlistTracks(tracks, op, type, platform = '163') {
         window.event.stopPropagation();
-        this.$store.dispatch('setOperation', { data: { tracks, op }, type });
+        this.$store.dispatch('setOperation', { data: { tracks, op }, type, platform });
       },
       playMusic(id) {
         const { dispatch } = this.$store;

@@ -25,10 +25,10 @@
             <a v-for="a in allSongs[playNow.id].ar" :key="a.id" :href="changeUrlQuery({ id: a.id, mid: a.mid, from: playNow.from }, '#/singer', false)">{{a.name}} </a>
           </span>
           <span
-            v-if="allList[userList.favId] && !playNow.from"
+            v-if="playNow.from !== 'migu'"
             @click="likeMusic(playNow.id)"
             style="margin-left: 25px; cursor: pointer;"
-            :class="allList[userList.favId].indexOf(playNow.id) > -1 ? 'iconfont icon-like iconfont' : 'iconfont icon-unlike'">
+            :class="(favSongMap[playNow.from || '163'][playNow.id]) ? 'iconfont icon-like iconfont' : 'iconfont icon-unlike'">
           </span>
         </div>
         <!-- 歌曲播放进度 -->
@@ -89,8 +89,8 @@
 
         <!-- 添加到歌单 -->
         <el-tooltip class="item" effect="dark" content="添加到歌单" placement="top">
-          <div class="inline-block ml_5 pd_5" v-if="!playNow.from">
-            <span @click="playlistTracks(playNow.id, 'add', 'ADD_SONG_2_LIST')">
+          <div class="inline-block ml_5 pd_5" v-if="playNow.from !== 'migu'">
+            <span @click="playlistTracks(playNow.id, 'add', 'ADD_SONG_2_LIST', playNow.from || '163')">
               <i class="iconfont icon-add ft_16 pointer" />
             </span>
           </div>
@@ -185,6 +185,7 @@
         playingList: 'getPlayingList',
         mode: 'getMode',
         isReading: 'isReading',
+        favSongMap: 'getFavSongMap',
       }),
     },
     watch: {
@@ -524,9 +525,9 @@
       goTo(url) {
         window.location = url;
       },
-      playlistTracks(tracks, op, type) {
+      playlistTracks(tracks, op, type, platform) {
         window.event.stopPropagation();
-        this.$store.dispatch('setOperation', { data: { tracks, op }, type });
+        this.$store.dispatch('setOperation', { data: { tracks, op }, type, platform });
       },
       goBack() {
         history.back(-1);

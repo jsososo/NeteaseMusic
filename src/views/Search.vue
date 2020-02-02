@@ -46,14 +46,14 @@
           <span class="artist-name">{{allSongs[s].ar.map((a) => a.name).join('/')}}</span>
           <span class="operation-btns">
             <i
-              v-show="platform === '163'"
+              v-show="platform !== 'migu'"
               v-if="favSongMap[platform]"
               @click="likeMusic(s)"
               :class="`operation-icon operation-icon-1 iconfont icon-${(favSongMap[platform][s]) ? 'like' : 'unlike'}`"
             />
             <i
-              v-show="platform === '163'"
-              @click="playlistTracks(s, 'add', 'ADD_SONG_2_LIST')"
+              v-show="platform !== 'migu'"
+              @click="playlistTracks(s, 'add', 'ADD_SONG_2_LIST', platform)"
               class="operation-icon operation-icon-2 iconfont icon-add"
             />
             <i
@@ -236,9 +236,9 @@
       },
       likeMusic,
       changeUrlQuery,
-      playlistTracks(tracks, op, type) {
+      playlistTracks(tracks, op, type, platform = '163') {
         window.event.stopPropagation();
-        this.$store.dispatch('setOperation', { data: { tracks, op }, type });
+        this.$store.dispatch('setOperation', { data: { tracks, op }, type, platform });
       },
       goTo(url) {
         window.location = url;

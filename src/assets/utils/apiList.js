@@ -60,6 +60,10 @@ const apiList = {
   'QQ_DOWN_URL': 'apiQ/song/url', // qq 下载歌曲链接
   'QQ_RECOMMEND_PLAYLIST': 'apiQ/recommend/playlist', // qq 推荐歌单
   'QQ_GET_COOKIE': 'apiQ/user/getCookie', // qq 获取cookie
+  'QQ_SONG_LIST_MAP': 'apiQ/songlist/map', // qq 获取歌单歌曲id哈希表
+  'QQ_USER_SONG_LIST': 'apiQ/user/songlist', // qq 获取用户的歌单
+  'QQ_SONG_LIST_ADD': 'apiQ/songlist/add', // 添加歌曲到歌单
+  'QQ_SONG_LIST_REMOVE': 'apiQ/songlist/remove',
 
   'MIGU_SEARCH': 'apiM/search', // 咪咕 搜索
   'MIGU_URL_GET': 'apiM/song/url', // 咪咕 获取图片、播放链接

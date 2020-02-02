@@ -143,7 +143,7 @@
 <script>
   import { mapGetters } from 'vuex';
   import { numToStr } from "../assets/utils/stringHelper";
-  import request, { handleSongs, getPersonFM, queryQQUserDetail } from '../assets/utils/request';
+  import request, { handleSongs, getPersonFM, getQQUserSonglist } from '../assets/utils/request';
   import Storage from "../assets/utils/Storage";
   export default {
     name: "PlayList",
@@ -325,7 +325,7 @@
         const { inputQQ } = this;
         this.qqId = inputQQ;
         Storage.set('qqId', inputQQ);
-        queryQQUserDetail(inputQQ)
+        getQQUserSonglist(inputQQ)
           .then(() => {
             this.pagePlayList = this.qUserList && this.qUserList.list || []
           });

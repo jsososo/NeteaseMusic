@@ -172,21 +172,20 @@
       },
     },
     methods: {
-      setCookie() {
+      async setCookie() {
         const expireTime = new Date(Date.now() + 86400000).toString();
         try {
-          let uin = this.inputCookie.match(/uin=(\d+)(;|$)/);
-          if (uin) {
-            uin = uin[1];
-          } else {
-            throw({ message: 'no uin'});
-          }
           this.inputCookie.split('; ').forEach((c) => {
             document.cookie=`${c}; expires=${expireTime}; `;
           });
-          checkCookie();
+          const result = checkCookie();
+          if (result.success) {
+            this.$message.success('设置 Cookie 成功');
+          } else {
+            throw({ message: 'cookie wrong'})
+          }
         } catch (err) {
-          this.$message.error('cookie 格式错误')
+          this.$message.error('cookie 错误或过期')
         }
       }
     }

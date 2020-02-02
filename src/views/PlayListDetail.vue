@@ -45,13 +45,13 @@
         <span class="song-artist">{{allSongs[s].ar.map((a) => a.name).join('/')}}</span>
         <div class="icon-container">
           <i
-            v-if="favSongMap['163'] && (id != userList.favId) && ((allSongs[s].from || '163') === '163')"
+            v-if="(id !== userList.favId) && id !== qUserList.favId"
             @click="likeMusic(s)"
-            :class="`operation-icon operation-icon-1 iconfont icon-${!!favSongMap['163'][s] ? 'like' : 'unlike'}`"
+            :class="`operation-icon operation-icon-1 iconfont icon-${!!favSongMap[allSongs[s].from || '163'][s] ? 'like' : 'unlike'}`"
           />
           <i
-            v-if="(allSongs[s].from || '163') === '163'"
-            @click="playlistTracks(s, id, 'add', 'ADD_SONG_2_LIST')"
+            v-if="allSongs[s].from !== 'migu'"
+            @click="playlistTracks(s, id, 'add', 'ADD_SONG_2_LIST', allSongs[s].from)"
             class="operation-icon operation-icon-2 iconfont icon-add"
           />
           <i
@@ -60,8 +60,9 @@
             class="operation-icon operation-icon-3 iconfont icon-download"
           />
           <i
-            @click="playlistTracks(s, id, 'del', 'DEL_SONG')"
-            v-if="platform === '163' && userList.obj && userList.obj[id] && !userList.obj[id].subscribed && (id !== userList.favId)"
+            @click="playlistTracks(s, id, 'del', 'DEL_SONG', allSongs[s].from)"
+            v-if="(platform === '163' && userList.obj && userList.obj[id] && !userList.obj[id].subscribed && (id !== userList.favId)) ||
+                   (platform === 'qq' && qUserList.obj && qUserList.obj[id] && (id != qUserList.favId))"
             class="operation-icon operation-icon-4 iconfont icon-delete"
           />
         </div>
@@ -94,6 +95,7 @@
       ...mapGetters({
         playingList: 'getPlayingList',
         userList: 'getUserList',
+        qUserList: 'getQUserList',
         allList: 'getAllList',
         allSongs: 'getAllSongs',
         playNow: 'getPlaying',
@@ -258,9 +260,9 @@
         ));
       },
       likeMusic: likeMusic,
-      playlistTracks(tracks, pid, op, type) {
+      playlistTracks(tracks, pid, op, type, platform) {
         window.event.stopPropagation();
-        this.$store.dispatch('setOperation', { data: { tracks, pid, op }, type });
+        this.$store.dispatch('setOperation', { data: { tracks, pid, op }, type, platform });
       },
       download,
       getShowIndex() {
