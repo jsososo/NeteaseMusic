@@ -18,8 +18,8 @@
             <div class="mt_10">
               <i @click="likeComment(item, t)" :class="`iconfont pointer ${item.newLike} icon-zan${item.liked ? '' : '-o'}`" />
               <span class="pl_10 ft_12">{{numberHandle(item.likedCount)}}</span>
-              <i v-if="!playNow.from" class="iconfont icon-reply ml_20 pointer" style="vertical-align: -1px;" @click="reply(item)" />
-              <i class="iconfont icon-delete ml_20 pointer" @click="delComment(item.commentId)" v-if="!playNow.from && item.user.userId === user.userId" />
+              <i v-if="platform === '163'" class="iconfont icon-reply ml_20 pointer" style="vertical-align: -1px;" @click="reply(item)" />
+              <i class="iconfont icon-delete ml_20 pointer" @click="delComment(item.commentId)" v-if="item.canDelete || item.user.userId === user.userId" />
             </div>
           </div>
         </div>
@@ -34,12 +34,14 @@
   import { numToStr } from "../assets/utils/stringHelper";
   import { mapGetters } from 'vuex';
   import $ from 'jquery';
+  import Storage from "../assets/utils/Storage";
   export default {
     name: "Comment",
     props: {
       commentType: Number,
-      id: Number,
+      id: Number | String,
       comments: Object,
+      platform: String,
     },
     data() {
       return {
@@ -53,7 +55,18 @@
         playNow: 'getPlaying',
         user: 'getUser',
         playingPercent: 'getPlayingPercent',
+        commentInfo: 'getCommentInfo',
       })
+    },
+    watch: {
+      commentInfo: {
+        handler(v) {
+          if (v.success) {
+            this.getComments(true);
+          }
+        },
+        deep: true,
+      }
     },
     created() {
       setTimeout(() => this.show = true);
@@ -67,6 +80,19 @@
           if (confirm !== 'confirm') {
             return;
           }
+          const cb = () => {
+            comments.hot = comments.hot.filter((item) => item.commentId !== commentId);
+            comments.latest = comments.latest.filter((item) => item.commentId !== commentId);
+            comments.total -= 1;
+            this.$store.dispatch(['updateSongDetail'][commentType], { id, comments });
+            this.$message.success('删除成功');
+          };
+          if (this.platform === 'qq') {
+            return request({
+              api: 'QQ_COMMENT_DELETE',
+              data: { id: commentId }
+            }).then(cb, () => this.$message.error('删除失败'));
+          }
           const res = await request({
             api: 'COMMENT',
             data: {
@@ -77,39 +103,35 @@
             },
             cache: true,
           });
-          if (res.code === 200) {
-            comments.hot = comments.hot.filter((item) => item.commentId !== commentId);
-            comments.latest = comments.latest.filter((item) => item.commentId !== commentId);
-            comments.total -= 1;
-            this.$store.dispatch(['updateSongDetail'][commentType], { id, comments });
-            this.$message.success('删除成功');
-          } else {
-            this.$message.error('删除失败');
-          }
+          (res.code === 200) ? cb() : this.$message.error('删除失败');
         } catch (err) {
           console.log(err);
         }
       },
       async reply(beReplied) {
         const { commentId, user } = beReplied;
-        const { id } = this;
-        this.$store.dispatch('updateCommentInfo', { type: 0, id, commentId, open: true, nick: user.nickname, beReplied });
+        const { id, platform } = this;
+        this.$store.dispatch('updateCommentInfo', { type: 0, id, commentId, open: true, nick: user.nickname, beReplied, platform });
       },
       // 获取评论
-      getComments() {
+      getComments(init) {
         const { playNow, commentType } = this;
         const { comments, id } = [playNow][commentType];
         if (!comments) {
           return false;
         }
-        const { offset, total } = comments;
+        let { offset, total } = comments;
+        if (init) {
+          offset = 0;
+        }
         const limit = 20;
         if (((offset + limit) > total) || this.loading) {
           return;
         }
         this.loading = true;
 
-        if (playNow.from === 'qq') {
+        init && (comments.latest = []);
+        if (this.platform === 'qq') {
           request({
             api: 'QQ_GET_COMMENT',
             data: {
@@ -157,8 +179,24 @@
       likeComment(c, type) {
         const { playNow, commentType } = this;
         const t = Number(!c.liked);
-        if (playNow.from) {
-          return this.$message.warning('暂不支持网易云音乐以外的评论点赞');
+        const cb = () => {
+          const comment = [playNow][commentType].comments[type].find((cItem) => cItem.commentId === c.commentId);
+          comment.likedCount += t * 2 - 1;
+          comment.liked = !c.liked;
+          comment.newLike = !c.liked ? '' : 'new-like';
+          this.$store.dispatch(['updateSongDetail'][commentType], playNow);
+        }
+        if (this.platform === 'qq') {
+          if (Storage.get('haveQCookie') !== '1') {
+            return this.$message.warning('请先前往设置页设置 Cookie');
+          }
+          return request({
+            api: 'QQ_COMMENT_LIKE',
+            data: {
+              id: c.commentId,
+              type: t * -1 + 2,
+            }
+          }).then(cb)
         }
         request({
           api: 'LIKE_COMMENT',
@@ -169,14 +207,7 @@
             id: this.id,
           }
         }).then((res) => {
-          if (!res) {
-            return;
-          }
-          const comment = [playNow][commentType].comments[type].find((cItem) => cItem.commentId === c.commentId);
-          comment.likedCount += t * 2 - 1;
-          comment.liked = !c.liked;
-          comment.newLike = !c.liked ? '' : 'new-like';
-          this.$store.dispatch(['updateSongDetail'][commentType], playNow);
+          res && cb();
         })
       },
     }

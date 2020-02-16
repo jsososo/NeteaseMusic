@@ -26,6 +26,7 @@
     props: {
       successCb: Function,
       type: Number,
+      platform: String,
     },
     data() {
       return {
@@ -40,16 +41,35 @@
     },
     methods: {
       clickPlane() {
-        const { commentInfo, type } = this;
+        const { commentInfo, platform, type } = this;
+        let trueType = type;
         let id = 0, title = commentInfo.title;
         if (commentInfo.open) {
+          // 这里是发送评论
           if (!commentInfo.val) {
             return this.$message.warning('无话可说？');
+          } else if (commentInfo.val.length > 300) {
+            return this.$message.warning('话有点多？');
           } else {
             if (this.loading) {
               return;
             }
+            // 真的要发评论了
             this.loading = true;
+            if (commentInfo.platform === 'qq') {
+              return request({
+                api: 'QQ_COMMENT_SEND',
+                method: 'post',
+                data: {
+                  id: commentInfo.id,
+                  content: commentInfo.val,
+                  biztype: commentInfo.type,
+                }
+              }).then(() => {
+                this.loading = false;
+                this.successCb();
+              }, () => this.$message.error('评论失败了'));
+            }
             request({
               api: 'COMMENT',
               data: {
@@ -60,20 +80,24 @@
                 commentId: commentInfo.commentId,
               },
               cache: true,
-            }).then((res) => {
+            }).then(() => {
               this.loading = false;
-              res.comment.beReplied = commentInfo.beReplied ? [ commentInfo.beReplied] : null;
-              this.successCb(res.comment);
+              this.successCb();
             }, () => this.$message.error('评论失败了'));
           }
         } else {
-          switch (type) {
-            case 0:
+          switch (`${platform}-${type}`) {
+            case '163-0':
               id = this.playNow.id;
               title = this.playNow.name;
               break;
+            case 'qq-0':
+              id = this.playNow.songid;
+              title = this.playNow.name;
+              trueType = 1;
+              break;
           }
-          this.$store.dispatch('updateCommentInfo', { type, id, title, open: true });
+          this.$store.dispatch('updateCommentInfo', { type: trueType, id, title, open: true, platform, success: false, });
         }
       },
       closeComment() {

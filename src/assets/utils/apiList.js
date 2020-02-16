@@ -63,7 +63,10 @@ const apiList = {
   'QQ_SONG_LIST_MAP': 'apiQ/songlist/map', // qq 获取歌单歌曲id哈希表
   'QQ_USER_SONG_LIST': 'apiQ/user/songlist', // qq 获取用户的歌单
   'QQ_SONG_LIST_ADD': 'apiQ/songlist/add', // 添加歌曲到歌单
-  'QQ_SONG_LIST_REMOVE': 'apiQ/songlist/remove',
+  'QQ_SONG_LIST_REMOVE': 'apiQ/songlist/remove', // 把歌曲移出歌单
+  'QQ_COMMENT_LIKE': 'apiQ/comment/like', // qq 音乐评论点赞
+  'QQ_COMMENT_DELETE': 'apiQ/comment/del', // qq 音乐删除评论
+  'QQ_COMMENT_SEND': 'apiQ/comment/send', // qq 音乐发送评论
 
   'MIGU_SEARCH': 'apiM/search', // 咪咕 搜索
   'MIGU_URL_GET': 'apiM/song/url', // 咪咕 获取图片、播放链接

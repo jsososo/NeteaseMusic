@@ -45,7 +45,7 @@
         <span class="song-artist">{{allSongs[s].ar.map((a) => a.name).join('/')}}</span>
         <div class="icon-container">
           <i
-            v-if="(id !== userList.favId) && id !== qUserList.favId"
+            v-if="(id !== userList.favId) && id !== qUserList.favId && allSongs[s].from !== 'migu'"
             @click="likeMusic(s)"
             :class="`operation-icon operation-icon-1 iconfont icon-${!!favSongMap[allSongs[s].from || '163'][s] ? 'like' : 'unlike'}`"
           />
@@ -135,8 +135,8 @@
       this.init();
     },
     methods: {
-      init() {
-        const { id, platform } = this;
+      async init() {
+        const { id, platform, trueId } = this;
         this.loading = false;
         if (id === 'daily') {
           this.listInfo = null;
@@ -163,17 +163,16 @@
               });
             break;
           case 'migu':
-            getMiguPlayList(this.id, 1)
-              .then(async ({ totalPage, list, name, creator, picUrl: coverImgUrl, playCount }) => {
-                this.$store.dispatch('query163List', { songs: list, listId: this.trueId });
-                this.listInfo = { name, creator, coverImgUrl, playCount, platform: 'migu' };
-                this.list = this.allList[this.trueId] || [];
-                this.loading = false;
-                for (let i = 2; i <= totalPage; i++) {
-                  const { list } = await getMiguPlayList(this.id, i);
-                  this.$store.dispatch('query163List', { songs: [ ...this.allList[this.trueId], ...list ], listId: this.trueId });
-                }
-              });
+            const result = await getMiguPlayList(this.id, 1);
+            const { totalPage, list, name, creator, picUrl: coverImgUrl, playCount } = result;
+            this.$store.dispatch('query163List', { songs: list, listId: this.trueId });
+            this.listInfo = { name, creator, coverImgUrl, playCount, platform: 'migu' };
+            this.list = this.allList[this.trueId] || [];
+            this.loading = false;
+            for (let i = 2; i <= totalPage; i++) {
+              const { list } = await getMiguPlayList(this.id, i);
+              this.$store.dispatch('query163List', { songs: [ ...this.allList[this.trueId], ...list ], listId: this.trueId });
+            }
             break;
           default:
             getPlayList(this.id)

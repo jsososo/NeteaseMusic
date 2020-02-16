@@ -1,8 +1,8 @@
 <template>
   <div>
-    <CommentComponent :comment-type="0" :id="playNow.id" :comments="comments" />
+    <CommentComponent :platform="playNow.from || '163'" :comment-type="0" :id="playNow.id" :comments="comments" />
 
-    <SendComment v-if="!playNow.from" :type="0" :success-cb="initComments" />
+    <SendComment :type="0" :platform="playNow.from || '163'" :success-cb="initComments" />
   </div>
 </template>
 
@@ -40,50 +40,9 @@
       this.$store.dispatch('updateCommentInfo', { type: 0, id: 0, val: '', title: '', open: false });
     },
     methods: {
-      async delComment(commentId) {
-        const { id, comments } = this.playNow;
-        try {
-          const confirm = await this.$confirm('确认删除？');
-          if (confirm !== 'confirm') {
-            return;
-          }
-          const res = await request({
-            api: 'COMMENT',
-            data: {
-              t: 0,
-              type: 0,
-              id,
-              commentId,
-            },
-            cache: true,
-          });
-          if (res.code === 200) {
-            comments.hot = comments.hot.filter((item) => item.commentId !== commentId);
-            comments.latest = comments.latest.filter((item) => item.commentId !== commentId);
-            comments.total -= 1;
-            this.$store.dispatch('updateSongDetail', { id, comments });
-            this.$message.success('删除成功');
-          } else {
-            this.$message.error('删除失败');
-          }
-        } catch (err) {
-          console.log(err);
-        }
-      },
-      initComments(res) {
-        const { comments } = this.playNow;
-        comments.latest.unshift(res);
+      initComments() {
         this.$message.success('发送成功~');
-        this.$store.dispatch('updateCommentInfo', { type: 0, id: 0, val: '', title: '', open: false });
-      },
-      clickPlane() {
-        const { commentInfo, playNow } = this;
-        if (!commentInfo.id) {
-          this.commentInfo = {
-            id: playNow.id,
-            name: playNow.name,
-          }
-        }
+        this.$store.dispatch('updateCommentInfo', { type: 0, id: 0, val: '', title: '', open: false, success: true, });
       },
     }
   }

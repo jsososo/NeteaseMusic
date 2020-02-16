@@ -139,12 +139,19 @@ export const getQQPlayList = async (id) => request({ api: 'QQ_LIST_DETAIL', data
   });
 
 export const getMiguPlayList = async (id, pageno) => {
-  const { data } = await request({
-    api: 'MIGU_PLAYLIST',
-    data: { id, pageno },
-  });
-  data.list = handleMiguSongs(data.list || []);
-  return data;
+  try {
+    const { data } = await request({
+      api: 'MIGU_PLAYLIST',
+      data: { id, pageno },
+    });
+    data.list = handleMiguSongs(data.list || []);
+    return data;
+  } catch {
+    return {
+      list: [],
+      total: 0,
+    }
+  }
 };
 
 // 批量获取歌曲的url
@@ -1034,6 +1041,8 @@ export const handleQQComments = (list) => (list || []).map((obj) => ({
     (obj.middlecommentcontent.map((r) => `回复 ${r.replyednick}：${(r.subcommentcontent || '').replace(/\\n/g, '<br/>')}`).join(' //')) :
     (obj.rootcommentcontent || '').replace(/\\n/g, '<br/>'),
   time: obj.time * 1000,
+  canDelete: obj.enable_delete,
+  liked: Number(obj.ispraise) === 1,
   beReplied: obj.middlecommentcontent ? [
     {
       content: (obj.rootcommentcontent || '').replace(/\\n/g, '<br/>'),
@@ -1130,7 +1139,7 @@ export const getMusicData = (url) => {
 // 校验 Cookie 是否过期
 export const checkCookie = async () => {
   Storage.set('haveQCookie', '0');
-  let uin = document.cookie.match(/uin=(\d+)(;|$)/);
+  let uin = document.cookie.match(/\suin=(\d+)(;|$)/);
   if (uin && uin[1]) {
     uin = uin[1];
   } else {
