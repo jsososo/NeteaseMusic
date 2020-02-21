@@ -364,6 +364,7 @@
 
       // audio标签
       const pDom = this.playerDom;
+      window.pDom = pDom;
       // slider，进度条
       const sDom = document.getElementsByClassName('el-slider__button el-tooltip')[0];
       const dispatch = this.$store.dispatch;

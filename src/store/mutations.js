@@ -81,14 +81,13 @@ export default {
     const {history, index, trueList, random} = playingList;
     const {id} = playNow;
     const orderType = Storage.get('orderType');
-    const order = orderType;
     if (index > 0) {
       playingList.index -= 1;
       return state.playNow = allSongs[history[playingList.index]];
     }
 
     let i = 0;
-    const list = order === 'suiji' ? random : trueList;
+    const list = orderType === 'suiji' ? random : trueList;
     i = list.indexOf(id);
     i -= 1;
     if (i === -1) {
@@ -102,26 +101,30 @@ export default {
   [types.PLAY_NEXT](state) {
     const { playingList, allSongs, playNow } = state;
     const orderType = Storage.get('orderType');
-    const order = orderType;
     const { history, index, trueList, random } = playingList;
     const { id } = playNow;
-
     playingList.index += 1;
     if (index < history.length - 1) {
       return state.playNow = allSongs[history[playingList.index]];
     }
+    if (playingList.history[playingList.history.length-1] !== id) {
+      playingList.history.push(id);
+    }
 
     let i = 0;
-    switch (order) {
+    switch (orderType) {
       case 'suiji':
         i = random.indexOf(id);
         i += 1;
-        playingList.history.push(id);
         if (i === trueList.length) {
           i = 0;
         }
         if (i === (trueList.length - 1) || i === 0) {
           window.VUE_APP.$store.dispatch('updateRandomList');
+        }
+        if (trueList.length === 1) {
+          window.VUE_APP.$message.info('还是这首！');
+          window.pDom.play();
         }
         return state.playNow = allSongs[random[i]];
       default:
@@ -130,7 +133,6 @@ export default {
         if (i === trueList.length) {
           i = 0;
         }
-        playingList.history.push(id);
         return state.playNow = allSongs[trueList[i]];
     }
 
@@ -177,9 +179,6 @@ export default {
       playingList.index += 1;
     }
     state.playNow = data;
-    if (!isPersonFM) {
-      window.VUE_APP.$store.dispatch('updateRandomList');
-    }
   },
   [types.UPDATE_PLAYING_LIST](state, { list, more, id, heart = false }) {
     const { playingList, allSongs } = state;
@@ -200,17 +199,23 @@ export default {
   },
   [types.UPDATE_RANDOM_LIST](state) {
     const { playingList, playNow } = state;
-    playingList.random = [ ...playingList.trueList ];
+    const arr = [ ...playingList.trueList ];
+    let temp;
     // 保证当前歌曲第一个，剩下歌曲随机顺序
-    playingList.random.sort((a, b) => {
-      if (a === playNow.id) {
-        return -1;
-      }
-      if (b === playNow.id) {
-        return 1;
-      }
-      return Math.random() - 0.5;
-    });
+    const length = arr.length;
+    for (let i = length - 1; i > 1; i--) {
+      const r = Math.floor(Math.random() * i);
+      temp = arr[r];
+      arr[r] = arr[i];
+      arr[i] = temp;
+    }
+    const nowI = arr.indexOf(playNow.id);
+    if (nowI >= 0) {
+      temp = arr[0];
+      arr[0] = arr[nowI];
+      arr[nowI] = temp;
+    }
+    playingList.random = [ ...arr ];
   },
   [types.UPDATE_SHOW_COVER](state, data) {
     state.showCoverImg = data;
