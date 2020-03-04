@@ -14,11 +14,24 @@
         </div>
       </div>
     </div>
+    <div class="play-line-center" v-show="protect > 0 && protect >= (current - 3000) || grab">
+      <hr />
+      <div
+        class="p-time-btn"
+        @mouseover="changeGrab(true)"
+        @mouseleave="changeGrab(false)"
+        @click="playAtCenter"
+      >
+        {{formatTooltip(centerTime)}}
+        <i class="iconfont icon-play" />
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
   import { mapGetters } from 'vuex';
+  import Num from "../assets/utils/num";
   export default {
     name: "Lyric",
     data() {
@@ -31,6 +44,8 @@
         mouseMove: 0,
         protect: 0, // 保护期，滚完之后给一个保护期，不过这个保护期就不自动滚动歌词
         show: false,
+        centerTime: 0,
+        current: 0,
       }
     },
     computed: {
@@ -59,6 +74,7 @@
         const carouselHeight = document.getElementsByClassName('lyric-content-container')[0].clientHeight;
         const key = lyricKeys.findIndex((k) => (k - 300) >= current);
         const nowDom = document.getElementsByClassName('lyric-item-now');
+        this.current = current;
         let lyricKey = current;
         switch (key) {
           case -1:
@@ -80,6 +96,21 @@
           this.top = carouselHeight / 2 - nowDom[0].offsetTop - 35;
         }
       },
+      top(v) {
+        const { playNow } = this;
+        const domC = document.getElementsByClassName('lyric-content-container')[0];
+        (Object.keys(playNow.lyric || {})).forEach((o, i) => {
+          const domL = document.getElementsByClassName(`lyric-item-${o}`)[0];
+          if (domL) {
+            const { offsetHeight, offsetTop } = domL;
+            let h = offsetTop + v - domC.offsetHeight / 2;
+            if (h < 0 && offsetHeight + h > 0) {
+              this.centerTime = Number(o / 1000);
+            }
+          }
+        })
+
+      }
     },
     created() {
       setTimeout(() => this.show = true);
@@ -112,6 +143,16 @@
           const mouseY = event.clientY;
           this.top = this.mouseTop + mouseY - this.mouseY;
         }
+      },
+
+      formatTooltip(v) {
+        return `${Num(v / 60, 0, -1)}:${Num(v % 60, 0) < 10 ? `0${Num(v % 60, 0)}` : Num(v % 60, 0)}`;
+      },
+      playAtCenter() {
+        const pDom = document.getElementById('m-player');
+        pDom.currentTime = this.centerTime;
+        this.grab = false;
+        setTimeout(() => this.protect = 0, 200);
       }
     }
   }
@@ -182,6 +223,33 @@
           color: rgba(255,255,255,0.8);
           font-size: 22px;
         }
+      }
+    }
+  }
+
+  .play-line-center {
+    position: absolute;
+    top: 50%;
+    width: 100%;
+    height: 0;
+    hr {
+      border: 1px dashed #fff6;
+      position: absolute;
+      z-index: -1;
+      width: 60%;
+      left: 15%;
+    }
+    .p-time-btn {
+      color: #fff6;
+      position: absolute;
+      right: 10%;
+      bottom: -11px;
+      cursor: pointer;
+      opacity: 0.7;
+      transition: 0.3s;
+
+      &:hover {
+        opacity: 1;
       }
     }
   }

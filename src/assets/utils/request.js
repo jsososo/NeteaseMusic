@@ -59,6 +59,8 @@ const request = (param) => {
     res.data = res.data || {};
     if (res.data.code === 200 || res.data.result === 100) {
       return res.data;
+    } else if (res.data.result === 400) {
+      window.VUE_APP.$message.error(res.data.data || res.data.errMsg);
     } else {
       throw({ data: res.data });
     }
@@ -1041,8 +1043,9 @@ export const handleQQComments = (list) => (list || []).map((obj) => ({
     (obj.middlecommentcontent.map((r) => `回复 ${r.replyednick}：${(r.subcommentcontent || '').replace(/\\n/g, '<br/>')}`).join(' //')) :
     (obj.rootcommentcontent || '').replace(/\\n/g, '<br/>'),
   time: obj.time * 1000,
-  canDelete: obj.enable_delete,
+  canDelete: Boolean(obj.enable_delete),
   liked: Number(obj.ispraise) === 1,
+  userId: obj.encrypt_uin,
   beReplied: obj.middlecommentcontent ? [
     {
       content: (obj.rootcommentcontent || '').replace(/\\n/g, '<br/>'),

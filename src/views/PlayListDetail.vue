@@ -67,6 +67,9 @@
           />
         </div>
       </div>
+      <div class="focus-btn" v-if="list.indexOf(playNow.id) > -1" @click="scrollToPlayNow">
+        <i class="iconfont icon-focus" />
+      </div>
     </div>
   </div>
 </template>
@@ -89,6 +92,7 @@
         platform: getQueryFromUrl('from') || '163',
         smallIndex: 0,
         bigIndex: 0,
+        showScrollTo: false,
       }
     },
     computed: {
@@ -220,8 +224,9 @@
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
-          songList.forEach((id) => {
-            download(id);
+          this.$message.info('为了防止服务器误封高频ip，批量下载一秒增加一个任务');
+          songList.forEach((id, i) => {
+            setTimeout(() => download(id), i * 1000);
           })
         });
 
@@ -243,6 +248,7 @@
         }
         rawList = rawList || [];
         if (!rex) {
+          this.showScrollTo = rawList.indexOf(this.playNow.id) !== -1;
           return this.list = rawList;
         }
         this.list = rawList.filter((s) => (
@@ -270,7 +276,14 @@
         this.smallIndex = smallHeight / 71;
         const bigHeight = dom.clientHeight + dom.scrollTop + 300;
         this.bigIndex = bigHeight / 71;
-      }
+      },
+      scrollToPlayNow() {
+        const domP = document.getElementsByClassName('song-item played')[0];
+        const domL = document.getElementsByClassName('song-list')[0];
+        if (domP) {
+          document.getElementsByClassName('list-detail-container')[0].scrollTo(0, domP.offsetTop + domL.offsetTop);
+        }
+      },
     }
   }
 </script>
@@ -356,6 +369,37 @@
     .song-list {
       padding-left: 20px;
       padding-right: 20px;
+      position: relative;
+
+      .focus-btn {
+        position: fixed;
+        bottom: 120px;
+        right: 40px;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: #F23C3C;
+        border: 2px solid #F23C3C;
+        opacity: 0.3;
+        font-size: 0;
+        cursor: pointer;
+        box-shadow: 0 0 20px #333;
+        transition: 0.3s;
+        overflow: hidden;
+        z-index: 10;
+        text-align: center;
+
+        .iconfont {
+          font-size: 28px;
+          color: #fff;
+          line-height: 50px;
+        }
+
+        &:hover {
+          opacity: 0.7;
+        }
+
+      }
 
       .song-item {
         color: #fffc;

@@ -19,7 +19,7 @@
               <i @click="likeComment(item, t)" :class="`iconfont pointer ${item.newLike} icon-zan${item.liked ? '' : '-o'}`" />
               <span class="pl_10 ft_12">{{numberHandle(item.likedCount)}}</span>
               <i v-if="platform === '163'" class="iconfont icon-reply ml_20 pointer" style="vertical-align: -1px;" @click="reply(item)" />
-              <i class="iconfont icon-delete ml_20 pointer" @click="delComment(item.commentId)" v-if="item.canDelete || item.user.userId === user.userId" />
+              <i class="iconfont icon-delete ml_20 pointer" @click="delComment(item.commentId)" v-if="item.canDelete || (platform === '163' && item.user.userId === user.userId)" />
             </div>
           </div>
         </div>
