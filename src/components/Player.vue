@@ -196,7 +196,7 @@
         const trueId = v.from === 'qq' ? mid : id;
         const dispatch = this.$store.dispatch;
         const listenSize = Storage.get('listenSize') || '128';
-        const needRead = Storage.get('showDrawMusic') !== '0'
+        const needRead = Storage.get('showDrawMusic') !== '0';
         if (isUpdating)
           return;
         // 这是刚切歌的时候需要判断下用户选择的播放品质并更新一下，同时如果已经在查询
@@ -218,15 +218,24 @@
           this.isUpdating = false;
           this.playingUrl = nUrl;
           pDom && pDom.pause();
-          dispatch('updateSongDetail', {
+          await dispatch('updateSongDetail', {
             pUrl: nUrl,
             br: nBr,
             id,
           });
           if (needRead) {
             getMusicData(url);
+          } else {
+            setTimeout(() => this.playing && this.playerDom.play(), 1);
           }
           return;
+        }
+        if (!this.playingUrl) {
+          setTimeout(() => {
+            if (!this.playingUrl) {
+              this.cutSong('playNext');
+            }
+          }, 1000);
         }
         if (isPersonFM && (playingList.index >= (playingList.raw.length - 2))) {
           this.getPersonFM();
@@ -444,9 +453,9 @@
       // 当点击进度条的滑块时需要停止进度的判断，否则松开鼠标后onchange事件无法返回正确的value
       sDom && (sDom.onmousedown = () => this.stopUpdateCurrent = true);
       // 键盘事件绑定
-      window.onkeydown = ({ keyCode, path, ctrlKey, altKey, shiftKey }) => {
+      window.onkeydown = ({ keyCode, target, ctrlKey, altKey, shiftKey }) => {
         // 输入框内的操作，忽略掉
-        if (['textarea', 'input'].indexOf(path[0].nodeName.toLowerCase()) > -1) {
+        if (['textarea', 'input'].indexOf(target.nodeName.toLowerCase()) > -1) {
           return;
         }
         const codeMap = Storage.get('key_code_map', true);

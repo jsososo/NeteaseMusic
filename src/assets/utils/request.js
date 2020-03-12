@@ -1120,7 +1120,7 @@ export const getMusicData = (url) => {
         (e) => {
           window.readNewMusic = false;
           if (VUE_APP.$store.getters.isPlaying) {
-            document.getElementById('m-player').play();
+            VUE_APP.$store.dispatch('setReading', false);
           }
         });
     };

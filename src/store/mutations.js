@@ -348,6 +348,7 @@ export default {
   },
   [types.SET_READING](state, data) {
     state.reading = data;
+    window.pDom.play();
   },
   [types.UPDATE_FAV_SONG_MAP](state, data) {
     state.favSongMap = {
