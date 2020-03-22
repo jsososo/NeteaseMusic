@@ -1142,9 +1142,9 @@ export const getMusicData = (url) => {
 // 校验 Cookie 是否过期
 export const checkCookie = async () => {
   Storage.set('haveQCookie', '0');
-  let uin = document.cookie.match(/\suin=(\d+)(;|$)/);
+  let uin = document.cookie.match(/\suin=([^;]+)(;|$)/);
   if (uin && uin[1]) {
-    uin = uin[1];
+    uin = uin[1].replace(/\D/g, '');
   } else {
     uin = null;
   }
