@@ -178,7 +178,7 @@
           this.inputCookie.split('; ').forEach((c) => {
             document.cookie=`${c}; expires=${expireTime}; `;
           });
-          const result = checkCookie();
+          const result = await checkCookie();
           if (result.success) {
             this.$message.success('设置 Cookie 成功');
           } else {

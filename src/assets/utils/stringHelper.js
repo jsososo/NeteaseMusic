@@ -1,5 +1,3 @@
-import Storage from './Storage';
-import down from './download';
 /*
 * 从浏览器url的search里获取query值
 *

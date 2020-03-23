@@ -318,6 +318,37 @@ export const loginStatus = async () => {
   getMyList(uid, true);
 };
 
+// 校验 Cookie 是否过期
+export const checkCookie = async () => {
+  Storage.set('haveQCookie', '0');
+  let uin = document.cookie.match(/\suin=([^;]+)(;|$)/);
+  if (uin && uin[1]) {
+    uin = uin[1].replace(/\D/g, '');
+  } else {
+    uin = null;
+  }
+  if (!uin) {
+    return {
+      success: false,
+      message: 'cookie 格式错误',
+    }
+  }
+  try {
+    const result = await request({ api: 'QQ_SONG_LIST_MAP', data: { ownCookie: 1 }});
+    Storage.set('qqId', uin);
+    Storage.set('haveQCookie', '1');
+    return {
+      success: true,
+      data: result,
+    }
+  } catch (data) {
+    return {
+      success: false,
+      data: data.data,
+    }
+  }
+};
+
 // 初始化获取qq音乐歌单、喜欢的歌曲等信息
 export const getQQInfo = async (getFav) => {
   const id = Storage.get('qqId');
@@ -916,69 +947,68 @@ export const getHighQualityUrl = async (id, type, updateSong) => {
   }
   let [url, br, songEndType] = ['', song.br, br > 320000 ? 'flac' : 'mp3'];
 
-  if (String(type) !== '128') {
-    if (song.qqId) {
-      const typeArr = ['flac', '320', '128'];
-      let i = typeArr.indexOf(type);
-      while (i < typeArr.length && !url)  {
-        try {
-          const mediaIdMatch = song.url.match(/(C4|F0|M8|M5|A0)00(.+)\.(m4a|flac|mp3)/);
-          const mediaId = mediaIdMatch ? mediaIdMatch[2] : '';
-          const urlReq = await request({
-            api: 'QQ_DOWN_URL',
-            data: { id: song.qqId, type, mediaId }
-          });
-          if (urlReq.result === 100) {
-            url = urlReq.data;
-            songEndType = {
-              320: 'mp3',
-              128: 'mp3',
-              flac: 'flac',
-            }[type];
-            br = {
-              320: 320000,
-              128: 128000,
-              flac: 960000,
-            }[type];
-          }
-        } catch (err) {
-          // console.error(`获取歌曲高品质链接错误${err.message}`);
-        }
-        i += 1;
-        type = typeArr[i];
-      }
-    }
-    // 别的网站下载会有跨域问题
-    url = url.replace(/^(.+)qq.com/, 'http://122.226.161.16/amobile.music.tc.qq.com');
-
-    if (song.miguId) {
-      url = '';
-      const typeArr = ['flac', '320', '128'];
-      const miguUrlInfo = Storage.get('miguUrlInfo', true, '{}');
-      let urlInfo = miguUrlInfo[song.miguId];
-      if (!urlInfo) {
-        urlInfo = await request({
-          api: 'MIGU_URL_GET',
-          data: { id: song.miguId, cid: song.cid }
+  if (song.qqId) {
+    const typeArr = ['flac', '320', '128'];
+    let i = typeArr.indexOf(type);
+    while (i < typeArr.length && !url)  {
+      try {
+        const mediaIdMatch = song.url.match(/(C4|F0|M8|M5|A0)00(.+)\.(m4a|flac|mp3)/);
+        const mediaId = mediaIdMatch ? mediaIdMatch[2] : '';
+        const urlReq = await request({
+          api: 'QQ_DOWN_URL',
+          data: { id: song.qqId, type, mediaId }
         });
-        urlInfo = urlInfo.data;
+        if (urlReq.result === 100) {
+          url = urlReq.data;
+          songEndType = {
+            320: 'mp3',
+            128: 'mp3',
+            flac: 'flac',
+          }[type];
+          br = {
+            320: 320000,
+            128: 128000,
+            flac: 960000,
+          }[type];
+        }
+      } catch (err) {
+        // console.error(`获取歌曲高品质链接错误${err.message}`);
       }
-      let i = typeArr.indexOf(type);
-      const tArr = [
-        { end: 'flac', key: 'flac', br: 960000 },
-        { end: 'mp3', key: '320k', br: 320000 },
-        { end: 'mp3', key: '128k', br: 128000 },
-      ];
-      while (i < typeArr.length && !url) {
-        url = urlInfo[tArr[i].key];
-        songEndType = tArr[i].end;
-        br = tArr[i].br;
-      }
-      url = encodeURI(url);
-      // migu 的有跨域问题，所以在服务器上用 nginx 配以下代理
-      url = url.replace('tyst.migu.cn', `${window.location.host}/miguSongs`);
+      i += 1;
+      type = typeArr[i];
     }
   }
+  // 别的网站下载会有跨域问题
+  url = url.replace(/^(.+)qq.com/, 'http://122.226.161.16/amobile.music.tc.qq.com');
+
+  if (song.miguId) {
+    url = '';
+    const typeArr = ['flac', '320', '128'];
+    const miguUrlInfo = Storage.get('miguUrlInfo', true, '{}');
+    let urlInfo = miguUrlInfo[song.miguId];
+    if (!urlInfo) {
+      urlInfo = await request({
+        api: 'MIGU_URL_GET',
+        data: { id: song.miguId, cid: song.cid }
+      });
+      urlInfo = urlInfo.data;
+    }
+    let i = typeArr.indexOf(type);
+    const tArr = [
+      { end: 'flac', key: 'flac', br: 960000 },
+      { end: 'mp3', key: '320k', br: 320000 },
+      { end: 'mp3', key: '128k', br: 128000 },
+    ];
+    while (i < typeArr.length && !url) {
+      url = urlInfo[tArr[i].key];
+      songEndType = tArr[i].end;
+      br = tArr[i].br;
+    }
+    url = encodeURI(url);
+    // migu 的有跨域问题，所以在服务器上用 nginx 配以下代理
+    url = url.replace('tyst.migu.cn', `${window.location.host}/miguSongs`);
+  }
+
   url = url || song.url;
   if (updateSong) {
     VUE_APP.$store.dispatch('updateSongDetail', {
@@ -1020,7 +1050,7 @@ export const download = async (id, songName, forceReq) => {
     }
   }
 
-  downReq(url, name, null, {
+  downReq(url, name, null, song, {
     init: (ajax) => {
       VUE_APP.$message.success('加入下载中');
       dispatch('updateDownload', { status: 'init', from: (song.from || '163'), id: downId, ajax, name, songId: id, br, songCid });
@@ -1135,37 +1165,6 @@ export const getMusicData = (url) => {
     window.readNewMusic = false;
     if (VUE_APP.$store.getters.isPlaying) {
       VUE_APP.$store.dispatch('setReading', false);
-    }
-  }
-};
-
-// 校验 Cookie 是否过期
-export const checkCookie = async () => {
-  Storage.set('haveQCookie', '0');
-  let uin = document.cookie.match(/\suin=([^;]+)(;|$)/);
-  if (uin && uin[1]) {
-    uin = uin[1].replace(/\D/g, '');
-  } else {
-    uin = null;
-  }
-  if (!uin) {
-    return {
-      success: false,
-      message: 'cookie 格式错误',
-    }
-  }
-  try {
-    const result = await request('QQ_SONG_LIST_MAP');
-    Storage.set('qqId', uin);
-    Storage.set('haveQCookie', '1');
-    return {
-      success: true,
-      data: result,
-    }
-  } catch (data) {
-    return {
-      success: false,
-      data: data.data,
     }
   }
 };

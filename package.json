@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "axios": "^0.19.0",
+    "browser-id3-writer": "^4.4.0",
     "downloadjs": "^1.4.7",
     "jquery": "^3.3.1",
     "node-sass": "^4.9.3",
