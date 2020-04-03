@@ -7,6 +7,7 @@
 // v4.2 adds semantic variable names, long (over 2MB) dataURL support, and hidden by default temp anchors
 // https://github.com/rndme/download
 import Id3 from 'browser-id3-writer';
+import timer from './timer';
 
 export default function download(data, strFileName, strMimeType = null, songInfo = null, cb = {}) {
   var self = window, // this script is only for browsers anyway...
@@ -49,11 +50,15 @@ export default function download(data, strFileName, strMimeType = null, songInfo
                 if (cE.currentTarget.status === 200) {
                   const writer = new Id3(e.target.response);
                   writer.setFrame('TIT2', songInfo.name)
+                    .setFrame('TPE1', songInfo.ar.map(a => a.name))
+                    .setFrame('TALB', songInfo.al.name)
+                    .setFrame('TRCK', songInfo.trackNo || '')
                     .setFrame('APIC', {
                       type: 3,
                       data: coverAjax.response,
                       description: songInfo.al.name,
                     });
+                  songInfo.publishTime && writer.setFrame('TYER', timer(songInfo.publishTime).str('YYYY'));
                   writer.addTag();
                   downInfo = writer.arrayBuffer;
                 }

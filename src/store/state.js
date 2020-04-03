@@ -10,7 +10,7 @@ export default {
   }, // qq音乐的用户歌单信息
   recommendList: {}, // 推荐歌单信息
   search: { // 搜索的参数和结果
-    type: 1,
+    type: 0,
     total: 0,
     pageNo: 1,
     keywords: '',

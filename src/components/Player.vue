@@ -142,6 +142,7 @@
   } from '../assets/utils/request';
   import { handleLyric, getQueryFromUrl, changeUrlQuery } from "../assets/utils/stringHelper";
   import ArrayHelper from '../assets/utils/arrayHelper';
+  import idMap from "../assets/utils/idMap";
 
   export default {
     name: "PlayerPage",
@@ -192,6 +193,7 @@
       async playNow(v) {
         const { listId, playingId, playerInfo, isPersonFM, playingList, playingPlatform, isUpdating, pDom } = this;
         const { id, lyric, name, comments, mid, songid, cid, qqId, miguId, br, pUrl } = v;
+        let platform = v.platform || v.from || '163';
         let { url } = v;
         const trueId = v.from === 'qq' ? mid : id;
         const dispatch = this.$store.dispatch;
@@ -281,47 +283,28 @@
         }
         // 没有歌词的拿歌词
         if (!lyric) {
-          switch (v.from) {
-            case 'qq':
-              request({
-                api: 'QQ_LYRIC',
-                data: { songmid: mid },
-              }).then((res) => {
-                const { lyric, trans } = res.data;
-                const lyricObj = {};
-                handleLyric(lyric, 'str', lyricObj);
-                handleLyric(trans, 'trans', lyricObj);
-                dispatch('updateSongDetail', { id: trueId, lyric: lyricObj });
+          request({
+            api: 'LYRIC',
+            data: {
+              id: {
+                163: id,
+                qq: mid,
+                migu: cid
+              }[platform],
+              _p: platform,
+            }
+          }).then(({ data: { lyric, trans }}) => {
+            let lyricObj = {};
+            lyric && handleLyric(lyric, 'str', lyricObj);
+            trans && handleLyric(trans, 'trans', lyricObj);
+            !lyric && !trans && (
+              lyricObj = {
+                0: {
+                  str: '没有歌词哟，好好享受',
+                },
               });
-              break;
-            case 'migu':
-              request({
-                api: 'MIGU_LYRIC',
-                data: { cid },
-              }).then((res) => {
-                const lyricObj = {};
-                handleLyric(res.data, 'str', lyricObj);
-                dispatch('updateSongDetail', { id, lyric: lyricObj });
-              });
-              break;
-            default:
-              request({ api: 'GET_LYRIC', data: { id }, cache: true })
-                .then((res) => {
-                    const { nolyric, lrc = {}, tlyric = {} } = res;
-                    let lyric = {};
-                    if (nolyric) {
-                      lyric = {
-                        0: {
-                          str: '没有歌词哟，好好享受',
-                        },
-                      }
-                    } else {
-                      handleLyric(lrc.lyric, 'str', lyric);
-                      handleLyric(tlyric.lyric, 'trans', lyric);
-                    }
-                    dispatch('updateSongDetail', { id, lyric });
-                  });
-          }
+            dispatch('updateSongDetail', { id: trueId, lyric: lyricObj });
+          })
         }
 
         // 没有评论的拿评论

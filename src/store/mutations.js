@@ -33,6 +33,19 @@ export default {
       state.allList = { ...allList };
     }
   },
+  [types.UPDATE_LIST](state, data) {
+    const { allList } = state;
+    const { songs = [], more = false, listId } = data;
+
+    if (listId) {
+      if (more) {
+        allList[listId] = [ ...(allList[listId]), ...songs ];
+      } else {
+        allList[listId] = songs;
+      }
+      state.allList = { ...allList };
+    }
+  },
   [types.SET_USER_LIST](state, data) {
     state.userList = { ...state.userList, ...data };
   },

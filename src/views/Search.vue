@@ -20,7 +20,7 @@
     </div>
 
     <!-- 歌曲 -->
-    <div v-if="searchQuery.type === 1">
+    <div v-if="searchQuery.type === 0">
       <div class="empty-status" v-if="!searchQuery.songs || searchQuery.songs.length === 0">
         空空如也！
       </div>
@@ -70,12 +70,12 @@
     </div>
 
     <!-- 专辑 -->
-    <div v-if="searchQuery.type === 10">
+    <div v-if="searchQuery.type === 2">
       <div class="album-list result-list" v-if="searchQuery.albums && searchQuery.albums.length > 0">
         <div
           v-for="a in searchQuery.albums" :key="a.id" class="album-item"
         >
-          <div class="album-img-container pointer" @click="changeUrlQuery({ id: a.id, mid: a.mid, from: a.from }, '#/album')">
+          <div class="album-img-container pointer" @click="changeUrlQuery({ id: a.id, mid: a.mid, from: a.platform }, '#/album')">
             <img :src="`${a.picUrl}?param=200y200`">
           </div>
           <div class="album-name pointer" @click="goTo(`#/album?id=${a.id}`)">{{a.name}}</div>
@@ -87,26 +87,37 @@
     </div>
 
     <!-- 歌手 -->
-    <div v-if="searchQuery.type === 100">
-      <div class="singer-list result-list" v-if="searchQuery.artists && searchQuery.artists.length > 0">
-        <div v-for="s in searchQuery.artists" class="singer-item" @click="changeUrlQuery({ id: s.id, mid: s.mid, from: s.from }, '#/singer')">
+    <div v-if="searchQuery.type === 3">
+      <div class="singer-list result-list" v-if="searchQuery.singers && searchQuery.singers.length > 0">
+        <div v-for="s in searchQuery.singers" class="singer-item" @click="changeUrlQuery({ id: s.id, mid: s.mid, from: s.platform }, '#/singer')">
           <img class="singer-img" :src="`${String(s.picUrl) === 'null' ? 'http://p3.music.126.net/VnZiScyynLG7atLIZ2YPkw==/18686200114669622.jpg' : s.picUrl}?param=120y120`"  />
           <div class="singer-name">{{s.name}}</div>
         </div>
       </div>
-      <div class="empty-status" v-if="!searchQuery.artists || searchQuery.artists.length === 0">
+      <div class="empty-status" v-if="!searchQuery.singers || searchQuery.singers.length === 0">
         空空如也！
       </div>
     </div>
 
     <!-- 歌单 -->
-    <div v-if="searchQuery.type === 1000">
+    <div v-if="searchQuery.type === 1">
       <div class="playlist-list result-list" v-if="searchQuery.playlists && searchQuery.playlists.length > 0">
-        <div v-for="s in searchQuery.playlists" class="playlist-item" @click="changeUrlQuery({ id: s.id, from: s.from }, '#/playlist/detail')">
-          <img class="playlist-img" :src="`${s.coverImgUrl}?param=120y120`"  />
+        <div v-for="s in searchQuery.playlists" class="playlist-item" @click="changeUrlQuery({ id: s.id, from: s.platform }, '#/playlist/detail')">
+          <img class="playlist-img" :src="`${s.cover}?param=120y120`"  />
           <div class="playlist-name">{{s.name}}</div>
           <div class="playlist-author">
-            <span v-if="s.creator">By: {{s.creator.nickname || s.creator.name}}</span>
+            <el-tooltip
+              v-if="
+                (((s.from || ('163')) === '163') && user && user.userId !== s.userId) ||
+                (s.from === 'qq') && (s.creator.qq != qqId)"
+              class="item"
+              effect="dark"
+              :content="s.subscribed ? '已收藏' : '收藏'"
+              placement="top"
+            >
+              <i @click="collectPlaylist(s)" :class="`inline-block mr_10 iconfont icon-${s.subscribed ? 'collected' : 'collect'}`" />
+            </el-tooltip>
+            <span v-if="s.creator && s.creator.nick">By: {{s.creator.nick}}</span>
             <span class="pl_20"><i class="iconfont icon-yinyue" />: {{numToStr(s.playCount || 0)}}</span>
           </div>
           <div class="playlist-trackcount">{{s.trackCount}}</div>
@@ -120,11 +131,12 @@
 </template>
 
 <script>
-  import { searchReq, likeMusic, download } from "../assets/utils/request";
+  import { searchReq, likeMusic, download, collectPlaylist } from "../assets/utils/request";
   import { numToStr, changeUrlQuery } from "../assets/utils/stringHelper";
   import { mapGetters } from 'vuex';
   import { messageHelp } from "../assets/utils/util";
   import $ from 'jquery';
+  import Storage from "../assets/utils/Storage";
 
   export default {
     name: "Search",
@@ -134,28 +146,28 @@
         keywords: '',
         typeList: [
           {
-            val: 1,
+            val: 0,
             color: 'red',
             icon: 'song',
             text: '歌曲',
             hasQQ: true,
           },
           {
-            val: 10,
+            val: 2,
             color: 'blue',
             icon: 'album',
             text: '专辑',
             hasQQ: true,
           },
           {
-            val: 100,
+            val: 3,
             color: 'green',
             icon: 'singer',
             text: '歌手',
             hasQQ: true,
           },
           {
-            val: 1000,
+            val: 1,
             color: 'yellow',
             icon: 'playlist',
             text: '歌单',
@@ -163,6 +175,7 @@
           },
         ],
         platform: '163',
+        qqId: Storage.get('qqId'),
         loading: false,
       }
     },
@@ -174,7 +187,9 @@
         playingPercent: 'getPlayingPercent',
         allList: 'getAllList',
         userList: 'getUserList',
+        qUserList: 'getQUserList',
         favSongMap: 'getFavSongMap',
+        user: 'getUser',
       })
     },
     watch: {
@@ -235,6 +250,7 @@
         }
       },
       likeMusic,
+      collectPlaylist,
       changeUrlQuery,
       playlistTracks(tracks, op, type, platform = '163') {
         window.event.stopPropagation();

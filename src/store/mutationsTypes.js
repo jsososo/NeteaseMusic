@@ -13,6 +13,9 @@ export const SET_READING = 'SET_READING';
 // 更新列表
 export const QUERY_163_LIST = 'QUERY_163_LIST';
 
+// 更新列表
+export const UPDATE_LIST = 'UPDATE_LIST';
+
 // 更新用户信息
 export const SET_USER = 'SET_USER';
 

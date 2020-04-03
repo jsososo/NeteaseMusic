@@ -32,7 +32,7 @@
         <div
           @click="login"
           :class="`login-btn ${(((type === 'captcha' && !code) || (type === 'password' && !password)) || !username) && 'disabled'}`"
-        >登录</div>
+        >登录网易云</div>
       </div>
     </div>
 
@@ -523,8 +523,8 @@
         margin-top: 20px;
         text-align: center;
         font-weight: bold;
-        font-size: 22px;
-        letter-spacing: 20px;
+        font-size: 18px;
+        letter-spacing: 5px;
         transition: 0.3s;
         cursor: pointer;
         

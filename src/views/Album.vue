@@ -6,14 +6,14 @@
         <div class="album-name">
           {{baseInfo.name}}
           <div class="album-name-alia">{{(baseInfo.alias || []).join('、')}}</div>
-          <div class="album-artist" v-if="baseInfo.artists">
-            <a v-for="a in baseInfo.artists" :key="a.id" :href="changeUrlQuery({ id: a.id, mid: a.mid, from: a.from }, '#/singer', false)">{{a.name}} </a>
+          <div class="album-artist" v-if="baseInfo.ar">
+            <a v-for="a in baseInfo.ar" :key="a.id" :href="changeUrlQuery({ id: a.id, mid: a.mid, from: a.platform }, '#/singer', false)">{{a.name}} </a>
           </div>
           <div class="album-company" v-if="baseInfo.company">发行：{{baseInfo.company}}</div>
-          <div class="album-pb-time">{{baseInfo.publishTime}}</div>
+          <div class="album-pb-time">{{handleTime(baseInfo.publishTime)}}</div>
           <div class="album-info-from">信息来源：{{{ 163: '网易云', qq: '企鹅音乐', migu: '咪咕～' }[platform]}}</div>
         </div>
-        <div class="base-desc" v-if="baseInfo.description" v-html="baseInfo.description"></div>
+        <div class="base-desc" v-if="baseInfo.desc" v-html="baseInfo.desc"></div>
       </div>
     </div>
     <div class="album-right-list">
@@ -118,56 +118,74 @@
     },
     methods: {
       queryAlbum() {
-        const { platform, mid: albummid } = this;
+        const { platform , mid: albummid, id } = this;
         this.$store.dispatch('updateShowCover', false);
-        if (platform === 'qq') {
-          request({
-            api: 'QQ_ALBUM',
-            data: { albummid },
-          }).then((res) => {
-            this.baseInfo = {
-              ...res.data,
-              description: res.data.desc,
-              artists: res.data.ar.map((a) => ({ ...a, from: 'qq' }))
-            }
-          });
-
-          return request({
-            api: 'QQ_ALBUM_SONGS',
-            data: { albummid },
-          }).then((res) => {
-            this.info.songs = handleQQSongs(res.data.list);
-          })
-        }
-
-        if (platform === 'migu') {
-          return request({
-            api: 'MIGU_ALBUM',
-            data: { id: this.id },
-          }).then(res => {
-            this.baseInfo = {
-              ...res.data,
-              description: res.data.desc.replace(/\n/g, '<br/>'),
-              artists: res.data.artists.map((a) => ({ ...a, from: 'migu' })),
-            };
-            this.info.songs = handleMiguSongs(res.data.songList);
-          })
-        }
         request({
-          api: 'GET_ALBUM',
-          data: { id: this.id },
-          cache: true,
-        }).then((res) => {
-          this.baseInfo = res.album;
-          this.baseInfo.publishTime = timer(this.baseInfo.publishTime).str('YYYY-MM-DD');
-          handleSongs(res.songs);
-          this.info.songs = (res.songs || []).map((item) => item.id);
+          api: 'ALBUM',
+          data: {
+            id: platform === 'qq' ? albummid : id,
+            _p: platform
+          }
+        }).then(({ data }) => {
+          this.baseInfo = data;
+          handleSongs(data.list)
+          this.info.songs = (data.list || []).map((s) => s.id);
         })
+
+        // if (platform === 'qq') {
+        //   request({
+        //     api: 'QQ_ALBUM',
+        //     data: { albummid },
+        //   }).then((res) => {
+        //     this.baseInfo = {
+        //       ...res.data,
+        //       description: res.data.desc,
+        //       artists: res.data.ar.map((a) => ({ ...a, from: 'qq' }))
+        //     }
+        //   });
+        //
+        //   return request({
+        //     api: 'QQ_ALBUM_SONGS',
+        //     data: { albummid },
+        //   }).then((res) => {
+        //     this.info.songs = handleQQSongs(res.data.list);
+        //   })
+        // }
+        //
+        // if (platform === 'migu') {
+        //   return request({
+        //     api: 'MIGU_ALBUM',
+        //     data: { id: this.id },
+        //   }).then(res => {
+        //     this.baseInfo = {
+        //       ...res.data,
+        //       description: res.data.desc.replace(/\n/g, '<br/>'),
+        //       artists: res.data.artists.map((a) => ({ ...a, from: 'migu' })),
+        //     };
+        //     this.info.songs = handleMiguSongs(res.data.songList);
+        //   })
+        // }
+        // request({
+        //   api: 'GET_ALBUM',
+        //   data: { id: this.id },
+        //   cache: true,
+        // }).then((res) => {
+        //   this.baseInfo = res.album;
+        //   handleSongs(res.songs, (s) => {
+        //     s.publishTime = this.baseInfo.publishTime;
+        //     console.log(s.publishTime);
+        //   });
+        //   this.baseInfo.publishTime = timer(this.baseInfo.publishTime).str('YYYY-MM-DD');
+        //   this.info.songs = (res.songs || []).map((item) => item.id);
+        // })
       },
       likeMusic: likeMusic,
       playlistTracks(tracks, op, type, platform = '163') {
         window.event.stopPropagation();
         this.$store.dispatch('setOperation', { data: { tracks, op }, type, platform });
+      },
+      handleTime(t) {
+        return timer(t).str('YYYY-MM-DD')
       },
       playMusic(id) {
         const { dispatch } = this.$store;

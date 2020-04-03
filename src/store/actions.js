@@ -14,6 +14,9 @@ export default {
   query163List: ({ commit }, data) => {
     commit(types.QUERY_163_LIST, data);
   },
+  updateList: ({ commit }, data) => {
+    commit(types.UPDATE_LIST, data);
+  },
   setUserList: ({ commit }, data) => {
     commit(types.SET_USER_LIST, data);
   },
