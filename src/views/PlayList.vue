@@ -70,11 +70,29 @@
         <img :src="`${item.coverImgUrl}?param=200y200`" class="list-img" />
         <span class="list-name">{{item.name}}</span>
         <span class="list-count">{{item.trackCount}}</span>
-        <i @click="toHeartMode(item.id)" :class="`iconfont icon-heart heart-btn ${heartMode && playingListId === item.id && 'hearting'}`" />
-        <span class="list-creator" v-if="item.creator">
+        <div class="bottom-text">
+          <el-tooltip
+            class="item"
+            effect="dark"
+            content="心动模式"
+            placement="top"
+          >
+            <i @click="toHeartMode(item.id)" :class="`iconfont icon-heart heart-btn ${heartMode && playingListId === item.id && 'hearting'}`" />
+          </el-tooltip>
+          <el-tooltip
+            v-if="(user && user.userId) !== item.creator.userId"
+            class="item"
+            effect="dark"
+            :content="item.subscribed ? '已收藏' : '收藏'"
+            placement="top"
+          >
+            <i @click="collectPlaylist(item)" :class="`collect-btn iconfont icon-${item.subscribed ? 'collected' : 'collect'}`" />
+          </el-tooltip>
+          <span class="list-creator" v-if="item.creator">
           By: <a :href="`#/user?id=${item.creator.userId}`">{{item.creator.nickname}}</a>
           <span class="pl_20" v-if="item.playCount"><i class="iconfont icon-yinyue" />: {{numToStr(item.playCount)}}</span>
         </span>
+        </div>
       </div>
     </div>
 
@@ -105,9 +123,21 @@
         <img :src="`${item.coverImgUrl}?param=50y50`" class="list-bg-img" />
         <img :src="`${item.coverImgUrl}?param=200y200`" class="list-img" />
         <span class="list-name">{{item.name}}</span>
-        <span class="list-creator">
-          <span v-if="item.playCount"><i class="iconfont icon-yinyue" />: {{numToStr(item.playCount)}}</span>
-        </span>
+        <div class="bottom-text">
+          <el-tooltip
+            v-if="item.creator && item.creator.id !== inputQQ"
+            class="item"
+            effect="dark"
+            :content="item.subscribed ? '已收藏' : '收藏'"
+            placement="top"
+          >
+            <i @click="collectPlaylist(item)" :class="`collect-btn iconfont icon-${item.subscribed ? 'collected' : 'collect'}`" />
+          </el-tooltip>
+          <span class="list-creator">
+            <span v-if="item.creator && item.creator.nickname">By: {{item.creator.nickname}}</span>
+            <span class="pl_20" v-if="item.playCount"><i class="iconfont icon-yinyue" />: {{numToStr(item.playCount)}}</span>
+          </span>
+        </div>
         <span class="list-count">{{item.trackCount}}</span>
 
       </div>
@@ -143,7 +173,7 @@
 <script>
   import { mapGetters } from 'vuex';
   import { numToStr } from "../assets/utils/stringHelper";
-  import request, { handleSongs, getPersonFM, getQQUserSonglist } from '../assets/utils/request';
+  import request, { handleSongs, getPersonFM, getQQUserSonglist, collectPlaylist, getMyList } from '../assets/utils/request';
   import Storage from "../assets/utils/Storage";
   export default {
     name: "PlayList",
@@ -219,7 +249,7 @@
       async hashChange() {
         const hashs = ['playlist', 'recommend'];
         this.hash = hashs.find((h) => document.location.hash.indexOf(h) > -1);
-        const { selected, hash } = this;
+        const { selected, hash, user } = this;
         this.pagePlayList = [];
         switch (`${hash}-${selected}`) {
           case 'recommend-qq':
@@ -231,7 +261,7 @@
           case 'playlist-qq':
             return this.updateQQNum();
           case 'playlist-163':
-            return (this.$route.query.id ? this.queryPlayList() : (this.pagePlayList = this.userList.list));
+            return (this.$route.query.id ? this.queryPlayList() : getMyList(user.id).then(() => this.pagePlayList = this.userList.list));
           case 'playlist-migu':
             return this.selected = '163';
         }
@@ -332,6 +362,8 @@
       },
 
       numToStr,
+
+      collectPlaylist,
     }
   }
 </script>
@@ -463,35 +495,37 @@
           top: -60px;
           transition: 0.3s;
         }
-        .heart-btn {
+        .bottom-text {
           position: absolute;
           bottom: 20px;
-          left: 110px;
           color: #fff3;
           font-weight: bold;
           cursor: pointer;
           font-size: 20px;
           transition: 0.3s;
+          left: 110px;
 
-          &.hearting {
-            color: #F56C6C88;
-            animation: hearting 1.4s infinite;
-            
-            @keyframes hearting {
-              from, to, 40%, 50%, 60%, 70% {
-                transform: scale(1);
-              }
-              45%, 65% {
-                transform: scale(1.2);
+          .collect-btn, .heart-btn {
+            margin-right: 15px;
+            &.heart-btn {
+
+              &.hearting {
+                color: #F56C6C88;
+                animation: hearting 1.4s infinite;
+
+                @keyframes hearting {
+                  from, to, 40%, 50%, 60%, 70% {
+                    transform: scale(1);
+                  }
+                  45%, 65% {
+                    transform: scale(1.2);
+                  }
+                }
               }
             }
           }
         }
         .list-creator {
-          position: absolute;
-          left: 145px;
-          bottom: 20px;
-          font-weight: bold;
           font-size: 14px;
           color: #fff5;
           transition: 0.3s;
@@ -550,10 +584,10 @@
           opacity: 1;
           box-shadow: 0 4px 20px #0004;
           
-          .heart-btn {
+          .bottom-text {
             color: #fffc;
 
-            &.hearting {
+            .hearting {
               color: #F56C6C;
             }
           }

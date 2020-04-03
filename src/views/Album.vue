@@ -159,8 +159,11 @@
           cache: true,
         }).then((res) => {
           this.baseInfo = res.album;
+          handleSongs(res.songs, (s) => {
+            s.publishTime = this.baseInfo.publishTime;
+            console.log(s.publishTime);
+          });
           this.baseInfo.publishTime = timer(this.baseInfo.publishTime).str('YYYY-MM-DD');
-          handleSongs(res.songs);
           this.info.songs = (res.songs || []).map((item) => item.id);
         })
       },

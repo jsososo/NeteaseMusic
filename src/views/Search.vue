@@ -106,6 +106,17 @@
           <img class="playlist-img" :src="`${s.coverImgUrl}?param=120y120`"  />
           <div class="playlist-name">{{s.name}}</div>
           <div class="playlist-author">
+            <el-tooltip
+              v-if="
+                (((s.from || ('163')) === '163') && user && user.userId !== s.userId) ||
+                (s.from === 'qq') && (s.creator.qq != qqId)"
+              class="item"
+              effect="dark"
+              :content="s.subscribed ? '已收藏' : '收藏'"
+              placement="top"
+            >
+              <i @click="collectPlaylist(s)" :class="`inline-block mr_10 iconfont icon-${s.subscribed ? 'collected' : 'collect'}`" />
+            </el-tooltip>
             <span v-if="s.creator">By: {{s.creator.nickname || s.creator.name}}</span>
             <span class="pl_20"><i class="iconfont icon-yinyue" />: {{numToStr(s.playCount || 0)}}</span>
           </div>
@@ -120,11 +131,12 @@
 </template>
 
 <script>
-  import { searchReq, likeMusic, download } from "../assets/utils/request";
+  import { searchReq, likeMusic, download, collectPlaylist } from "../assets/utils/request";
   import { numToStr, changeUrlQuery } from "../assets/utils/stringHelper";
   import { mapGetters } from 'vuex';
   import { messageHelp } from "../assets/utils/util";
   import $ from 'jquery';
+  import Storage from "../assets/utils/Storage";
 
   export default {
     name: "Search",
@@ -163,6 +175,7 @@
           },
         ],
         platform: '163',
+        qqId: Storage.get('qqId'),
         loading: false,
       }
     },
@@ -174,7 +187,9 @@
         playingPercent: 'getPlayingPercent',
         allList: 'getAllList',
         userList: 'getUserList',
+        qUserList: 'getQUserList',
         favSongMap: 'getFavSongMap',
+        user: 'getUser',
       })
     },
     watch: {
@@ -235,6 +250,7 @@
         }
       },
       likeMusic,
+      collectPlaylist,
       changeUrlQuery,
       playlistTracks(tracks, op, type, platform = '163') {
         window.event.stopPropagation();

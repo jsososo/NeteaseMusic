@@ -82,28 +82,16 @@ export const getPlayList = async (id) => request({ api: 'LIST_DETAIL', data: { i
     const userList = store.getters.getUserList;
     const isFav = String(id) === String(userList.favId);
     const { tracks } = playlist;
-    const ids = [];
-    const newSongObj = {};
 
     // 请求的太多的话返回的会不详细
     const favMap = {};
-    const songs = tracks.map((s) => {
-      if (!allSongs[s.id]) {
-        const { al = {}, ar = [], id, name, mv, mvid } = s;
-        newSongObj[s.id] = { al, ar: ar, id, name, mvid: mv || mvid };
-        allSongs[s.id] = newSongObj[s.id];
-        ids.push(s.id);
-      }
+    const songs = await handleSongs(tracks);
+    const songIds = songs.map((s) => {
       isFav && (favMap[s.id] = 1);
-      return s.id;
+      return s.id
     });
     isFav && dispatch('updateFavSongMap', { 163: favMap });
-    dispatch('query163List', { songs, listId: id });
-    dispatch('updateAllSongs', newSongObj);
-
-    while (ids.length > 0) {
-      querySongUrl(ids.splice(-300).join(','));
-    }
+    dispatch('query163List', { songs: songIds, listId: id });
 
     return res;
   });
@@ -373,6 +361,10 @@ export const getQQUserSonglist = async (id) => {
       ownCookie: Number(Storage.get('haveQCookie') === '1'),
     }
   });
+  const res2 = await request({
+    api: 'QQ_COLLECTED_SONGLIST',
+    data: { id }
+  });
   const qUserList = {
     list: [],
     obj: {},
@@ -387,12 +379,33 @@ export const getQQUserSonglist = async (id) => {
       name: k.diss_name,
       coverImgUrl: k.diss_cover,
       trackCount: k.song_cnt,
+      creator: {
+        id,
+      },
+      from: 'qq',
     };
     if (k.dirid === 201) {
       qUserList.favId = k.tid;
     }
     qUserList.list.push(obj);
     qUserList.obj[k.tid] = obj;
+  });
+  res2.data.list.forEach(({ dissid, dissname, songnum, listennum, nickname, uin, logo }) => {
+    const obj = {
+      id: dissid,
+      name: dissname,
+      coverImgUrl: logo,
+      trackCount: songnum,
+      playCount: listennum,
+      creator: {
+        id: uin,
+        nickname,
+      },
+      subscribed: true,
+      from: 'qq',
+    };
+    qUserList.list.push(obj);
+    qUserList.obj[dissid] = obj;
   });
   window.VUE_APP.$store.dispatch('updateQUserList', qUserList);
 };
@@ -713,6 +726,7 @@ const searchQQReq = async ({ keywords: key, pageNo, type }) => {
 
   // 搜索歌单
   if (type === 1000) {
+    const qUserList = VUE_APP.$store.state.qUserList;
     resultList = list.map((item) => ({
       from: 'qq',
       id: item.dissid,
@@ -721,6 +735,7 @@ const searchQQReq = async ({ keywords: key, pageNo, type }) => {
       playCount: item.listennum,
       trackCount: item.song_count,
       coverImgUrl: item.imgurl,
+      subscribed: qUserList && qUserList.obj && qUserList.obj[item.dissid],
     }))
   }
 
@@ -752,6 +767,8 @@ export const QQ2163 = (item) => {
     songname,
     url,
     vid,
+    cdIdx,
+    pubtime,
   } = item;
   return {
     ar: singer,
@@ -769,6 +786,8 @@ export const QQ2163 = (item) => {
     songid,
     from: 'qq',
     url,
+    trackNo: cdIdx,
+    publishTime: pubtime * 1000,
   };
 };
 
@@ -815,13 +834,14 @@ export const handleMiguSongs = (list) => {
 };
 
 // 处理获取到的歌曲，把他们存到 allSongs 并获取链接
-export const handleSongs = (songs) => (
+export const handleSongs = (songs, func) => (
   new Promise((resolve, reject) => {
     const VUE_APP = window.VUE_APP;
     const obj = {};
     const allSongs = VUE_APP.$store.getters.getAllSongs;
     const ids = [];
     songs.forEach((s) => {
+      func && func(s);
       obj[s.id] = {
         ...(allSongs[s.id] || {}),
         al: (s.al || s.album),
@@ -829,6 +849,8 @@ export const handleSongs = (songs) => (
         name: s.name,
         id: s.id,
         mvid: s.mvid || s.mv,
+        trackNo: s.no,
+        publishTime: s.publishTime || (s.al || s.album || {}).publishTime,
       };
       allSongs[s.id] = obj[s.id];
       if (!allSongs[s.id].url) {
@@ -837,7 +859,7 @@ export const handleSongs = (songs) => (
     });
     VUE_APP.$store.dispatch('updateAllSongs', obj);
     while (ids.length > 0) {
-      querySongUrl(ids.splice(-500).join(','));
+      querySongUrl(ids.splice(-300).join(','));
     }
     setTimeout(() => resolve(songs));
   })
@@ -1098,7 +1120,7 @@ export const handleQQSongs = (list) => {
   const allSongs = window.VUE_APP.$store.getters.getAllSongs;
   const obj = {};
   const ids = [];
-  list.forEach(({ singer, mid, id, name, mv = {}, album}) => {
+  list.forEach(({ singer, mid, id, name, mv = {}, album, cdIdx, time_public, index_album }) => {
     if (!allSongs[mid]) {
       album.picUrl = `https://y.gtimg.cn/music/photo_new/T002R300x300M000${album.mid}.jpg`;
       obj[mid] = {
@@ -1110,6 +1132,8 @@ export const handleQQSongs = (list) => {
         mvid: mv.vid,
         from: 'qq',
         al: album,
+        trackNo: cdIdx || index_album,
+        publishTime: timer(time_public, 'YYYY-MM-DD').time,
       };
     }
     ids.push(mid);
@@ -1184,6 +1208,43 @@ export const getCookie = async (id) => {
     } else {
       VUE_APP.$message.success('获取 Cookie 成功');
     }
+  }
+};
+
+// 收藏/取消收藏 歌单
+export const collectPlaylist = async (playlist) => {
+  window.event.stopPropagation();
+  let result = null;
+  switch (playlist.from) {
+    case 'migu':
+      VUE_APP.$message.warning('咪咕音乐暂不支持！');
+      return {};
+    case 'qq':
+      try {
+        result = await request({
+          api: 'QQ_COLLECT_SONGLIST',
+          data: {
+            id: playlist.id,
+            op: playlist.subscribed ? 2 : 1,
+          }
+        });
+        playlist.subscribed = !playlist.subscribed;
+        VUE_APP.$message.success(`${playlist.subscribed ? '' : '取消'}收藏！`);
+      } catch {
+        VUE_APP.$message.error('是不是没有 cookie 啊');
+      }
+      return playlist;
+    default:
+      result = await request({
+        api: 'SUBSCRIBE_PLAYLIST',
+        data: {
+          id: playlist.id,
+          t: Number(!playlist.subscribed),
+        }
+      });
+      playlist.subscribed = !playlist.subscribed;
+      VUE_APP.$message.success(`${playlist.subscribed ? '' : '取消'}收藏！`);
+      return playlist;
   }
 };
 
