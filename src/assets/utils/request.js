@@ -1025,8 +1025,10 @@ export const getHighQualityUrl = async (id, type, updateSong) => {
       url = urlInfo[tArr[i].key];
       songEndType = tArr[i].end;
       br = tArr[i].br;
+      i++;
     }
-    url = encodeURI(url);
+    url = encodeURI(url || '');
+    !url && (url = song.url);
     // migu 的有跨域问题，所以在服务器上用 nginx 配以下代理
     url = url.replace('tyst.migu.cn', `${window.location.host}/miguSongs`);
   }

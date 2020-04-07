@@ -159,10 +159,12 @@
         <img :src="`${item.picUrl}`" class="list-bg-img" />
         <img :src="`${item.picUrl}`" class="list-img" />
         <span class="list-name">{{item.name}}</span>
-        <span class="list-creator">
-          By: <span>{{item.creator.name}}</span>
-          <span class="pl_20" v-if="item.playCount"><i class="iconfont icon-yinyue" />: {{numToStr(item.playCount)}}</span>
-        </span>
+        <div class="bottom-text">
+          <span class="list-creator">
+            By: <span>{{item.creator.name}}</span>
+            <span class="pl_20" v-if="item.playCount"><i class="iconfont icon-yinyue" />: {{numToStr(item.playCount)}}</span>
+          </span>
+        </div>
         <span class="list-count">{{item.songCount}}</span>
 
       </div>
