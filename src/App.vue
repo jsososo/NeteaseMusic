@@ -46,9 +46,14 @@
     created() {
       window.VUE_APP = this;
       window.QUERY_QQ_TIMES = 1;
-      const quin = getQueryFromUrl('q');
-      if (quin && (Storage.get('openSetQCookie') || '0') !== '0') {
-        getCookie(getQueryFromUrl('q'));
+      Storage.set('haveQCookie', '0');
+
+      // 看一下是否有 cookie，以及设置项是否开启
+      let uin = document.cookie.match(/\suin=([^;]+)(;|$)/);
+      uin = uin ? uin[1] : '';
+      uin = getQueryFromUrl('q') || uin;
+      if (uin && (Storage.get('openSetQCookie') || '0') !== '0') {
+        getCookie(uin);
       }
       loginStatus();
 
@@ -57,11 +62,10 @@
       }
 
       // 播放顺序，qq号的一些配置
-      if (!Storage.get('orderType')) {
-        Storage.set('orderType', 'liebiao');
-      }
       this.defaultActive = window.location.hash.split('/')[1];
 
+      const agent = navigator.userAgent.toLowerCase();
+      const isMac = /macintosh|mac os x/i.test(navigator.userAgent);
       Storage.setDefault({
         listen_size: 'size320',
         down_size: 'high',
@@ -71,6 +75,7 @@
           count: 0,
           list: [],
         }),
+        orderType: 'liebiao',
         key_code_map: JSON.stringify({
           PLAY_NEXT: '39',
           PLAY_PREV: '37',
@@ -81,6 +86,8 @@
           TO_SIMPLE: ''
         }),
         openSetQCookie: 0,
+        showDrawMusic: isMac ? '1' : '0',
+        drawMusicType: 1,
       });
 
       // 初始化一下下载记录
@@ -328,6 +335,7 @@
                     lines: [],
                   }
                 }
+                prevObj.lines = prevObj.lines || [];
                 prevObj.lines.push({
                   x: pageWidth / 2 + Math.sin(angle) * (r - 10 - h / 20),
                   y: pageHeight / 2 - Math.cos(angle) * (r - 10 - h / 20),

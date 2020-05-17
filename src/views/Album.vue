@@ -30,53 +30,21 @@
       </div>
 
       <!-- 热门歌曲 -->
-      <div class="song-list" v-if="selected === 'songs'">
-        <div
-          v-for="s in info.songs"
-          :key="s"
-          class="song-item"
-          @click="playMusic(s)"
-        >
-          <div v-if="(favSongMap[platform] && favSongMap[platform][s])" class="liked-item"></div>
-          <div class="playing-bg" v-if="playNow.id === s" :style="`width: ${playingPercent * 100}%`">
-            <div class="wave-bg"></div>
-            <div class="wave-bg2"></div>
-          </div>
-          <div class="song-name">{{allSongs[s].name}}</div>
-          <div>
-            <div class="song-ar">{{allSongs[s].ar.map((a) => a.name).join('/')}}</div>
-            <div class="song-operation">
-              <i
-                v-if="favSongMap[platform]"
-                @click="likeMusic(s)"
-                :class="`operation-icon operation-icon-1 iconfont icon-${Boolean(favSongMap[platform][s]) ? 'like' : 'unlike'}`"
-              />
-              <i
-                v-if="platform !== 'migu'"
-                @click="playlistTracks(s, 'add', 'ADD_SONG_2_LIST', platform)"
-                class="operation-icon operation-icon-2 iconfont icon-add"
-              />
-              <i
-                @click="download(s)"
-                class="operation-icon operation-icon-3 iconfont icon-download"
-              />
-            </div>
-          </div>
-        </div>
-        <div v-if="info.songs.length === 0" class="text-center mt_40">没啥歌曲哟</div>
-      </div>
+      <SongList v-if="selected === 'songs'" :songs="info.songs || []" />
     </div>
   </div>
 </template>
 
 <script>
   import { mapGetters } from 'vuex';
-  import request, {handleSongs, likeMusic, download, handleQQSongs, handleMiguSongs} from '../assets/utils/request';
+  import request, {handleSongs, likeMusic} from '../assets/utils/request';
   import timer from '../assets/utils/timer';
   import { changeUrlQuery } from "../assets/utils/stringHelper";
+  import SongList from '../components/list/song';
 
   export default {
     name: "Album",
+    components: { SongList },
     data() {
       return {
         selected: 'songs',
@@ -128,58 +96,10 @@
           }
         }).then(({ data }) => {
           this.baseInfo = data;
-          handleSongs(data.list)
-          this.info.songs = (data.list || []).map((s) => s.id);
-        })
-
-        // if (platform === 'qq') {
-        //   request({
-        //     api: 'QQ_ALBUM',
-        //     data: { albummid },
-        //   }).then((res) => {
-        //     this.baseInfo = {
-        //       ...res.data,
-        //       description: res.data.desc,
-        //       artists: res.data.ar.map((a) => ({ ...a, from: 'qq' }))
-        //     }
-        //   });
-        //
-        //   return request({
-        //     api: 'QQ_ALBUM_SONGS',
-        //     data: { albummid },
-        //   }).then((res) => {
-        //     this.info.songs = handleQQSongs(res.data.list);
-        //   })
-        // }
-        //
-        // if (platform === 'migu') {
-        //   return request({
-        //     api: 'MIGU_ALBUM',
-        //     data: { id: this.id },
-        //   }).then(res => {
-        //     this.baseInfo = {
-        //       ...res.data,
-        //       description: res.data.desc.replace(/\n/g, '<br/>'),
-        //       artists: res.data.artists.map((a) => ({ ...a, from: 'migu' })),
-        //     };
-        //     this.info.songs = handleMiguSongs(res.data.songList);
-        //   })
-        // }
-        // request({
-        //   api: 'GET_ALBUM',
-        //   data: { id: this.id },
-        //   cache: true,
-        // }).then((res) => {
-        //   this.baseInfo = res.album;
-        //   handleSongs(res.songs, (s) => {
-        //     s.publishTime = this.baseInfo.publishTime;
-        //     console.log(s.publishTime);
-        //   });
-        //   this.baseInfo.publishTime = timer(this.baseInfo.publishTime).str('YYYY-MM-DD');
-        //   this.info.songs = (res.songs || []).map((item) => item.id);
-        // })
+          return handleSongs(data.list || []);
+        }).then((ids) => this.info.songs = ids);
       },
-      likeMusic: likeMusic,
+      likeMusic,
       playlistTracks(tracks, op, type, platform = '163') {
         window.event.stopPropagation();
         this.$store.dispatch('setOperation', { data: { tracks, op }, type, platform });
@@ -198,7 +118,6 @@
         dispatch('updatePlayingList', { list: this.info.songs });
         dispatch('updatePlayingStatus', true);
       },
-      download,
       changeUrlQuery,
     }
   }
@@ -271,7 +190,7 @@
       position: relative;
       height: calc(100vh - 120px);
 
-      .song-list {
+      .list-songs {
         height: calc(100vh - 120px);
         box-sizing: border-box;
         overflow-y: auto;
@@ -280,86 +199,6 @@
           width: 0;
           height:8px;
           background-color:rgba(0,0,0,0);
-        }
-      }
-
-      .song-list {
-
-        .song-item {
-          height: 55px;
-          position: relative;
-          border-bottom: 1px solid #fff3;
-          overflow: hidden;
-          transition: 0.3s;
-          box-sizing: border-box;
-
-          .liked-item {
-            position: absolute;
-            height: 100%;
-            width: 1px;
-            left: 0;
-            top: 0;
-            box-shadow: 0 0 10px 4px #F56C6C;
-          }
-
-          &:hover {
-            background: #0003;
-
-            .song-name {
-              font-weight: bold;
-              font-size: 20px;
-            }
-
-            .song-ar {
-              opacity: 0.3;
-            }
-
-            .operation-icon {
-              font-size: 16px;
-            }
-          }
-
-          div {
-            box-sizing: border-box;
-          }
-
-          .song-name {
-            display: inline-block;
-            width: 60%;
-            vertical-align: top;
-            position: absolute;
-            top: 10px;
-            left: 40px;
-            transition: 0.3s;
-            overflow: hidden;
-            white-space: nowrap;
-            text-overflow: ellipsis;
-          }
-          .song-ar {
-            vertical-align: top;
-            display: inline-block;
-            width: 30%;
-            text-overflow: ellipsis;
-            overflow: hidden;
-            white-space: nowrap;
-            position: absolute;
-            bottom: 5px;
-            opacity: 0.6;
-            left: 40px;
-            font-size: 12px;
-            transition: 0.3s;
-          }
-        }
-
-        @for $i from 1 to 4 {
-          .operation-icon-#{$i} {
-            position: absolute;
-            bottom: 20px;
-            left: calc(60% + #{$i * 30}px);
-            cursor: pointer;
-            font-size: 14px !important;
-            transition: 0.3s;
-          }
         }
       }
     }

@@ -2,6 +2,7 @@ import * as types from './mutationsTypes';
 import Storage from "../assets/utils/Storage";
 import ArrHelper from '../assets/utils/arrayHelper';
 import Num from '../assets/utils/num';
+import de from "element-ui/src/locale/lang/de";
 
 export default {
   [types.SET_OPERATION](state, data) {
@@ -68,12 +69,13 @@ export default {
   },
   [types.UPDATE_ALL_SONGS](state, data) {
     const { allSongs, playNow, playingList } = state;
+    const { platform, aId } = playNow;
     state.allSongs = { ...state.allSongs, ...data };
-    if (playNow.id && JSON.stringify(playNow) !== JSON.stringify(allSongs[playNow.id])) {
-      state.playNow = allSongs[playNow.id];
+    if (playNow.aId && JSON.stringify(playNow) !== JSON.stringify(allSongs[aId])) {
+      state.playNow = allSongs[aId];
     }
     if (ArrHelper.hasDuplicate(Object.keys(data), playingList.raw.join(',').split(','))) {
-      playingList.trueList = playingList.raw.filter((id) => state.allSongs[id].url || allSongs[id].qqId);
+      playingList.trueList = playingList.raw.filter((aId) => state.allSongs[aId] && (state.allSongs[aId].url || allSongs[aId].qqId));
       window.VUE_APP.$store.dispatch('updateRandomList');
     }
   },
@@ -92,7 +94,7 @@ export default {
   [types.PLAY_PREV](state) {
     const {playingList, allSongs, playNow} = state;
     const {history, index, trueList, random} = playingList;
-    const {id} = playNow;
+    const { aId } = playNow;
     const orderType = Storage.get('orderType');
     if (index > 0) {
       playingList.index -= 1;
@@ -101,13 +103,13 @@ export default {
 
     let i = 0;
     const list = orderType === 'suiji' ? random : trueList;
-    i = list.indexOf(id);
+    i = list.indexOf(aId);
     i -= 1;
     if (i === -1) {
       i = list.length - 1;
     }
     state.playNow = allSongs[list[i]];
-    state.playingList.history.unshift(state.playNow.id);
+    state.playingList.history.unshift(state.playNow.aId);
   }
   ,
   // 下一首
@@ -115,19 +117,19 @@ export default {
     const { playingList, allSongs, playNow } = state;
     const orderType = Storage.get('orderType');
     const { history, index, trueList, random } = playingList;
-    const { id } = playNow;
+    const { aId } = playNow;
     playingList.index += 1;
     if (index < history.length - 1) {
       return state.playNow = allSongs[history[playingList.index]];
     }
-    if (playingList.history[playingList.history.length-1] !== id) {
-      playingList.history.push(id);
+    if (playingList.history[playingList.history.length-1] !== aId) {
+      playingList.history.push(aId);
     }
 
     let i = 0;
     switch (orderType) {
       case 'suiji':
-        i = random.indexOf(id);
+        i = random.indexOf(aId);
         i += 1;
         if (i === trueList.length) {
           i = 0;
@@ -141,7 +143,7 @@ export default {
         }
         return state.playNow = allSongs[random[i]];
       default:
-        i = trueList.indexOf(id);
+        i = trueList.indexOf(aId);
         i += 1;
         if (i === trueList.length) {
           i = 0;
@@ -167,17 +169,17 @@ export default {
   },
   // 更新歌曲信息
   [types.UPDATE_SONG_DETAIL](state, data) {
-    const { id } = data;
-    state.allSongs[id] = {
-      ...(state.allSongs[id]),
+    const { aId } = data;
+    state.allSongs[aId] = {
+      ...(state.allSongs[aId] || {}),
       ...data,
     };
-    if (id === state.playNow.id) {
-      state.playNow = state.allSongs[id];
+    if (!state.playNow || aId === state.playNow.aId) {
+      state.playNow = state.allSongs[aId];
     }
     state.allSongs = { ...state.allSongs };
     if (state.playingList.raw.indexOf(data) > -1) {
-      state.playingList.trueList = state.raw.filter((id) => state.allSongs[id].url);
+      state.playingList.trueList = state.playingList.raw.filter((aId) => state.allSongs[aId].url);
       window.VUE_APP.$store.dispatch('updateRandomList');
     }
   },
@@ -187,13 +189,13 @@ export default {
   // 更新正在播放的音乐
   [types.UPDATE_PLAY_NOW](state, data) {
     const { playingList, playNow, isPersonFM } = state;
-    if (playNow.id) {
-      playingList.history.push(playNow.id);
+    if (playNow.aId) {
+      playingList.history.push(playNow.aId);
       playingList.index += 1;
     }
     state.playNow = data;
   },
-  [types.UPDATE_PLAYING_LIST](state, { list, more, id, heart = false }) {
+  [types.UPDATE_PLAYING_LIST](state, { list, more, listId, heart = false }) {
     const { playingList, allSongs } = state;
     if (more) {
       // 增量
@@ -205,9 +207,9 @@ export default {
       playingList.index = 0;
     }
     state.isPersonFM = false;
-    state.playingListId = id;
+    state.playingListId = listId;
     state.heartMode = heart;
-    playingList.trueList = playingList.raw.filter((v) => allSongs[v].url || allSongs[v].qqId);
+    playingList.trueList = playingList.raw.filter((v) => allSongs[v] && (allSongs[v].url || allSongs[v].qqId));
     window.VUE_APP.$store.dispatch('updateRandomList');
   },
   [types.UPDATE_RANDOM_LIST](state) {
@@ -222,7 +224,7 @@ export default {
       arr[r] = arr[i];
       arr[i] = temp;
     }
-    const nowI = arr.indexOf(playNow.id);
+    const nowI = arr.indexOf(playNow.aId);
     if (nowI >= 0) {
       temp = arr[0];
       arr[0] = arr[nowI];
@@ -257,18 +259,18 @@ export default {
       });
       state.downloadInfo = downloadInfo;
     } else {
-      const { id, p, l, t, ajax, status, errMsg, name, songId, br, from, songCid } = data;
+      const { id, aId, p, l, t, ajax, status, errMsg, name, songId, br, from, songCid, song } = data;
       const { downloadInfo } = state;
       const d = downloadInfo.list.find((item) => item.id === id);
       const now = new Date().getTime();
       // 这是其他的更新下载状态
       switch (status) {
         case 'init':
-          downloadInfo.list.unshift({ status, from, id, startTime: now, ajax, name, songId, songCid, br });
+          downloadInfo.list.unshift({ status, from, aId, id, startTime: now, ajax, name, songId, songCid, br, song });
           downloadInfo.count++;
           break;
         case 'initError':
-          downloadInfo.list.unshift({ status: 'error', from, id, errMsg, name, songId, songCid, br, startTime: now, endTime: now });
+          downloadInfo.list.unshift({ status: 'error', from, aId, id, errMsg, name, song, songId, songCid, br, startTime: now, endTime: now });
           break;
         case 'success':
           d.status = 'success';
@@ -299,7 +301,7 @@ export default {
           downloadInfo.list = downloadInfo.list.filter((o) => o.status !== 'error');
           break;
         case 'abort':
-          d.ajax && d.ajax.abort();
+          d.ajax && d.ajax.abort && d.ajax.abort();
           d.errMsg ='主动结束';
           d.endTime = now;
           d.status = 'error';
@@ -310,8 +312,8 @@ export default {
           break;
         case 'abortAll':
           downloadInfo.list.forEach((item) => {
-            if (['init', 'progress'].indexOf(item.status) > 0) {
-              item.ajax && item.ajax.abort();
+            if (['init', 'progress'].indexOf(item.status) >= 0) {
+              item.ajax && item.ajax.abort && item.ajax.abort();
               item.errMsg ='主动结束';
               item.status = 'error';
               item.endTime = now;

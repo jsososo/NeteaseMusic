@@ -1,3 +1,5 @@
+import Storage from '../assets/utils/Storage'
+
 export default {
   mode: '', // 一个全局的 ui 模式
   allSongs: {}, // 全部的歌曲信息，其他地方除了 playNow 不再存储信息，一律通过 id 到 allSongs 中获取
@@ -47,10 +49,10 @@ export default {
   },
   loading: false,
   reading: false,
-  downloadInfo: { // 下载信息
+  downloadInfo: Storage.get('download_info', true, JSON.stringify({
     count: 0,
     list: [],
-  },
+  })),
   isPersonFM: false, // 是否为私人fm,
   favSongMap: { // 喜欢的歌曲 id map
     163: {},

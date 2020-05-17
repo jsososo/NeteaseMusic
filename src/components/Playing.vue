@@ -1,5 +1,5 @@
 <template>
-  <div class="playnow-container" v-if="playNow.id && allSongs[playNow.id]">
+  <div class="playnow-container" v-if="playNow && playNow.id">
     <div class="progress-container" v-if="playNow.al && playNow.al.picUrl">
       <el-progress
         :width="280"
@@ -18,29 +18,29 @@
         <div class="info-val">
           {{playNow.name}}
           <span class="info-br" v-if="playNow.br">{{getBr(playNow.br)}}</span>
-          <i style="vertical-align: -1px;" :class="`pl_10 iconfont icon-${playNow.from || '163'}`" />
+          <i style="vertical-align: -1px;" :class="`pl_10 iconfont icon-${playNow.platform || '163'}`" />
         </div>
       </div>
       <div class="info-line">
         <div class="info-label"><i class="iconfont icon-singer" /></div>
         <div class="info-val">
-          <a v-for="a in allSongs[playNow.id].ar" :key="a.id" :href="changeUrlQuery({id: a.id, from: playNow.from, mid: a.mid }, '#/singer', false)">{{a.name}} </a>
+          <a v-for="a in playNow.ar" :key="a.id" :href="changeUrlQuery({id: a.id, from: playNow.platform, mid: a.mid }, '#/singer', false)">{{a.name}} </a>
         </div>
       </div>
       <div class="info-line">
         <div class="info-label"><i class="iconfont icon-album" /></div>
         <div class="info-val" v-if="playNow.al && playNow.al.name">
-          <a :href="changeUrlQuery({ id: playNow.al.id, mid: playNow.al.mid, from: playNow.from }, '#/album', false)">{{playNow.al.name}}</a>
+          <a :href="changeUrlQuery({ id: playNow.al.id, mid: playNow.al.mid, from: playNow.platform }, '#/album', false)">{{playNow.al.name}}</a>
         </div>
       </div>
 
       <div class="btn-group">
         <a class="btn-group-href" href="#/"><i class="iconfont icon-lyric"></i></a>
-        <a class="btn-group-href" v-if="playNow.from !== 'migu'" href="#/comment">
+        <a class="btn-group-href" v-if="playNow.platform !== 'migu'" href="#/comment">
           <i class="iconfont icon-comment"></i>
           <span class="pl_10 ft_12" v-if="playNow.comments">{{numberHandle(playNow.comments.total)}}</span>
         </a>
-        <a v-if="playNow.mvid" :href="changeUrlQuery({ id: playNow.mvid, from: playNow.from }, '#/mv', false)" class="btn-group-href">
+        <a v-if="playNow.mvid" :href="changeUrlQuery({ id: playNow.mvid, from: playNow.platform }, '#/mv', false)" class="btn-group-href">
           <i class="iconfont icon-mv"></i>
         </a>
       </div>
@@ -67,16 +67,6 @@
     methods: {
       numberHandle(n) {
         return n > 1000 ? `${Number(n / 1000).toFixed(1)}k` : n
-      },
-      goTo(type) {
-        switch (type) {
-          case 'singer':
-            if (this.playNow.arId.indexOf(',') > 0) {
-              return;
-            } else {
-              return window.location = `#/singer?id=${this.playNow.arId}`;
-            }
-        }
       },
       getBr(val) {
         if (val > 320000) {

@@ -21,13 +21,12 @@
     >
       <div class="add-2-list hide-scroll">
         <div
-          v-for="item in showList.list"
-          :class="`list-item ${add2ListId === item.id && 'selected'}`"
-          @click="add2ListId = item.id"
-          v-if="!item.subscribed"
-          :key="`list-${item.id}`"
+          v-for="(v, listId) in showList.mine"
+          :class="`list-item ${add2ListId === listId && 'selected'}`"
+          @click="add2ListId = listId"
+          :key="`list-${listId}`"
         >
-          {{item.name}}
+          {{showList.obj[listId].name}}
         </div>
       </div>
       <span slot="footer" class="dialog-footer">
@@ -40,7 +39,7 @@
 
 <script>
   import { mapGetters } from 'vuex';
-  import request, { getMyList } from '../assets/utils/request';
+  import request from '../assets/utils/request';
   import Storage from "../assets/utils/Storage";
   export default {
     name: "Operation",
@@ -49,7 +48,7 @@
         showDelSong: false,
         showAddSong: false,
         add2ListId: '',
-        showList: [],
+        showList: {},
       }
     },
     computed: {
@@ -64,22 +63,30 @@
     },
     watch: {
       operation(v = {}) {
+        const { data, type } = v;
+        if (!data) return;
+        const { platform } = this.allSongs[data.tracks];
         const { user } = this;
-        if (v.platform === 'qq' && Storage.get('haveQCookie') !== '1') {
-          return this.$message.warning('请先去设置页设置好 Cookie');
+        this.platform = platform;
+        switch (platform) {
+          case 'qq':
+            if (Storage.get('haveQCookie') !== '1') {
+              return this.$message.warning('请先去设置页设置好 Cookie');
+            }
+            break;
+          case '163':
+            if (!user || !user.userId) {
+              return this.$message.warning('请先登录');
+            }
+            break;
+          default: return;
         }
-        if ((!v.platform || v.platform === '163') && (!user || !user.userId)) {
-          return this.$message.warning('请先登录');
-        }
-        switch (v.type) {
+        switch (type) {
           case 'DEL_SONG':
             this.showDelSong = true;
             break;
           case 'ADD_SONG_2_LIST':
-            this.showList = {
-              163: this.userList,
-              qq: this.qUserList,
-            }[v.platform || '163'];
+            this.showList = this.userList[platform];
             this.showAddSong = true;
             break;
         }
@@ -93,55 +100,52 @@
         this.$store.dispatch('setOperation', {});
       },
       async handelPlayList(req) {
+        this.add2ListId = this.add2ListId || this.operation.data.pid;
+        const { platform, add2ListId, operation, userList, allSongs, allList } = this;
+        const { type, data } = operation;
         if (req) {
-          if (this.operation.platform === 'qq') {
-            return this.handleQQPlaylist();
+          let reqData = { ...data };
+          let api = 'PLAYLIST_TRACKS';
+          if (type === 'ADD_SONG_2_LIST') {
+            reqData.pid = add2ListId;
           }
-          if (this.operation.type === 'ADD_SONG_2_LIST') {
-            this.operation.data.pid = this.add2ListId;
+          reqData.pid = reqData.pid.replace(`${platform}_`, '');
+          reqData.tracks = reqData.tracks.replace(`${platform}_`, '');
+
+          if (platform === 'qq') {
+            api = (type === 'ADD_SONG_2_LIST') ? 'QQ_SONG_LIST_ADD' : 'QQ_SONG_LIST_REMOVE';
+            reqData.dirid = userList.qq.obj[`qq_${reqData.pid}`].dirid;
+            reqData.mid = reqData.tracks;
+            reqData.id = allSongs[data.tracks].songid;
           }
-          const res = await request({
-            api: 'PLAYLIST_TRACKS',
-            data: this.operation.data,
+
+          const errTxt = {
+            qq: '操作失败',
+            163: '操作失败：可能是歌曲下架了'
+          }[platform];
+          request({
+            api,
+            data: reqData,
+          }).then((res) => {
+            if (res) {
+              this.$message.success('操作成功！');
+              let songs = allList[add2ListId] || [];
+
+              if (operation.type === 'ADD_SONG_2_LIST') {
+                songs.unshift(operation.data.tracks);
+              } else if (operation.type === 'DEL_SONG') {
+                songs = songs.filter((id) => id !== operation.data.tracks);
+              }
+              this.$store.dispatch('updateList', { songs, listId: add2ListId });
+            } else {
+              this.$message.error(errTxt);
+            }
+          }, (err) => {
+            this.$message.error(errTxt);
           });
-          res && getMyList(undefined, undefined, this.operation.data.pid);
-          res && this.$message.success('操作成功～');
-          !res && this.$message.error('操作失败：可能是歌曲下架了');
         }
         this.clearOperation();
       },
-      async handleQQPlaylist() {
-        const { operation } = this;
-        let api = 'QQ_SONG_LIST_REMOVE';
-        const data = {};
-        const mid = operation.data.tracks;
-        if (operation.type === 'ADD_SONG_2_LIST') {
-          data.dirid = this.qUserList.obj[this.add2ListId].dirid;
-          data.mid = mid;
-          api = 'QQ_SONG_LIST_ADD';
-        } else if (operation.type === 'DEL_SONG') {
-          data.id = this.allSongs[mid].songid;
-          data.dirid = this.qUserList.obj[operation.data.pid].dirid;
-        }
-        request({
-          api,
-          data,
-        }).then(() => {
-          this.$message.success('操作成功！');
-          const listId = `qq${operation.data.pid || this.add2ListId}`;
-          let songs = this.allList[listId] || [];
-          if (operation.type === 'ADD_SONG_2_LIST') {
-            songs.unshift(mid);
-          } else if (operation.type === 'DEL_SONG') {
-            songs = songs.filter((id) => id !== mid);
-          }
-          this.$store.dispatch('query163List', { songs, listId });
-          this.clearOperation();
-        }, (err) => {
-          this.$message.error(err.errMsg);
-          this.clearOperation();
-        });
-      }
     },
   }
 </script>

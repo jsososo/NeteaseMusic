@@ -28,6 +28,7 @@
           实现半自动化的获取 Cookie，模拟用户登陆
         </p>
         <p class="mt_20">GitHub: <a href="https://github.com/jsososo/NeteaseMusic" target="_blank">网易云第三方 Web 播放器</a></p>
+        <p>后端：「聚合接口」（暂未上传到github，等我再改改再说！）</p>
         <p>后端：「网易云」<a href="https://github.com/Binaryify/NeteaseCloudMusicApi" target="_blank">NeteaseCloudMusicApi</a></p>
         <p>后端：「QQ音乐」<a href="https://github.com/jsososo/QQMusicApi" target="_blank">QQMusicApi</a> (也是我的项目，也欢迎支持一下)</p>
         <p>后端：「咪咕音乐」<a href="https://github.com/jsososo/MiguMusicApi" target="_blank">MiguMusicApi</a> (还是我的项目，也欢迎支持一下)</p>
@@ -52,15 +53,6 @@
           <div class="ml_20"> {{r.time}}</div>
         </li>
       </ul>
-    </div>
-
-    <div class="content-block">
-      <h2>未来</h2>
-      <div class="mt_20 ml_20">
-        <ul>
-          <li v-for="f in future" class="mb_15" :key="f">{{f}}</li>
-        </ul>
-      </div>
     </div>
     
     <div class="content-block">
@@ -287,12 +279,12 @@
           {
             txt: '🍧 mp3下砸支持更多id3标签、歌单收藏操作',
             time: '20-04-04',
+          },
+          {
+            txt: '🎢 数据层重制、接口整合',
+            time: '20-05-17',
           }
         ],
-        future: [
-          '歌单编辑',
-          '电台播放',
-        ]
       }
     },
     created() {

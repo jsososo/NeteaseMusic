@@ -28,7 +28,7 @@
         </div>
         <div class="item-time">{{getTime(item.startTime)}}</div>
         <div class="item-operation">
-          <div class="down-button" v-if="['init', 'progress'].indexOf(item.status) === -1" @click="download(item.songId, item.name, true)">重新下载</div>
+          <div class="down-button" v-if="['init', 'progress'].indexOf(item.status) === -1" @click="download(item.song.aId, item.name, true, item.song)">重新下载</div>
           <div class="down-button" v-if="['init', 'progress'].indexOf(item.status) > -1" @click="updateDownload({ status: 'abort', id: item.id })">取消下载</div>
         </div>
       </div>
@@ -39,14 +39,12 @@
 <script>
   import timer from '../assets/utils/timer';
   import { mapGetters } from 'vuex';
-  import {download, getSongsDetail, getQQUrls, getMiguUrl} from "../assets/utils/request";
+  import { download } from "../assets/utils/request";
 
   export default {
     name: "Download",
     data() {
-      return {
-
-      }
+      return {}
     },
     computed: {
       ...mapGetters({
@@ -55,26 +53,6 @@
     },
     created() {
       this.$store.dispatch('updateShowCover', false);
-      if (this.downloadInfo.list.length > 0) {
-        const list = [];
-        const qList = [];
-        const mList = [];
-        this.downloadInfo.list.forEach((item) => {
-          switch (item.from) {
-            case 'qq':
-              qList.push(item.songId);
-              break;
-            case 'migu':
-              mList.push({ id: item.songId.replace('migu_', ''), cid: item.songCid });
-              break;
-            default: list.push(item.songId);
-          }
-         });
-
-        qList.length > 0 && getQQUrls(qList);
-        list.length > 0 && getSongsDetail(list);
-        mList.length > 0 && getMiguUrl(mList);
-      }
     },
     methods: {
       getBr(val) {

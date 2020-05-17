@@ -1,5 +1,5 @@
 <template>
-  <div class="feed-back-page">
+  <div class="feed-back-page hide-scroll">
     <h1>说说想说的吧～</h1>
     <div class="feedback-input-container">
       <div class="info-input-container">
@@ -148,6 +148,7 @@
   .feed-back-page {
     padding-left: 100px;
     padding-top: 20px;
+    max-height: calc(100vh - 120px);
 
     h1 {
       color: #fff6;

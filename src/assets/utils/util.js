@@ -42,6 +42,9 @@ export const messageHelp = (id) => {
       message: '反馈可以戳右下面👇',
       type: 'info',
       duration: 20000,
+    },
+    9: {
+      message: ''
     }
   };
   const newMessage = [
@@ -54,20 +57,12 @@ export const messageHelp = (id) => {
       time: '20-01-09',
     },
     {
-      content: '增加了新的频谱图样式！去设置里看看呀',
-      time: '20-01-10',
-    },
-    {
-      content: '播放也支持音质选择啦！(企鹅/咪咕限定)',
-      time: '20-01-26',
-    },
-    {
-      content: '音频图更新啦！！',
-      time: '20-01-29',
-    },
-    {
       content: '可以前往设置页，自行加入企鹅音乐Cookie啦，未来会支持更多操作',
       time: '20-01-31',
+    },
+    {
+      content: '数据层面和接口重大重构！如果有什么bug及时反馈！',
+      time: '20-05-17',
     }
   ];
   if (id === 'newInfo') {

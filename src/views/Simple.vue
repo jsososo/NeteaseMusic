@@ -3,11 +3,11 @@
     <div class="img-container">
       <img class="song-img" :src="playNow.al.picUrl" alt="">
     </div>
-    <div class="song-info" v-if="allSongs[playNow.id]">
+    <div class="song-info" v-if="allSongs[playNow.aId]">
       <div class="d-table">
         <div class="d-table-cell">
           <div class="song-name">{{playNow.name}}</div>
-          <div class="song-artist"><span v-for="a in allSongs[playNow.id].ar" :key="a.id">{{a.name}} </span></div>
+          <div class="song-artist"><span v-for="a in playNow.ar" :key="a.id">{{a.name}} </span></div>
 
           <div class="song-lyric" v-if="playNow.lyric">
             <div :class="`lyric-item ${lyricKey === item && 'active'}`" :key="`lyric-${item}`" v-if="lyricList[item]" v-for="(item) in [startKey, startKey + 1, startKey + 2]">

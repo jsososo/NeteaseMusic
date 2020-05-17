@@ -6,35 +6,17 @@
         <img class="list-info-cover" :src="listInfo.cover">
         <div class="list-info-txt">
           <div class="list-info-name">{{listInfo.name}}</div>
-<!--          <div class="list-info-creator" v-if="listInfo.creator && platform === '163'">-->
-<!--            <el-tooltip-->
-<!--              v-if="(user && user.userId) !== listInfo.creator.userId"-->
-<!--              class="item"-->
-<!--              effect="dark"-->
-<!--              :content="listInfo.subscribed ? '已收藏' : '收藏'"-->
-<!--              placement="top"-->
-<!--            >-->
-<!--              <i @click="collectPlaylist(listInfo)" :class="`collect-btn mr_10 iconfont icon-${listInfo.subscribed ? 'collected' : 'collect'}`" />-->
-<!--            </el-tooltip>-->
-<!--            <span>By <a :href="`#/user?id=${listInfo.creator.userId}`"><span class="creator-name">{{listInfo.creator.nickname}}</span></a></span>-->
-<!--          </div>-->
-<!--          <div class="list-info-creator" v-if="listInfo.creator && platform === 'qq'">-->
-<!--            <el-tooltip-->
-<!--              v-if="!(qUserList.obj[id] && qUserList.obj[id].creator.id == qqId)"-->
-<!--              class="item"-->
-<!--              effect="dark"-->
-<!--              :content="listInfo.subscribed ? '已收藏' : '收藏'"-->
-<!--              placement="top"-->
-<!--            >-->
-<!--              <i @click="collectPlaylist(listInfo)" :class="`collect-btn mr_10 iconfont icon-${listInfo.subscribed ? 'collected' : 'collect'}`" />-->
-<!--            </el-tooltip>-->
-<!--            <span>By <span class="creator-name">{{listInfo.creator.nickname}}</span></span>-->
-<!--          </div>-->
-<!--          <div class="list-info-creator" v-if="listInfo.creator && platform === 'migu'">-->
-<!--            By <span class="creator-name">{{listInfo.creator.name}}</span>-->
-<!--          </div>-->
-          <div class="list-info-creator" v-if="listInfo.creator && listInfo.creator.nick">
-            By <span class="creator-name">{{listInfo.creator.nick}}</span>
+          <div class="list-info-creator">
+            <el-tooltip
+              v-if="userList[platform] && !userList[platform].mine[listId]"
+              class="item"
+              effect="dark"
+              :content="userList[platform].sub[listId] ? '已收藏' : '收藏'"
+              placement="top"
+            >
+              <i @click="collectPlaylist(listInfo)" :class="`collect-btn mr_10 iconfont icon-${userList[platform].sub[listId] ? 'collected' : 'collect'}`" />
+            </el-tooltip>
+            <span>By <span class="creator-name">{{listInfo.creator.nick}}</span></span>
           </div>
         </div>
       </div>
@@ -49,30 +31,30 @@
         </div>
       </div>
     </div>
-    <div class="song-list" v-if="allList[trueId] || id === 'playing'">
+    <div class="song-list" v-if="allList[listId] || id === 'playing'">
       <div
-        :class="`song-item ${playNow.id === s ? 'played' : ''} ${!allSongs[s].url ? 'disabled' : ''} ${((i < smallIndex) || (i > bigIndex)) ? 'hidden' : ''}`"
+        :class="`song-item ${playNow.aId === s ? 'played' : ''} ${!allSongs[s].url ? 'disabled' : ''} ${((i < smallIndex) || (i > bigIndex)) ? 'hidden' : ''}`"
         v-for="(s, i) in list"
         :key="`${s}-${i}`"
         @click="playMusic(s)"
       >
-        <div class="playing-bg" v-if="playNow.id === s" :style="`width: ${playingPercent * 100}%`">
+        <div class="playing-bg" v-if="playNow.aId === s" :style="`width: ${playingPercent * 100}%`">
           <div class="wave-bg"></div>
           <div class="wave-bg2"></div>
         </div>
         <span class="song-order">{{i+1}}</span>
-        <img class="song-cover" :src="`${allSongs[s].al.picUrl}?param=50y50`" alt="">
+        <img class="song-cover" :src="`${allSongs[s].al && allSongs[s].al.picUrl}?param=50y50`" alt="">
         <span class="song-name">{{allSongs[s].name}}</span>
-        <span class="song-artist">{{allSongs[s].ar.map((a) => a.name).join('/')}}</span>
+        <span class="song-artist">{{(allSongs[s].ar || []).map((a) => a.name).join('/')}}</span>
         <div class="icon-container">
           <i
-            v-if="(id !== userList.favId) && id !== qUserList.favId && allSongs[s].from !== 'migu'"
+            v-if="userList[allSongs[s].platform] && (listId !== userList[allSongs[s].platform].favListId)"
             @click="likeMusic(s)"
-            :class="`operation-icon operation-icon-1 iconfont icon-${!!favSongMap[allSongs[s].from || '163'][s] ? 'like' : 'unlike'}`"
+            :class="`operation-icon operation-icon-1 iconfont icon-${!!favSongMap[allSongs[s].platform][s] ? 'like' : 'unlike'}`"
           />
           <i
             v-if="allSongs[s].from !== 'migu'"
-            @click="playlistTracks(s, id, 'add', 'ADD_SONG_2_LIST', allSongs[s].from)"
+            @click="playlistTracks(s, listId, 'add', 'ADD_SONG_2_LIST', allSongs[s].platform)"
             class="operation-icon operation-icon-2 iconfont icon-add"
           />
           <i
@@ -81,14 +63,13 @@
             class="operation-icon operation-icon-3 iconfont icon-download"
           />
           <i
-            @click="playlistTracks(s, id, 'del', 'DEL_SONG', allSongs[s].from)"
-            v-if="(platform === '163' && userList.obj && userList.obj[id] && !userList.obj[id].subscribed && (id !== userList.favId)) ||
-                   (platform === 'qq' && qUserList.obj && qUserList.obj[id] && (id != qUserList.favId))"
+            @click="playlistTracks(s, listId, 'del', 'DEL_SONG')"
+            v-if="userList[allSongs[s].platform] && userList[allSongs[s].platform].mine && userList[allSongs[s].platform].mine[listId]"
             class="operation-icon operation-icon-4 iconfont icon-delete"
           />
         </div>
       </div>
-      <div class="focus-btn" v-if="list.indexOf(playNow.id) > -1" @click="scrollToPlayNow">
+      <div class="focus-btn" v-if="list.indexOf(playNow.aId) > -1" @click="scrollToPlayNow">
         <i class="iconfont icon-focus" />
       </div>
     </div>
@@ -98,13 +79,10 @@
 <script>
   import { getQueryFromUrl } from "../assets/utils/stringHelper";
   import request, {
-    getPlayList,
+    getPlaylist,
     likeMusic,
     download,
-    getQQPlayList,
-    getMiguPlayList,
     collectPlaylist,
-    handleSongs
   } from "../assets/utils/request";
   import { mapGetters } from 'vuex';
   import Storage from "../assets/utils/Storage";
@@ -114,7 +92,7 @@
     data() {
       return {
         id: getQueryFromUrl('id'),
-        trueId: '',
+        listId: '',
         search: '',
         list: [],
         listInfo: null,
@@ -150,8 +128,9 @@
         this.searchList();
       },
       $route(){
-        this.id = this.$route.query.id;
         this.platform = this.$route.query.from || '163';
+        this.id = this.$route.query.id.replace(`${this.platform}_`, '');
+        this.listId = `${this.platform}_${this.id}`;
         this.init();
       },
       playingList: {
@@ -165,57 +144,52 @@
     },
     created() {
       const { allList, id, userList, platform } = this;
-      this.trueId = `${{163: '', qq: 'qq', migu: 'migu'}[platform] || ''}${id}`;
-      this.list = allList[this.trueId] || [];
-      this.listInfo = (userList && userList.obj && userList.obj[id]) || null;
+      this.id = String(id).replace(`${platform}_`, '');
+      this.listId = `${platform}_${this.id}`;
+      this.list = allList[this.listId] || [];
       this.init();
     },
     methods: {
       async init() {
         const { id, platform, qUserList, list } = this;
         this.loading = false;
-        if (id === 'daily') {
-          this.listInfo = null;
-          return this.list = this.allList.daily || [];
-        }
         if (id === 'playing') {
           this.listInfo = null;
           return this.list = this.playingList.trueList || [];
         }
+        const listId = this.listId = `${platform}_${id}`;
+        if (listId === `${platform}_daily`) {
+          this.listInfo = null;
+          return this.list = this.allList[listId] || [];
+        }
         this.loading = true;
-        this.trueId = `${platform}_${id}`;
-        const listInfo = await getPlaylist(id, platform);
-
-        this.listInfo = listInfo;
-        this.songs = listInfo.songs;
-        this.listInfo = result.data;
-        const songs = await handleSongs(result.data.list || []);
-        this.$store.dispatch('updateList', { songs, listId: `${platform}_${id}` });
+        this.listInfo = await getPlaylist(id, platform);
+        this.songs = this.listInfo.songs;
         this.loading = false;
       },
       playMusic(id) {
-        const { allSongs, allList, trueId, platform } = this;
+        const { allSongs, allList, listId, platform } = this;
         const { dispatch } = this.$store;
         const song = allSongs[id];
         if (!song.url) {
           return;
         }
-        let list = allList[trueId];
-        if (trueId === 'playing')
-          list = this.playingList.trueList;
+        let list = allList[listId];
+
+        (listId === 'playing') && (list = this.playingList.trueList);
         dispatch('updatePlayNow', song);
-        dispatch('updatePlayingList', { list, id: trueId });
+        dispatch('updatePlayingList', { list, listId });
         dispatch('updatePlayingStatus', true);
       },
       playListShow() {
-        const { allSongs, list, trueId: id } = this;
+        const { allSongs, list, listId } = this;
         const { dispatch } = this.$store;
         const song = allSongs[list[0]];
         if (!song.url) {
           return;
         }
         dispatch('updatePlayNow', song);
-        dispatch('updatePlayingList', { list, id });
+        dispatch('updatePlayingList', { list, listId });
         dispatch('updatePlayingStatus', true);
       },
       downShow() {
@@ -238,15 +212,15 @@
 
       },
       searchList() {
-        const { search, allList, trueId: id, allSongs, platform } = this;
+        const { search, allList, listId, id, allSongs, platform } = this;
         const rex = search.replace(/\/|\s|\t|,|，|-|/g, '').toLowerCase();
         let rawList = [];
-        switch (this.id) {
+        switch (listId) {
           case 'playing':
             rawList = this.playingList.trueList;
             break;
-          case 'daily':
-            rawList = this.allList.daily;
+          case `${platform}_${id}`:
+            rawList = this.allList[listId];
             break;
           default:
             rawList = allList[id];
@@ -254,23 +228,23 @@
         }
         rawList = rawList || [];
         if (!rex) {
-          this.showScrollTo = rawList.indexOf(this.playNow.id) !== -1;
+          this.showScrollTo = rawList.indexOf(this.playNow.aId) !== -1;
           return this.list = rawList;
         }
         this.list = rawList.filter((s) => (
           `${allSongs[s].name}
-          ${allSongs[s].ar.map((a) => a.name)}
+          ${(allSongs[s].ar || []).map((a) => a.name)}
           ${allSongs[s].al.name}
           ${allSongs[s].name}
           ${allSongs[s].al.name}
-          ${allSongs[s].ar.map((a) => a.name)}
+          ${(allSongs[s].ar || []).map((a) => a.name)}
           ${allSongs[s].name}`
             .replace(/\s/g, '')
             .toLowerCase()
             .indexOf(rex) > -1
         ));
       },
-      likeMusic: likeMusic,
+      likeMusic,
       playlistTracks(tracks, pid, op, type, platform) {
         window.event.stopPropagation();
         this.$store.dispatch('setOperation', { data: { tracks, pid, op }, type, platform });
