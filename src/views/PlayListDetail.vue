@@ -78,7 +78,7 @@
 
 <script>
   import { getQueryFromUrl } from "../assets/utils/stringHelper";
-  import request, {
+  import {
     getPlaylist,
     likeMusic,
     download,
