@@ -75,7 +75,7 @@ export default {
       state.playNow = allSongs[aId];
     }
     if (ArrHelper.hasDuplicate(Object.keys(data), playingList.raw.join(',').split(','))) {
-      playingList.trueList = playingList.raw.filter((aId) => state.allSongs[aId] && (state.allSongs[aId].url || allSongs[aId].qqId));
+      playingList.trueList = playingList.raw.filter((aId) => state.allSongs[aId] && (state.allSongs[aId].pUrl));
       window.VUE_APP.$store.dispatch('updateRandomList');
     }
   },
@@ -179,7 +179,7 @@ export default {
     }
     state.allSongs = { ...state.allSongs };
     if (state.playingList.raw.indexOf(data) > -1) {
-      state.playingList.trueList = state.playingList.raw.filter((aId) => state.allSongs[aId].url);
+      state.playingList.trueList = state.playingList.raw.filter((aId) => state.allSongs[aId].pUrl);
       window.VUE_APP.$store.dispatch('updateRandomList');
     }
   },
@@ -209,7 +209,7 @@ export default {
     state.isPersonFM = false;
     state.playingListId = listId;
     state.heartMode = heart;
-    playingList.trueList = playingList.raw.filter((v) => allSongs[v] && (allSongs[v].url || allSongs[v].qqId));
+    playingList.trueList = playingList.raw.filter((v) => allSongs[v] && (allSongs[v].pUrl));
     window.VUE_APP.$store.dispatch('updateRandomList');
   },
   [types.UPDATE_RANDOM_LIST](state) {

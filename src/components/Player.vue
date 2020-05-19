@@ -192,7 +192,7 @@
     watch: {
       async playNow(v) {
         const { listId, playingId, playerInfo, isPersonFM, playingList, playingPlatform, isUpdating, pDom } = this;
-        const { id, lyric, name, comments, mid, songid, cid, br, pUrl, aId, platform, qqId, miguId } = v;
+        const { id, lyric, name, comments, mid, songid, cId, br, pUrl, aId, platform, qqId, miguId } = v;
         let { url } = v;
         const dispatch = this.$store.dispatch;
         const listenSize = Storage.get('listenSize') || '128';
@@ -290,7 +290,7 @@
               id: {
                 163: id,
                 qq: mid,
-                migu: cid
+                migu: cId
               }[platform],
               _p: platform,
             }

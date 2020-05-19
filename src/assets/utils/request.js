@@ -266,7 +266,7 @@ export const getPlaylist = async (id, platform) => {
     qq: Storage.get('qqId'),
   }[platform]
   id = String(id).replace(`${platform}_`, '');
-  const { data } = await request({
+  const { data = {} } = await request({
     api: 'PLAYLIST',
     data: {
       id,
@@ -337,15 +337,17 @@ export const getUrlBatch = async (id, platform) => {
       const song = allSongs[`${platform}_${v}`];
       findByQQ[aId] = `${song.name.replace(/\(|\)|（|）/g, ' ')} ${song.ar.map((a) => a.name).join(' ')}`;
     })
-  };
+  }
   Object.keys(res.data).forEach((id) => {
     const aId = `${platform}_${id}`;
     delete findByQQ[aId];
     if (platform === 'migu') {
+      const al = allSongs[aId].al || {};
+      al.picUrl = al.picUrl || res.data[id].picUrl
       obj[aId] = {
         ...allSongs[aId],
         ...res.data[id],
-        al: { ...(allSongs[aId].al || {}), picUrl: res.data[id].picUrl },
+        al,
       }
     } else {
       obj[aId] = {
@@ -407,7 +409,7 @@ export const handleSongs = (songs = [], func) => (
     });
     VUE_APP.$store.dispatch('updateAllSongs', obj);
     while (ids.length > 0) {
-      getUrlBatch(ids.splice(-300).join(','), platform || '163');
+      getUrlBatch(ids.splice(-90).join(','), platform || '163');
     }
     resolve(songs.map(s => s.aId));
   })
