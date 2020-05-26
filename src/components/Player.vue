@@ -259,7 +259,7 @@
             api: 'SCROBBLE',
             data: {
               id: playingId,
-              sourceid,
+              sourceid: sourceid.replace(`${playingPlatform}_`, ''),
               time: Num(playerInfo.current),
             }
           })

@@ -28,10 +28,10 @@
           实现半自动化的获取 Cookie，模拟用户登陆
         </p>
         <p class="mt_20">GitHub: <a href="https://github.com/jsososo/NeteaseMusic" target="_blank">网易云第三方 Web 播放器</a></p>
-        <p>后端：「聚合接口」（暂未上传到github，等我再改改再说！）</p>
         <p>后端：「网易云」<a href="https://github.com/Binaryify/NeteaseCloudMusicApi" target="_blank">NeteaseCloudMusicApi</a></p>
         <p>后端：「QQ音乐」<a href="https://github.com/jsososo/QQMusicApi" target="_blank">QQMusicApi</a> (也是我的项目，也欢迎支持一下)</p>
         <p>后端：「咪咕音乐」<a href="https://github.com/jsososo/MiguMusicApi" target="_blank">MiguMusicApi</a> (还是我的项目，也欢迎支持一下)</p>
+        <p>后端：「聚合接口」<a href="https://github.com/jsososo/MixMusicApi" target="_blank">MixMusicApi</a>（我的项目也太多了）</p>
         <p>Chrome插件：「QQ音乐Cookie搬运工」<a href="https://github.com/jsososo/qqmusic-cookie-porter" target="_blank">qqmusic-cookie-porter</a>  (又是我的项目，也欢迎支持一下)</p>
       </div>
     </div>
@@ -291,6 +291,10 @@
           {
             txt: '🎰 偷偷修复一些bug',
             time: '20-05-19',
+          },
+          {
+            txt: '🍬 修复咪咕音乐接口问题',
+            time: '20-05-26',
           }
         ],
       }

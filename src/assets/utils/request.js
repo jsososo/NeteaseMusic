@@ -398,12 +398,8 @@ export const handleSongs = (songs = [], func) => (
         return;
       }
       obj[aId] = s;
-      if (!allSongs[aId] || !allSongs[aId].url) {
-        if (s.platform === 'migu') {
-          ids.push(`${s.id}_${s.cId}`)
-        } else {
-          ids.push(s.id);
-        }
+      if ((!allSongs[aId] || !allSongs[aId].url) && !s.url) {
+        ids.push(s.id);
       }
       platform = s.platform;
     });
@@ -491,10 +487,8 @@ export const getHighQualityUrl = async (id, type, updateSong) => {
   if (!song.url) {
     return '';
   }
-  let idStr = id.replace(`${song.platform}_`, '');
-  if (song.platform === 'migu') {
-    idStr = `${song.id}_${song.cid}`;
-  }
+  const idStr = id.replace(`${song.platform}_`, '');
+
   let url = song.url, br = song.br || 128000, songEndType = 'mp3';
   try {
     const res = await request({
@@ -518,7 +512,7 @@ export const getHighQualityUrl = async (id, type, updateSong) => {
   }
 
   url = url.replace(/^(.+)qq.com/, 'http://122.226.161.16/amobile.music.tc.qq.com');
-  url = url.replace('tyst.migu.cn', `${window.location.host}/miguSongs`);
+  url = url.replace('freetyst.nf.migu.cn', `${window.location.host}/miguSongs`);
 
   if (updateSong) {
     VUE_APP.$store.dispatch('updateSongDetail', {
@@ -544,7 +538,7 @@ export const download = async (id, songName, forceReq, defaultSong) => {
   if (!song.url) {
     return VUE_APP.$message.warning('没有这首歌呀');
   }
-  let songCid = song.cid;
+  let songCid = song.cId;
 
   let { url, songEndType, br } = await getHighQualityUrl(id, Storage.get('downSize') || 'flac', song);
 
