@@ -68,7 +68,7 @@
           return;
         }
         dispatch('updatePlayNow', song);
-        dispatch('updatePlayingList', { list: this.info.songs });
+        dispatch('updatePlayingList', { list: this.songs });
         dispatch('updatePlayingStatus', true);
       },
 

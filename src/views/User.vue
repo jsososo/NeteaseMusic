@@ -49,6 +49,7 @@
         <div class="user-info-txt user-info-listen pointer" @click="selected = 'history'">听过 {{uInfo.listenSongs}}</div>
         <div class="user-info-txt user-info-playlist"><a :href="`#/playlist?id=${uInfo.userId}&from=163`">歌单 {{uInfo.playlistCount}} 个</a></div>
         <div class="user-info-txt user-info-level">Lv {{uInfo.level}}</div>
+        <div class="user-info-txt user-info-logout" @click="logout"><i class="iconfont icon-logout" /> 退出</div>
       </div>
       <div class="user-setting-container">
         <Setting />
@@ -156,6 +157,7 @@
         allSongs: 'getAllSongs',
         playNow: 'getPlaying',
         playingPercent: 'getPlayingPercent',
+        favSongMap: 'getFavSongMap',
       }))
     },
     watch: {
@@ -271,6 +273,18 @@
             loginStatus();
           }
         }
+      },
+
+      logout() {
+        request('163_LOGOUT').then(() => {
+          const { dispatch } = this.$store;
+          this.userList['163'] = {};
+          dispatch('setUser', {});
+          dispatch('setUserList', this.userList);
+          dispatch('updateFavSongMap', { 163: {}});
+          this.uid = '';
+          this.uInfo = {};
+        })
       },
 
       async getRecord(type = 0, uid = this.uid) {
@@ -577,6 +591,12 @@
       .user-info-level {
         font-size: 22px;
         padding-left: 60px;
+      }
+      .user-info-logout {
+        font-size: 20px;
+        padding-left: 75px;
+        cursor: pointer;
+        display: inline-block;
       }
     }
 

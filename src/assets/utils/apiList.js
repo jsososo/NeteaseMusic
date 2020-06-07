@@ -17,6 +17,7 @@ const apiList = {
 
   '163_SEARCH': '/api/search',
   '163_LOGIN_PHONE': '/api/login/cellphone',
+  '163_LOGOUT': '/api/logout',
   '163_LOGIN_EMAIL': '/api/login',
   'LOGIN_STATUS': '/api/login/status',
   'USER_LIST': '/api/user/playlist',

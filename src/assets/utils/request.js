@@ -49,6 +49,8 @@ const request = (param, platform) => {
   let url =  apiList[api];
   if (method === 'get') {
     url += `?${Object.keys(data).map((k) => `${k}=${encodeURI(data[k])}`).join('&')}`
+  } else {
+    url += '?_t=' + data._t;
   }
   return axios({
     method,

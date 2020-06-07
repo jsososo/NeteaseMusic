@@ -191,6 +191,9 @@
     },
     watch: {
       async playNow(v) {
+        if (!v) {
+          return;
+        }
         const { listId, playingId, playerInfo, isPersonFM, playingList, playingPlatform, isUpdating, pDom } = this;
         const { id, lyric, name, comments, mid, songid, cId, br, pUrl, aId, platform, qqId, miguId } = v;
         let { url } = v;
@@ -252,14 +255,14 @@
         if (playerInfo.current > 0 && playingPlatform === '163') {
           let sourceid = (listId === 'daily' ? '' : listId) || '';
           if (!sourceid) {
-            sourceid = this.allSongs[playingId].al.id;
+            sourceid = this.allSongs[`163_${playingId}`].al.id;
           }
           // 听歌打卡
           request({
             api: 'SCROBBLE',
             data: {
               id: playingId,
-              sourceid: sourceid.replace(`${playingPlatform}_`, ''),
+              sourceid: String(sourceid).replace(`${playingPlatform}_`, ''),
               time: Num(playerInfo.current),
             }
           })
