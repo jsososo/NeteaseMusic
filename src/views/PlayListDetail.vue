@@ -176,7 +176,7 @@
         }
         let list = allList[listId];
 
-        (listId === 'playing') && (list = this.playingList.trueList);
+        (listId.indexOf('playing') > -1) && (list = this.playingList.trueList);
         dispatch('updatePlayNow', song);
         dispatch('updatePlayingList', { list, listId });
         dispatch('updatePlayingStatus', true);
@@ -216,7 +216,7 @@
         const rex = search.replace(/\/|\s|\t|,|，|-|/g, '').toLowerCase();
         let rawList = [];
         switch (listId) {
-          case 'playing':
+          case `${platform}_playing`:
             rawList = this.playingList.trueList;
             break;
           case `${platform}_${id}`:

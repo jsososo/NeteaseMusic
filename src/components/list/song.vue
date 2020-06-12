@@ -7,7 +7,7 @@
       @click="playMusic(s)"
     >
       <div v-if="(favSongMap[allSongs[s].platform] && favSongMap[allSongs[s].platform][s])" class="liked-item" />
-      <div class="playing-bg" v-if="playNow.id === s" :style="`width: ${playingPercent * 100}%`">
+      <div class="playing-bg" v-if="playNow.aId === s" :style="`width: ${playingPercent * 100}%`">
         <div class="wave-bg"></div>
         <div class="wave-bg2"></div>
       </div>

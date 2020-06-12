@@ -173,12 +173,21 @@
       },
       recommendList() {
         this.hashChange();
+      },
+      userList(v) {
+        const { selected } = this;
+        if (v[selected] && !getQueryFromUrl('id')) {
+          this.pagePlayList = v[selected].list.map((id) => v[selected].obj[id]);
+        }
       }
     },
     created() {
       this.hashChange();
       setTimeout(() => this.show = true);
       this.selected = getQueryFromUrl('from') || Storage.get('playlist_from') || '163';
+      if (document.location.hash.indexOf('playlist') > -1 && this.selected === 'migu') {
+        this.selected = '163';
+      }
     },
     destroyed() {
       this.show = false;
@@ -189,7 +198,7 @@
         this.hash = hashs.find((h) => document.location.hash.indexOf(h) > -1);
         const { selected, hash, user, inputQQ } = this;
         this.pagePlayList = [];
-        let res, id = { 163: user.userId, qq: inputQQ }[selected];
+        let res, id = getQueryFromUrl('id') || { 163: user.userId, qq: inputQQ }[selected];
         switch (hash) {
           case 'recommend':
             res = await request({

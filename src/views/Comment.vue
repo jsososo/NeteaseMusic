@@ -1,8 +1,8 @@
 <template>
   <div>
-    <CommentComponent :platform="playNow.from || '163'" :comment-type="0" :id="playNow.id" :comments="comments" />
+    <CommentComponent :platform="playNow.platform || '163'" :comment-type="0" :id="playNow.id" :comments="comments" />
 
-    <SendComment :type="0" :platform="playNow.from || '163'" :success-cb="initComments" />
+    <SendComment :type="0" :platform="playNow.platform || '163'" :success-cb="initComments" />
   </div>
 </template>
 

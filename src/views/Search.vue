@@ -24,12 +24,12 @@
       </div>
       <div class="song-list result-list" v-if="searchQuery.songs && searchQuery.songs.length > 0">
         <div
-          :class="`song-item ${(allSongs[s].url || allSongs[s].qqId) ? 'hasurl' : 'disabled'}`"
+          :class="`song-item ${(allSongs[s].url) ? 'hasurl' : 'disabled'}`"
           v-for="(s, i) in searchQuery.songs"
           :key="`${s}-${i}`"
           @click="playMusic(s)"
         >
-          <div class="playing-bg" v-if="playNow.id === s" :style="`width: ${playingPercent * 100}%`">
+          <div class="playing-bg" v-if="playNow.aId === s" :style="`width: ${playingPercent * 100}%`">
             <div class="wave-bg"></div>
             <div class="wave-bg2"></div>
           </div>
