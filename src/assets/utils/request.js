@@ -601,54 +601,6 @@ export const handleQQComments = (list) => (list || []).map((obj) => ({
   likedCount: obj.praisenum,
 }));
 
-export const getMusicData = (url) => {
-  try {
-    if (!url) {
-      return;
-    }
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    window.AudioBufferSourceNode = audioCtx.createBufferSource();
-    window.AnalyserNode = audioCtx.createAnalyser();
-    window.musicDataMap = {0: [0]};
-    window.readNewMusic = true;
-    const { AudioBufferSourceNode, AnalyserNode } = window;
-    AnalyserNode.fftSize = Number(Storage.get('drawMusicNum') || 64) * 2;
-    const request = new XMLHttpRequest();
-    request.open('GET', url, true);
-    request.responseType = 'arraybuffer'; // 设置数据类型为arraybuffer
-    request.onload = function() {
-      const audioData = request.response;
-      audioCtx.decodeAudioData(
-        audioData,
-        (buffer) => {
-          AudioBufferSourceNode.buffer = buffer;
-          AudioBufferSourceNode.connect(AnalyserNode);
-          AudioBufferSourceNode.start();
-          window.AnalyserNode = AnalyserNode;
-          window.AudioBufferSourceNode = AudioBufferSourceNode;
-        },
-        (e) => {
-          window.readNewMusic = false;
-          if (VUE_APP.$store.getters.isPlaying) {
-            VUE_APP.$store.dispatch('setReading', false);
-          }
-        });
-    };
-    request.onerror = function () {
-      window.readNewMusic = false;
-      if (VUE_APP.$store.getters.isPlaying) {
-        VUE_APP.$store.dispatch('setReading', false);
-      }
-    };
-    request.send();
-  } catch (err) {
-    window.readNewMusic = false;
-    if (VUE_APP.$store.getters.isPlaying) {
-      VUE_APP.$store.dispatch('setReading', false);
-    }
-  }
-};
-
 // 从服务器获取 Cookie
 export const getCookie = async (id) => {
   Storage.set('qqId', id);

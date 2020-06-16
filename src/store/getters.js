@@ -75,9 +75,6 @@ export default {
   isPersonFM(state) {
     return state.isPersonFM;
   },
-  isReading(state) {
-    return state.reading;
-  },
   getFavSongMap(state) {
     return state.favSongMap;
   }

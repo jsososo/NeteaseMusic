@@ -63,6 +63,10 @@ export const messageHelp = (id) => {
     {
       content: '数据层面和接口重大重构！如果有什么bug及时反馈！',
       time: '20-05-17',
+    },
+    {
+      content: '音频图大优化！windows 也不卡了！',
+      time: '20-06-16',
     }
   ];
   if (id === 'newInfo') {

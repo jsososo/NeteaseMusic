@@ -10,7 +10,7 @@
         style="opacity: 0.5;position: absolute;top: 10px;left: 10px;"
         :show-text="false"
       />
-      <img :class="`progress-cover playing-${!reading && !loading && playing}`" :src="`${playNow.al.picUrl || 'http://p2.music.126.net/ftPcA5oCeIQxhiNmEpmtKw==/109951163926974610.jpg'}?param=300y300`" alt="">
+      <img :class="`progress-cover playing-${!loading && playing}`" :src="`${playNow.al.picUrl || 'http://p2.music.126.net/ftPcA5oCeIQxhiNmEpmtKw==/109951163926974610.jpg'}?param=300y300`" alt="">
     </div>
     <div class="song-info">
       <div class="info-line">
@@ -59,7 +59,6 @@
         playNow: 'getPlaying',
         percent: 'getPlayingPercent',
         playing: 'isPlaying',
-        reading: 'isReading',
         loading: 'isLoading',
         allSongs: 'getAllSongs',
       })

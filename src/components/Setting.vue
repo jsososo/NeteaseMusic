@@ -27,24 +27,13 @@
         <el-radio-group v-model="drawMusicStyle">
           <el-radio-button label="rect">柱状图</el-radio-button>
           <el-radio-button label="line">曲线</el-radio-button>
-          <el-radio-button label="line2">曲线2</el-radio-button>
+<!--          <el-radio-button label="line2">曲线2</el-radio-button>-->
           <el-radio-button label="particle">泡泡</el-radio-button>
-          <el-radio-button label="particle2">粒子</el-radio-button>
+<!--          <el-radio-button label="particle2">粒子</el-radio-button>-->
           <el-radio-button label="circle">圈圈</el-radio-button>
           <el-radio-button label="circle2">海螺</el-radio-button>
-          <el-radio-button label="circle3">圆环</el-radio-button>
+<!--          <el-radio-button label="circle3">圆环</el-radio-button>-->
         </el-radio-group>
-      </div>
-    </div>
-    <div class="input-row" v-if="showDrawMusic">
-      <div class="input-label">音频数量：</div>
-      <div class="input-content">
-        <el-radio-group v-model="drawMusicNum">
-          <el-radio-button label="32">32</el-radio-button>
-          <el-radio-button label="64">64</el-radio-button>
-          <el-radio-button label="128">128</el-radio-button>
-        </el-radio-group>
-        <div class="input-explain">看自己的性能来定</div>
       </div>
     </div>
 
@@ -147,7 +136,6 @@
     watch: {
       showDrawMusic(v) {
         Storage.set('showDrawMusic', Number(v));
-        this.$message.info('刷新生效！');
       },
       openSetQCookie(v) {
         Storage.set('openSetQCookie', Number(v));

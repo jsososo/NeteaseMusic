@@ -361,10 +361,6 @@ export default {
   [types.SET_LOADING](state, data) {
     state.loading = data;
   },
-  [types.SET_READING](state, data) {
-    state.reading = data;
-    state.isPlaying && window.pDom.play();
-  },
   [types.UPDATE_FAV_SONG_MAP](state, data) {
     state.favSongMap = {
       ...state.favSongMap,

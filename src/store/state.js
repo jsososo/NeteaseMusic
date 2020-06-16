@@ -48,7 +48,6 @@ export default {
     open: false,
   },
   loading: false,
-  reading: false,
   downloadInfo: Storage.get('download_info', true, JSON.stringify({
     count: 0,
     list: [],

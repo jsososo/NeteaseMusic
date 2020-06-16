@@ -7,9 +7,6 @@ export const SET_RECOMMEND_LIST = 'SET_RECOMMEND_LIST';
 // 设置是否在加载状态
 export const SET_LOADING = 'SET_LOADING';
 
-// 设置是否在读取音乐数据
-export const SET_READING = 'SET_READING';
-
 // 更新列表
 export const QUERY_163_LIST = 'QUERY_163_LIST';
 

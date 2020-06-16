@@ -41,7 +41,11 @@ export default function download(data, strFileName, strMimeType = null, songInfo
         if (e.currentTarget.status === 200) {
           var downInfo = e.target.response;
           // 下面是下载歌曲图片，通过 id3 加到歌曲信息中，这样就能显示图片了
-          if (songInfo && songInfo.al && songInfo.al.picUrl) {
+          // 网易云的如果来源是qq,暂不添加id3
+          if (
+            !(songInfo.platform === '163' && songInfo.qqId) &&
+            songInfo && songInfo.al && songInfo.al.picUrl
+          ) {
             var coverAjax = new XMLHttpRequest();
             coverAjax.open('GET', songInfo.al.picUrl.replace(/http(s|):\/\/y\.gtimg\.cn/, `http://${window.location.host}/qqImg`), true);
             coverAjax.responseType = 'arraybuffer';

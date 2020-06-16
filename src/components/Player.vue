@@ -19,7 +19,7 @@
       <div class="inline-block progress-container">
         <!-- 歌曲信息 -->
         <div class="song-info">
-          <i class="el-icon-loading mr_10" v-if="loading || Boolean(isReading)" />
+          <i class="el-icon-loading mr_10" v-if="loading" />
           <span class="player-song-title pointer" @click="goTo('#/')">{{playNow.name}}</span>
           <span class="player-song-singer pl_20 pointer">
             <a v-for="a in playNow.ar" :key="a.id" :href="changeUrlQuery({ id: a.id, mid: a.mid, from: playNow.platform }, '#/singer', false)">{{a.name}} </a>
@@ -124,7 +124,7 @@
 
       </div>
     </div>
-    <audio id="m-player" :src="playingUrl || ''" controls></audio>
+    <audio id="m-player" crossOrigin="anonymous" :src="playingUrl || ''" controls></audio>
   </div>
 </template>
 
@@ -137,11 +137,11 @@
     download,
     getPersonFM,
     handleQQComments,
-    getMusicData,
     getHighQualityUrl
   } from '../assets/utils/request';
   import { handleLyric, getQueryFromUrl, changeUrlQuery } from "../assets/utils/stringHelper";
   import ArrayHelper from '../assets/utils/arrayHelper';
+  import DrawMusic from "../assets/utils/drawMusic";
   import idMap from "../assets/utils/idMap";
 
   export default {
@@ -185,7 +185,6 @@
         isPersonFM: 'isPersonFM',
         playingList: 'getPlayingList',
         mode: 'getMode',
-        isReading: 'isReading',
         favSongMap: 'getFavSongMap',
       }),
     },
@@ -199,15 +198,11 @@
         let { url } = v;
         const dispatch = this.$store.dispatch;
         const listenSize = Storage.get('listenSize') || '128';
-        const needRead = Storage.get('showDrawMusic') !== '0';
         if (isUpdating)
           return;
         // 这是刚切歌的时候需要判断下用户选择的播放品质并更新一下，同时如果已经在查询
         if ((pUrl !== this.playingUrl || !this.playingUrl) && url) {
           dispatch('setLoading', true);
-          if (needRead) {
-            dispatch('setReading', true);
-          }
           this.isUpdating = true;
           const listenBr = {128: 128000, 320: 320000, flac: 960000}[listenSize];
           let [nUrl, nBr] = [url, br]; // 默认原始的信息
@@ -229,11 +224,7 @@
             id,
             aId,
           });
-          if (needRead) {
-            getMusicData(url);
-          } else {
-            setTimeout(() => this.playing && this.playerDom.play(), 1);
-          }
+          setTimeout(() => this.playing && this.playerDom.play(), 1);
           return;
         }
         if (!this.playingUrl) {
@@ -366,20 +357,23 @@
       const dispatch = this.$store.dispatch;
       window.onhashchange = () => this.showControl = !getQueryFromUrl('hideControl');
 
+      // 加载音频数据
+      if (window.AudioContext || window.webkitAudioContext) {
+        this.drawMusic = new DrawMusic();
+        const draw = () => {
+          this.drawMusic.draw();
+          setTimeout(() => draw(), 1000 / 90);
+        }
+        window.requestAnimationFrame(draw);
+      }
+
       // audio加载完成
       pDom.oncanplaythrough = () => {
         if (this.playingUrl === this.playNow.pUrl) {
           dispatch('setLoading', false);
 
           if (this.playing) {
-            const playDom = () => {
-              if (!this.isReading) {
-                pDom.play();
-              } else {
-                setTimeout(() => playDom(), 500);
-              }
-            };
-            playDom();
+            pDom.play();
           }
         }
         this.playerInfo = { duration: pDom.duration, current: 0 };
