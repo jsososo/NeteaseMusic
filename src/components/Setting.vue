@@ -3,11 +3,19 @@
     <div class="setting-title">频谱图设置</div>
     <div class="input-row">
       <div class="input-label">
+        先进模式：
+      </div>
+      <div class="input-content">
+        <el-switch v-model="useAudioContext" />
+        <div class="input-explain">刷新生效，关闭后停用AudioContext, 无法展示频谱图，但是能解决大部分无法播放的问题</div>
+      </div>
+    </div>
+    <div class="input-row" v-if="useAudioContext">
+      <div class="input-label">
         看见音乐：
       </div>
       <div class="input-content">
         <el-switch v-model="showDrawMusic" />
-        <div class="input-explain">开启音频图后会影响性能和流量</div>
       </div>
     </div>
     <div class="input-row" v-if="showDrawMusic">
@@ -130,12 +138,17 @@
         drawMusicStyle: Storage.get('drawMusicStyle') || 'rect',
         listenSize: Storage.get('listenSize') || '128',
         openSetQCookie: Storage.get('openSetQCookie') !== '0',
+        useAudioContext: Storage.get('useAudioContext') !== '0',
         inputCookie: '',
       }
     },
     watch: {
       showDrawMusic(v) {
         Storage.set('showDrawMusic', Number(v));
+      },
+      useAudioContext(v) {
+        Storage.set('useAudioContext', Number(v));
+        this.showDrawMusic = false;
       },
       openSetQCookie(v) {
         Storage.set('openSetQCookie', Number(v));

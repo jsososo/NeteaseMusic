@@ -207,11 +207,11 @@
           const listenBr = {128: 128000, 320: 320000, flac: 960000}[listenSize];
           let [nUrl, nBr] = [url, br]; // 默认原始的信息
           if ((pUrl && Number(br) === listenBr) || listenSize === '128') { // 有 pUrl 且与当前选择的品质相同
-            nUrl = pUrl;
+            nUrl = pUrl || url;
             nBr = listenBr;
           } else if (qqId || miguId) { // 如果是qq音乐或者咪咕音乐，获取播放链接
             const result = await getHighQualityUrl(aId, listenSize);
-            nUrl = result.url;
+            nUrl = result.url || url;
             nBr = result.br;
           }
           this.isUpdating = false;
@@ -224,7 +224,11 @@
             id,
             aId,
           });
-          setTimeout(() => this.playing && this.playerDom.play(), 1);
+          setTimeout(() => {
+            if (this.playing) {
+              this.playerDom.play();
+            }
+          }, 1);
           return;
         }
         if (!this.playingUrl) {
@@ -274,7 +278,9 @@
         }
 
         if (v.miguId && this.playing) {
-          setTimeout(() => this.playerDom.play(), 1);
+          setTimeout(() => {
+            this.playerDom.play();
+          }, 1);
         }
         // 没有歌词的拿歌词
         if (!lyric) {
@@ -358,11 +364,11 @@
       window.onhashchange = () => this.showControl = !getQueryFromUrl('hideControl');
 
       // 加载音频数据
-      if (window.AudioContext || window.webkitAudioContext) {
+      if ((window.AudioContext || window.webkitAudioContext) && Storage.get('useAudioContext') !== '0') {
         this.drawMusic = new DrawMusic();
         const draw = () => {
           this.drawMusic.draw();
-          setTimeout(() => draw(), 1000 / 90);
+          window.requestAnimationFrame(draw);
         }
         window.requestAnimationFrame(draw);
       }

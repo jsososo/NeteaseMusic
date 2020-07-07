@@ -46,36 +46,41 @@ export default function download(data, strFileName, strMimeType = null, songInfo
             !(songInfo.platform === '163' && songInfo.qqId) &&
             songInfo && songInfo.al && songInfo.al.picUrl
           ) {
-            var coverAjax = new XMLHttpRequest();
-            coverAjax.open('GET', songInfo.al.picUrl.replace(/http(s|):\/\/y\.gtimg\.cn/, `http://${window.location.host}/qqImg`), true);
-            coverAjax.responseType = 'arraybuffer';
-            coverAjax.onload = function (cE) {
-              try {
-                if (cE.currentTarget.status === 200) {
-                  const writer = new Id3(e.target.response);
-                  writer.setFrame('TIT2', songInfo.name)
-                    .setFrame('TPE1', songInfo.ar.map(a => a.name))
-                    .setFrame('TALB', songInfo.al.name)
-                    .setFrame('TRCK', songInfo.trackNo || '')
-                    .setFrame('APIC', {
-                      type: 3,
-                      data: coverAjax.response,
-                      description: songInfo.al.name,
-                    });
-                  songInfo.publishTime && writer.setFrame('TYER', timer(songInfo.publishTime).str('YYYY'));
-                  writer.addTag();
-                  downInfo = writer.arrayBuffer;
+            try {
+              var coverAjax = new XMLHttpRequest();
+              coverAjax.open('GET', songInfo.al.picUrl.replace(/http(s|):\/\/y\.gtimg\.cn/, `http://${window.location.host}/qqImg`), true);
+              coverAjax.responseType = 'arraybuffer';
+              coverAjax.onload = function (cE) {
+                try {
+                  if (cE.currentTarget.status === 200) {
+                    const writer = new Id3(e.target.response);
+                    writer.setFrame('TIT2', songInfo.name)
+                      .setFrame('TPE1', songInfo.ar.map(a => a.name))
+                      .setFrame('TALB', songInfo.al.name)
+                      .setFrame('TRCK', songInfo.trackNo || '')
+                      .setFrame('APIC', {
+                        type: 3,
+                        data: coverAjax.response,
+                        description: songInfo.al.name,
+                      });
+                    songInfo.publishTime && writer.setFrame('TYER', timer(songInfo.publishTime).str('YYYY'));
+                    writer.addTag();
+                    downInfo = writer.arrayBuffer;
+                  }
+                } catch (err) {
+                  console.log('DOWN ERR: ', err);
                 }
-              } catch (err) {
-                console.log('DOWN ERR: ', err);
-              }
-              setTimeout(() => {
-                cb.success && cb.success();
-                download(downInfo, fileName, defaultMime);
-              }, 10);
-            };
+                setTimeout(() => {
+                  cb.success && cb.success();
+                  download(downInfo, fileName, defaultMime);
+                }, 10);
+              };
 
-            coverAjax.send();
+              coverAjax.send();
+            } catch (err) {
+              cb.success && cb.success();
+              download(downInfo, fileName, defaultMime);
+            }
           } else {
             cb.success && cb.success();
             download(downInfo, fileName, defaultMime);

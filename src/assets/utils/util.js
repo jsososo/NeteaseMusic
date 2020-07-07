@@ -67,6 +67,10 @@ export const messageHelp = (id) => {
     {
       content: '音频图大优化！windows 也不卡了！',
       time: '20-06-16',
+    },
+    {
+      content: '如果无法播放可以尝试去设置页关闭先进模式',
+      time: '20-07-07',
     }
   ];
   if (id === 'newInfo') {

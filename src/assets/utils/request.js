@@ -56,6 +56,9 @@ const request = (param, platform) => {
     method,
     url: '' + url,
     data,
+    headers: {
+      'Host-Check': btoa(timer().str('YYYYMMDD')),
+    }
   }).then((res) => {
     res.data = res.data || {};
     if (res.data.code === 200 || res.data.result === 100) {
@@ -155,13 +158,14 @@ export const getDaily = async (platform, retry) => {
 
 // 获取用户歌单
 export const getUserList = async (id, platform) => {
-  let myId = '';
+  let myId = '', ownCookie = 0;
   switch (platform) {
     case '163':
       myId = Storage.get('uid');
       break;
     case 'qq':
       let uin = document.cookie.match(/\suin=([^;]+)(;|$)/);
+      ownCookie = Storage.get('haveQCookie') || '0';
       myId = uin ? uin[1] : '';
       break;
   }
@@ -172,6 +176,7 @@ export const getUserList = async (id, platform) => {
   const { data } = await request({
     api: 'USER_PLAYLIST',
     data: {
+      ownCookie,
       id,
       _p: platform,
     }
@@ -369,7 +374,7 @@ export const getUrlBatch = async (id, platform) => {
       }
     }).then((res) => {
       const newObj = {};
-      Object.keys(res.data).forEach((id) => {
+      Object.keys(res.data || {}).forEach((id) => {
         newObj[id] = {
           ...allSongs[id],
           url: res.data[id].url,
@@ -402,6 +407,8 @@ export const handleSongs = (songs = [], func) => (
       obj[aId] = s;
       if ((!allSongs[aId] || !allSongs[aId].url) && !s.url) {
         ids.push(s.id);
+      } else {
+        s.pUrl = (allSongs[aId] && allSongs[aId].pUrl) || s.url
       }
       platform = s.platform;
     });

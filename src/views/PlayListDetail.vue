@@ -35,6 +35,7 @@
       <div
         :class="`song-item ${playNow.aId === s ? 'played' : ''} ${!allSongs[s].url ? 'disabled' : ''} ${((i < smallIndex) || (i > bigIndex)) ? 'hidden' : ''}`"
         v-for="(s, i) in list"
+        v-if="allSongs[s]"
         :key="`${s}-${i}`"
         @click="playMusic(s)"
       >
@@ -163,7 +164,11 @@
           return this.list = this.allList[listId] || [];
         }
         this.loading = true;
-        this.listInfo = await getPlaylist(id, platform);
+        const listInfo = await getPlaylist(id, platform);
+        if (!listInfo) {
+          return this.$message.error('获取歌单信息出错！');
+        }
+        this.listInfo = listInfo;
         this.songs = this.listInfo.songs;
         this.loading = false;
       },

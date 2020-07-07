@@ -41,6 +41,15 @@
       @current-change="getFeedback"
       :total="total">
     </el-pagination>
+    <div class="top-qa">
+      <h2>一些可能你会问的</h2>
+      <div class="qa-list">
+        <div v-for="({q, a}) in topQa" class="top-qa-content">
+          <div class="question nick">{{q}}</div>
+          <div class="answer content">{{a}}</div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -64,6 +73,41 @@
         replyId: '',
         replyContent: '',
         replyNick: '',
+        topQa: [
+          {
+            q: '无法播放？',
+            a: '1、确认下浏览器是否允许网页播放声音 （如chrome 访问 chrome://settings/content/sound ）2、确认下去广告插件是否有影响 ' +
+              '3、还是无法播放的同学可以去设置里关闭先进模式刷新尝试（就无法显示频谱图）'
+          },
+          {
+            q: '临时公告一下',
+            a: '咪咕音乐播放出现了跨域问题，还是因为服务器带宽有限，目前不想考虑走服务器代理，暂时不解决',
+          },
+          {
+            q: '移动端适配？',
+            a: '暂时真的没有精力，一开始想法是在现有项目中增加一套样式适配，但是改造起来非常麻烦，如果有机会下次会尝试用 react 构建新的移动端'
+          },
+          {
+            q: '为什么没有 https',
+            a: '鹅厂链接为 ip + http，如果支持了 https 会导致无法下载，（走服务器代理可以解决，但是也就5M带宽，应该不会尝试）'
+          },
+          {
+            q: '桌面版应用？',
+            a: '1、github上已经有很多不错的开源的第三方音乐播放器；2、我更喜欢即开即用的网页；3、在真实体验上来说，网页和应用端还是存在一些交互不同的',
+          },
+          {
+            q: '下载歌词',
+            a: '排期中。。。',
+          },
+          {
+            q: '登陆',
+            a: '网站目前没有账密系统，网易云走的是账号密码接口登陆，我这边试过是没有问题的，有问题的各位请先确认下账密，无误后最好能贴控制台报错信息反馈，鹅厂没有登陆接口，只能搬运cookie',
+          },
+          {
+            q: '接口问题',
+            a: '网易云的接口是用另一个大佬的开源项目（https://github.com/Binaryify/NeteaseCloudMusicApi）实现的，所以暂时也不会做一些魔改',
+          }
+        ]
       }
     },
     computed: {
@@ -149,15 +193,23 @@
     padding-left: 100px;
     padding-top: 20px;
     max-height: calc(100vh - 120px);
+    position: relative;
 
-    h1 {
+    h1, h2 {
       color: #fff6;
       margin-bottom: 30px;
     }
 
+    .top-qa {
+      position: absolute;
+      width: 45%;
+      top: 100px;
+      right: 0;
+    }
+
     .feedback-input-container {
       background: #0005 !important;
-      width: 600px;
+      width: 45%;
       border-radius: 10px;
       font-size: 14px;
       color: #fffc;
@@ -198,6 +250,7 @@
           background: #fff4;
           padding: 0 10px;
           border-radius: 4px;
+          word-break: break-all;
         }
         .icon-cancel {
           cursor: pointer;
@@ -234,16 +287,20 @@
       }
     }
 
-    .feedback-list {
+    .feedback-list, .qa-list {
       margin-top: 20px;
-      .feedback-content-item {
-        width: 600px;
+      .feedback-content-item, .top-qa-content {
+        width: 45%;
         background: #0003;
         border-radius: 10px;
         color: #fffc;
         padding: 10px;
         font-size: 14px;
         margin-bottom: 10px;
+
+        &.top-qa-content {
+          width: 80%;
+        }
 
         .nick {
           font-weight: bold;

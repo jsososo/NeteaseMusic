@@ -55,7 +55,7 @@
       </ul>
     </div>
     
-    <div class="content-block">
+    <div class="content-block qr-block">
       <h2>服务器香油钱</h2>
       <div class="mt_20">
         <img class="pay-img" src="../assets/img/pay-1.png" alt="" />
@@ -307,6 +307,10 @@
           {
             txt: '🚒 网易云下载问题 & 音频图大优化！windows 也不卡了！',
             time: '20-06-16',
+          },
+          {
+            txt: '😺 一些杂七杂八的优化',
+            time: '20-07-07',
           }
         ],
       }
@@ -326,6 +330,14 @@
     padding-right: 40%;
     max-height: calc(100vh - 120px);
     overflow: auto;
+    position: relative;
+
+    .qr-block {
+      width: 35%;
+      position: absolute;
+      top: 60px;
+      right: 10px;
+    }
 
     .content-block {
       margin-bottom: 40px;

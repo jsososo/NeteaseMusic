@@ -7,6 +7,7 @@ export default class DrawMusic {
 
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     const ctx = new AudioContext();
+    window.actx = ctx;
     const analyser = ctx.createAnalyser();
     analyser.fftSize = this.fftSize;
     // 通过<audio>节点创建音频源
@@ -15,6 +16,7 @@ export default class DrawMusic {
     source.connect(analyser);
     // 将分析器关联到输出设备（耳机、扬声器）
     analyser.connect(ctx.destination);
+    setTimeout(() => window.actx.resume(), 5000);
     this.playerAnalyser = analyser;
     window.playerAnalyser = analyser;
     const bufferLength = analyser.frequencyBinCount;
