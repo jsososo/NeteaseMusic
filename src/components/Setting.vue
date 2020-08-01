@@ -100,6 +100,22 @@
 
     <div class="setting-title">下载设置</div>
     <div class="input-row">
+      <div class="input-label">下载歌词：</div>
+      <div class="input-content">
+        <el-switch v-model="downLyric" />
+      </div>
+    </div>
+    <div class="input-row">
+      <div class="input-label">歌曲名：</div>
+      <div class="input-content">
+        <el-radio-group v-model="downName">
+          <el-radio-button label="0">歌手-歌名</el-radio-button>
+          <el-radio-button label="1">歌名-歌手</el-radio-button>
+          <el-radio-button label="2">歌名</el-radio-button>
+        </el-radio-group>
+      </div>
+    </div>
+    <div class="input-row">
       <div class="input-label">默认品质：</div>
       <div class="input-content">
         <el-radio-group v-model="downSize">
@@ -140,9 +156,17 @@
         openSetQCookie: Storage.get('openSetQCookie') !== '0',
         useAudioContext: Storage.get('useAudioContext') !== '0',
         inputCookie: '',
+        downName: Storage.get('downMusicName') || '0',
+        downLyric: Storage.get('downLyric', false, '0') !== '0',
       }
     },
     watch: {
+      downName(v) {
+        Storage.set('downMusicName', v);
+      },
+      downLyric(v) {
+        Storage.set('downLyric', Number(v));
+      },
       showDrawMusic(v) {
         Storage.set('showDrawMusic', Number(v));
       },

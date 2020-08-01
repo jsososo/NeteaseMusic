@@ -552,9 +552,16 @@ export const download = async (id, songName, forceReq, defaultSong) => {
   let { url, songEndType, br } = await getHighQualityUrl(id, Storage.get('downSize') || 'flac', song);
 
   const downId = `${new Date().getTime()}${id}`;
-  const name = songName ? songName : `${song.ar.map((a) => a.name).join('、')}-${song.name}.${songEndType}`;
+  if (url.indexOf('.mp3') > -1) {
+    songEndType = 'mp3';
+  } else if (url.indexOf('.flac') > -1) {
+    songEndType = 'flac';
+  }
+  let name = `.${songEndType}`;
+  let { repeatDown, download_info: downloadInfo, downLyric } = Storage.get(['repeatDown', 'download_info', 'downLyric']);
 
-  let { repeatDown, download_info: downloadInfo } = Storage.get(['repeatDown', 'download_info']);
+  name = songName || getDownName(song, name);
+
   downloadInfo = JSON.parse(downloadInfo);
   if (!repeatDown && !forceReq) {
     const song = downloadInfo.list.find((s) => s.songId === id && s.status === 'success');
@@ -569,10 +576,33 @@ export const download = async (id, songName, forceReq, defaultSong) => {
       VUE_APP.$message.success('加入下载中');
       dispatch('updateDownload', { status: 'init', from: (song.from || '163'), id: downId, ajax, name, songId: id, br, songCid, song, });
     },
-    success: () => dispatch('updateDownload', { status: 'success', id: downId }),
+    success: () => {
+      debugger;
+      if (downLyric === '1' && song.rawLyric) {
+        downReq(song.rawLyric, name.replace(/(\.mp3)|(\.flac)/, '.lrc'))
+      }
+      dispatch('updateDownload', { status: 'success', id: downId });
+    },
     error: () => dispatch('updateDownload', { status: 'error', id: downId }),
     progress: (p, l, t) => dispatch('updateDownload', { status: 'progress', id: downId, p, l, t }),
   });
+};
+
+export const getDownName = (song, end = '') => {
+  let artistName = (song.ar || []).map((a) => a.name).join('/');
+  let name = '';
+  switch (Storage.get('downMusicName')) {
+    case '1':
+      name = `${song.name}-${artistName}${end}`;
+      break;
+    case '2':
+      name = `${song.name}${end}`;
+      break;
+    default:
+      name = `${artistName}-${song.name}${end}`;
+      break;
+  }
+  return name;
 };
 
 export const getPersonFM = () => (

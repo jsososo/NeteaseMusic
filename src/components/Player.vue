@@ -97,14 +97,6 @@
         </el-tooltip>
 
         <input id="cp-share-input" :value="changeUrlQuery({ shareId: playNow.id, from: playNow.platform, shareCid: playNow.cid }, 'http://music.jsososo.com/#/', false)">
-        <!-- 分享 -->
-        <el-tooltip class="item" effect="dark" content="分享" placement="top">
-          <div class="inline-block ml_5 pd_5">
-            <span @click="copyUrl">
-              <i class="iconfont icon-share ft_16 pointer" />
-            </span>
-          </div>
-        </el-tooltip>
 
         <el-tooltip class="item" effect="dark" content="正在播放" placement="top">
           <div @click="goTo('#/playlist/detail?id=playing')" class="inline-block ml_5 pd_5">
@@ -113,6 +105,21 @@
             </span>
           </div>
         </el-tooltip>
+
+        <!-- 更多 -->
+        <div class="more-control"  @mouseleave="showMore = false">
+          <div v-if="showMore" class="more-list-container" @mouseleave="showMore = false" @mouseover="showMore = true">
+            <div class="more-list">
+              <div v-for="more in moreList" @click="handleClickMore(more.key)">
+                <i :class="`iconfont icon-${more.key}`" />
+                <span style="padding-left: 5px;">{{more.text}}</span>
+              </div>
+            </div>
+          </div>
+          <div class="ml_10" @mouseover="showMore = true" >
+            <i class="iconfont icon-more" />
+          </div>
+        </div>
 
         <div class="back-container">
           <a class="iconfont icon-feedback" href="#/feedback" />
@@ -137,12 +144,12 @@
     download,
     getPersonFM,
     handleQQComments,
-    getHighQualityUrl
+    getHighQualityUrl, getDownName
   } from '../assets/utils/request';
   import { handleLyric, getQueryFromUrl, changeUrlQuery } from "../assets/utils/stringHelper";
   import ArrayHelper from '../assets/utils/arrayHelper';
   import DrawMusic from "../assets/utils/drawMusic";
-  import idMap from "../assets/utils/idMap";
+  import downReq from '../assets/utils/download';
 
   export default {
     name: "PlayerPage",
@@ -154,6 +161,7 @@
         stopUpdateCurrent: false,
         showVolume: false,
         showOrder: false,
+        showMore: false,
         orderList: ['suiji', 'danquxunhuan', 'liebiao'],
         orderType: Storage.get('orderType'),
         showControl: !getQueryFromUrl('hideControl'),
@@ -168,6 +176,11 @@
         errorId: '',
         playingUrl: '',
         isUpdating: false,
+        moreList: [
+          { key: 'share', text: '分享' },
+          { key: 'down-lyric', text: '歌词' },
+          { key: 'home', text: '歌词' },
+        ]
       }
     },
     computed: {
@@ -304,7 +317,7 @@
                   str: '没有歌词哟，好好享受',
                 },
               });
-            dispatch('updateSongDetail', { lyric: lyricObj, aId });
+            dispatch('updateSongDetail', { lyric: lyricObj, aId, rawLyric: lyric });
           })
         }
 
@@ -546,6 +559,20 @@
         this.$message.success('复制链接成功，去分享吧');
       },
       changeUrlQuery,
+      handleClickMore(key) {
+        const { playNow } = this;
+        switch (key) {
+          case 'share':
+            this.copyUrl();
+            break;
+          case 'down-lyric':
+            downReq(playNow.rawLyric || '', getDownName(playNow, '.lrc'));
+            break;
+          case 'home':
+            window.location = '#/';
+            break;
+        }
+      },
     }
   }
 </script>
@@ -693,6 +720,44 @@
 
           div {
             padding: 3px 10px;
+            cursor: pointer;
+            &:hover {
+              background: rgba(255,255,255,0.3);
+            }
+          }
+        }
+      }
+
+      .more-control {
+        display: inline-block;
+        position: relative;
+
+        .more-list-container {
+          padding-bottom: 40px;
+          position: absolute;
+          width: 60px;
+          top: -102px;
+          left: -10px;
+          z-index: 10;
+        }
+
+        .more-list {
+          position: relative;
+          padding: 4px 0;
+          border-radius: 10px;
+          border: 1px solid #eaeaea;
+          opacity: 1;
+          transition: 0.4s opacity;
+          background: rgba(255,255,255,0.4);
+          font-size: 12px;
+          color: #fff;
+
+          .iconfont {
+            font-size: 16px;
+          }
+
+          div {
+            padding: 5px 6px;
             cursor: pointer;
             &:hover {
               background: rgba(255,255,255,0.3);

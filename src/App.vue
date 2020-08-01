@@ -88,6 +88,7 @@
         openSetQCookie: 0,
         showDrawMusic: '1',
         drawMusicType: 1,
+        downMusicName: '0',
       });
 
       // 初始化一下下载记录

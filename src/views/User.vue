@@ -94,7 +94,7 @@
 <script>
   import { mapGetters } from 'vuex';
   import Setting from '../components/Setting';
-  import request, { loginStatus, likeMusic, handleSongs, download } from '../assets/utils/request';
+  import request, { loginStatus, likeMusic, handleSongs } from '../assets/utils/request';
   import Num from '../assets/utils/num';
   import $ from 'jquery';
   import SongList from '../components/list/song';
@@ -390,7 +390,6 @@
         dispatch('updatePlayingList', { list: info[selected] });
         dispatch('updatePlayingStatus', true);
       },
-      download,
     },
   }
 </script>

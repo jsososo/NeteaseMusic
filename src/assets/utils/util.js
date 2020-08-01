@@ -71,6 +71,10 @@ export const messageHelp = (id) => {
     {
       content: '如果无法播放可以尝试去设置页关闭先进模式',
       time: '20-07-07',
+    },
+    {
+      content: '支持歌词下载 & 下载歌名格式选择，前往设置页查看！',
+      time: '20-08-02',
     }
   ];
   if (id === 'newInfo') {
@@ -79,7 +83,7 @@ export const messageHelp = (id) => {
       Storage.set('notify-new-index', newMessage.length - 1);
       window.VUE_APP.$notify({
         title: '有更新呀！',
-        message: newMessage.slice(newInfoIndex + 1).map((v) => `${v.content} (${v.time})`).join('<br/>'),
+        message: newMessage.slice(newInfoIndex + 1).map((v) => `${v.content} (${v.time})`).slice(-3).join('<br/>'),
         duration: (newMessage.length - newInfoIndex) * 20000,
         dangerouslyUseHTMLString: true,
       })
