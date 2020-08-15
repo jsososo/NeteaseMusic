@@ -75,6 +75,10 @@ export const messageHelp = (id) => {
     {
       content: '支持歌词下载 & 下载歌名格式选择，前往设置页查看！',
       time: '20-08-02',
+    },
+    {
+      content: '会员 & 无版权歌曲替换回来啦！',
+      time: '20-08-15',
     }
   ];
   if (id === 'newInfo') {

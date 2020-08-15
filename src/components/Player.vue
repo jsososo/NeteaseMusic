@@ -523,11 +523,15 @@
       },
       // 播放、暂停
       updatePlayingStatus(status) {
+        if (status === 'play') {
+          window.actx && window.actx.resume();
+        }
         this.playerDom[['pause', 'play'][Number(status)]]();
         this.$store.dispatch('updatePlayingStatus', status);
       },
       // 切歌。包括上一首。下一首
       cutSong(type) {
+        window.actx && window.actx.resume();
         this.$store.dispatch(type);
       },
       down: download,

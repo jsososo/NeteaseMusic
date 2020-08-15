@@ -14,6 +14,7 @@ const apiList = {
   'SONG_INFO': '/apiMix/song',
   'SONG_RECORD': '/apiMix/song/record',
   'SINGLE_URL': '/apiMix/url',
+  'SONG_FIND': '/apiMix/song/find',
 
   '163_SEARCH': '/api/search',
   '163_LOGIN_PHONE': '/api/login/cellphone',

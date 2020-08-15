@@ -51,7 +51,12 @@
       // 看一下是否有 cookie，以及设置项是否开启
       let uin = document.cookie.match(/\suin=([^;]+)(;|$)/);
       uin = uin ? uin[1] : '';
-      uin = getQueryFromUrl('q') || uin;
+      let urlUin = window.location.href.match(/q=(\d+)/);
+      uin = urlUin ? urlUin[1] : uin;
+      if (window.location.href.indexOf('q=') > -1) {
+        document.cookie = `uin=${uin}`;
+        window.location = `http://${window.location.host}/#/`;
+      }
       if (uin && (Storage.get('openSetQCookie') || '0') !== '0') {
         getCookie(uin);
       }

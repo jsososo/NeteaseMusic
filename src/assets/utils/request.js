@@ -329,57 +329,50 @@ export const searchReq = async ({ keywords, type = 1, pageNo = 1, platform }) =>
 export const getUrlBatch = async (id, platform) => {
   const res = await request({
     api: 'BATCH_URL',
+    method: 'post',
     data: {
       id,
       _p: platform
     }
   });
   const obj = {};
-  const findByQQ = {};
+  const findMap = {};
   const VUE_APP = window.VUE_APP;
   const allSongs = VUE_APP.$store.getters.getAllSongs;
-  if (platform === '163') {
-    id.split(',').forEach(v => {
-      const aId = `${platform}_${v}`
-      const song = allSongs[`${platform}_${v}`];
-      findByQQ[aId] = `${song.name.replace(/\(|\)|（|）/g, ' ')} ${song.ar.map((a) => a.name).join(' ')}`;
-    })
-  }
+  id.split(',').forEach(v => {
+    const aId = `${platform}_${v}`
+    const song = allSongs[`${platform}_${v}`];
+    findMap[aId] = {
+      key: `${song.name.replace(/\(|\)|（|）/g, ' ')} ${song.ar.map((a) => a.name).join(' ')}`,
+      id: aId,
+      duration: song.duration,
+    };
+  })
   Object.keys(res.data).forEach((id) => {
     const aId = `${platform}_${id}`;
-    delete findByQQ[aId];
-    if (platform === 'migu') {
-      const al = allSongs[aId].al || {};
-      al.picUrl = al.picUrl || res.data[id].picUrl
-      obj[aId] = {
-        ...allSongs[aId],
-        ...res.data[id],
-        al,
-      }
-    } else {
-      obj[aId] = {
-        ...allSongs[aId],
-        br: 128000,
-        url: res.data[id],
-        pUrl: res.data[id],
-      }
+    delete findMap[aId];
+    obj[aId] = {
+      ...allSongs[aId],
+      br: 128000,
+      url: res.data[id],
+      pUrl: res.data[id],
     }
   })
-  if (Object.keys(findByQQ).length > 0) {
+  if (Object.keys(findMap).length > 0) {
     request({
-      api: 'QQ_SONG_FINDS',
+      api: 'SONG_FIND',
       method: 'post',
       data: {
-        data: findByQQ,
+        list: Object.values(findMap),
+        _p: platform,
       }
     }).then((res) => {
       const newObj = {};
       Object.keys(res.data || {}).forEach((id) => {
         newObj[id] = {
           ...allSongs[id],
-          url: res.data[id].url,
-          pUrl: res.data[id].url,
-          qqId: res.data[id].songmid,
+          url: res.data[id],
+          pUrl: res.data[id],
           br: 128000,
         };
       });
@@ -414,7 +407,7 @@ export const handleSongs = (songs = [], func) => (
     });
     VUE_APP.$store.dispatch('updateAllSongs', obj);
     while (ids.length > 0) {
-      getUrlBatch(ids.splice(-90).join(','), platform || '163');
+      getUrlBatch(ids.splice(-290).join(','), platform || '163');
     }
     resolve(songs.map(s => s.aId));
   })
