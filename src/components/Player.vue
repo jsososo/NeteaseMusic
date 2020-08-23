@@ -144,7 +144,7 @@
     download,
     getPersonFM,
     handleQQComments,
-    getHighQualityUrl, getDownName, queryLyric
+    getHighQualityUrl, getDownName, queryLyric, downLyricFunc
   } from '../assets/utils/request';
   import { handleLyric, getQueryFromUrl, changeUrlQuery } from "../assets/utils/stringHelper";
   import ArrayHelper from '../assets/utils/arrayHelper';
@@ -549,7 +549,7 @@
             this.copyUrl();
             break;
           case 'down-lyric':
-            downReq(playNow.rawLyric || '', getDownName(playNow, '.lrc'));
+            downLyricFunc(playNow);
             break;
           case 'home':
             window.location = '#/';
