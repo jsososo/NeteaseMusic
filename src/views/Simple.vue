@@ -10,9 +10,24 @@
           <div class="song-artist"><span v-for="a in playNow.ar" :key="a.id">{{a.name}} </span></div>
 
           <div class="song-lyric" v-if="playNow.lyric">
-            <div :class="`lyric-item ${lyricKey === item && 'active'}`" :key="`lyric-${item}`" v-if="lyricList[item]" v-for="(item) in [startKey, startKey + 1, startKey + 2]">
-              {{lyricList[item].str}}
+            <div v-if="playNow.rawTrans && showTrans">
+              <div class="lyric-item" v-if="lyricList[startKey+1]">
+                {{lyricList[startKey+1].str}}
+              </div>
+              <div class="lyric-item"> </div>
+              <div class="lyric-item" v-if="lyricList[startKey+1]">
+                {{lyricList[startKey+1].trans}}
+              </div>
             </div>
+            <div v-else>
+              <div :class="`lyric-item ${lyricKey === item && 'active'}`" :key="`lyric-${item}`" v-if="lyricList[item]" v-for="(item) in [startKey, startKey + 1, startKey + 2]">
+                {{lyricList[item].str}}
+              </div>
+            </div>
+          </div>
+
+          <div class="iconfont icon-trans trans-btn" @click="updateShowTrans" v-if="playNow.rawTrans">
+            <div class="hide-trans" v-if="!showTrans" />
           </div>
         </div>
       </div>
@@ -22,6 +37,7 @@
 
 <script>
   import { mapGetters } from 'vuex';
+  import Storage from "../assets/utils/Storage";
 
   export default {
     name: "Simple",
@@ -30,6 +46,7 @@
         lyricKey: 0,
         startKey: 0,
         lyricList: [],
+        showTrans: Storage.get('SHOW_LRC_TRANS') === '1',
       }
     },
     computed: {
@@ -54,7 +71,7 @@
       },
       percent() {
         this.renderLyric();
-      }
+      },
     },
     methods: {
       renderLyric() {
@@ -88,6 +105,10 @@
 
         this.lyricKey = lyricKey - 1;
         this.startKey = startKey - 1;
+      },
+      updateShowTrans() {
+        this.showTrans = !this.showTrans;
+        Storage.set('SHOW_LRC_TRANS', Number(this.showTrans));
       }
     }
   }
@@ -150,6 +171,35 @@
       .d-table-cell {
         display: table-cell;
         vertical-align: middle;
+        position: relative;
+
+        .trans-btn {
+          position: absolute;
+          right: 20%;
+          font-size: 36px;
+          color: #fff;
+          opacity: 0.2;
+          box-shadow: 0 0 5px #fff;
+          cursor: pointer;
+          transition: 0.3s;
+          border-radius: 50%;
+
+          .hide-trans {
+            position: absolute;
+            width: 45px;
+            border: 3px solid #fff;
+            transform: rotate(45deg);
+            top: 12px;
+            left: -8px;
+            border-radius: 3px;
+          }
+
+          &:hover {
+            opacity: 0.6;
+            box-shadow: 0 0 10px #fff;
+          }
+
+        }
       }
 
       .song-artist {

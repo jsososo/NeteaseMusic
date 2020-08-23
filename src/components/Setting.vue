@@ -105,6 +105,12 @@
         <el-switch v-model="downLyric" />
       </div>
     </div>
+    <div class="input-row" v-if="downLyric">
+      <div class="input-label">歌词翻译：</div>
+      <div class="input-content">
+        <el-switch v-model="downLyricTrans" />
+      </div>
+    </div>
     <div class="input-row">
       <div class="input-label">歌曲名：</div>
       <div class="input-content">
@@ -158,6 +164,7 @@
         inputCookie: '',
         downName: Storage.get('downMusicName') || '0',
         downLyric: Storage.get('downLyric', false, '0') !== '0',
+        downLyricTrans: Storage.get('downLyricTrans', false, '0') !== '0',
       }
     },
     watch: {
@@ -166,6 +173,9 @@
       },
       downLyric(v) {
         Storage.set('downLyric', Number(v));
+      },
+      downLyricTrans(v) {
+        Storage.set('downLyricTrans', Number(v));
       },
       showDrawMusic(v) {
         Storage.set('showDrawMusic', Number(v));

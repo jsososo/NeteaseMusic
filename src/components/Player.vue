@@ -144,7 +144,7 @@
     download,
     getPersonFM,
     handleQQComments,
-    getHighQualityUrl, getDownName
+    getHighQualityUrl, getDownName, queryLyric
   } from '../assets/utils/request';
   import { handleLyric, getQueryFromUrl, changeUrlQuery } from "../assets/utils/stringHelper";
   import ArrayHelper from '../assets/utils/arrayHelper';
@@ -297,28 +297,7 @@
         }
         // 没有歌词的拿歌词
         if (!lyric) {
-          request({
-            api: 'LYRIC',
-            data: {
-              id: {
-                163: id,
-                qq: mid,
-                migu: cId
-              }[platform],
-              _p: platform,
-            }
-          }).then(({ data: { lyric, trans }}) => {
-            let lyricObj = {};
-            lyric && handleLyric(lyric, 'str', lyricObj);
-            trans && handleLyric(trans, 'trans', lyricObj);
-            !lyric && !trans && (
-              lyricObj = {
-                0: {
-                  str: '没有歌词哟，好好享受',
-                },
-              });
-            dispatch('updateSongDetail', { lyric: lyricObj, aId, rawLyric: lyric });
-          })
+          queryLyric(aId);
         }
 
         // 没有评论的拿评论

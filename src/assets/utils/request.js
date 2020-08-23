@@ -1,13 +1,13 @@
 import apiList from './apiList';
 import Storage from './Storage';
-import { getQueryFromUrl } from './stringHelper';
+import {getQueryFromUrl, handleLyric} from './stringHelper';
 import downReq from './download';
 import timer from './timer';
 import axios from 'axios';
 
 axios.interceptors.response.use(data=> {
 //==============  所有请求完成后都要执行的操作  ==================
-  if (data.status && data.status == 200 && data.data.status == 'error') {
+  if (data.status && data.status == 200 && data.data && data.data.status == 'error') {
     return;
   }
   return data;
@@ -15,16 +15,6 @@ axios.interceptors.response.use(data=> {
   const url = err.config && err.config.url;
   if (!url) {
     return { code: 500 };
-  }
-  if (url.indexOf('/api/playlist/tracks') > -1 || url.indexOf('/api/like' > -1)) {
-    switch (err.response.data.code) {
-      case 502:
-        return window.VUE_APP.$message.warning('歌曲已存在');
-      case 401:
-      case 512:
-        return;
-        // return window.VUE_APP.$message.error('大概是歌曲下线了');
-    }
   }
   if (url.indexOf('/api/login/status') > -1) {
     return Promise.reject({});
@@ -369,10 +359,13 @@ export const getUrlBatch = async (id, platform) => {
     }).then((res) => {
       const newObj = {};
       Object.keys(res.data || {}).forEach((id) => {
+        const { url, bId, bPlatform } = res.data[id];
         newObj[id] = {
           ...allSongs[id],
-          url: res.data[id],
-          pUrl: res.data[id],
+          url,
+          pUrl: url,
+          bId,
+          bPlatform,
           br: 128000,
         };
       });
@@ -435,12 +428,17 @@ export const likeMusic = (id) => {
     return VUE_APP.$message.error('咪咕音乐暂不支持！');
   }
 
-  let favFunc = () => (
-    request({
-      api: 'LIKE_MUSIC',
-      data: { id: trueId, like },
+  let favFunc = () => {
+    const listId = userList[platform].favListId;
+    return request({
+      api: 'PLAYLIST_TRACKS',
+      data: { tracks: trueId, pid: listId.replace(`${platform}_`, ''), op: like ? 'add' : 'del'},
+    }).catch((err) => {
+      if (err.data && err.data.status === 200) {
+        return err.data.body || err.data.data;
+      }
     })
-  );
+  }
   if (platform === 'qq') {
     if (Storage.get('haveQCookie') !== '1') {
       return message.warning('没有 cookie ！');
@@ -485,11 +483,11 @@ export const likeMusic = (id) => {
 // 获取高品质歌曲的
 export const getHighQualityUrl = async (id, type, updateSong) => {
   const allSongs = VUE_APP.$store.getters.getAllSongs;
-  const song = allSongs[id] || updateSong;
+  const song = allSongs[id] || updateSong || {};
   if (!song.url) {
     return '';
   }
-  const idStr = id.replace(`${song.platform}_`, '');
+  const idStr = (song.bId || id).replace(`${song.platform}_`, '');
 
   let url = song.url, br = song.br || 128000, songEndType = 'mp3';
   try {
@@ -499,7 +497,7 @@ export const getHighQualityUrl = async (id, type, updateSong) => {
         id: idStr,
         mediaId: song.mediaId,
         br: type,
-        _p: song.platform,
+        _p: song.bPlatform || song.platform,
       }
     });
     if (res.data && res.data.url) {
@@ -570,9 +568,8 @@ export const download = async (id, songName, forceReq, defaultSong) => {
       dispatch('updateDownload', { status: 'init', from: (song.from || '163'), id: downId, ajax, name, songId: id, br, songCid, song, });
     },
     success: () => {
-      debugger;
-      if (downLyric === '1' && song.rawLyric) {
-        downReq(song.rawLyric, name.replace(/(\.mp3)|(\.flac)/, '.lrc'))
+      if (downLyric === '1') {
+        downLyricFunc(song);
       }
       dispatch('updateDownload', { status: 'success', id: downId });
     },
@@ -580,6 +577,31 @@ export const download = async (id, songName, forceReq, defaultSong) => {
     progress: (p, l, t) => dispatch('updateDownload', { status: 'progress', id: downId, p, l, t }),
   });
 };
+
+export const downLyricFunc = async (obj) => {
+  await queryLyric(obj.aId);
+  const allSongs = VUE_APP.$store.getters.getAllSongs;
+  const song = allSongs[obj.aId] || obj;
+  let lyric = song.rawLyric;
+  if (!lyric) {
+    return;
+  }
+  if (Storage.get('downLyricTrans') === '1' && song.rawTrans) {
+    const lyricArr = lyric.split('\n');
+    const transArr = song.rawTrans.split('\n');
+    const result = [];
+    lyricArr.forEach((str) => {
+      result.push(str);
+      const times = str.match(/\[\d+:\d+.\d+\]/);
+      if (times) {
+        const transStr = transArr.find((v) => v.indexOf(times[0]) > -1);
+        transStr && result.push(transStr);
+      }
+    })
+    lyric = result.join('\n');
+  }
+  downReq(lyric, getDownName(song, '.lrc'));
+}
 
 export const getDownName = (song, end = '') => {
   let artistName = (song.ar || []).map((a) => a.name).join('/');
@@ -700,5 +722,35 @@ export const collectPlaylist = async ({ platform, id, listId }) => {
   }
 
 };
+
+export const queryLyric = async (aId) => {
+  const allSongs = VUE_APP.$store.getters.getAllSongs;
+  const song = allSongs[aId];
+  const { id, mid, cId, platform } = song;
+  if (song.lyricObj) {
+    return;
+  }
+  const { data: { lyric, trans }} = await request({
+    api: 'LYRIC',
+    data: {
+      id: {
+        163: id,
+        qq: mid,
+        migu: cId
+      }[platform],
+      _p: platform,
+    }
+  }).catch(() => ({ data: { lyric: '', trans: '' }}));
+  let lyricObj = {};
+  lyric && handleLyric(lyric, 'str', lyricObj);
+  trans && handleLyric(trans, 'trans', lyricObj);
+  !lyric && !trans && (
+    lyricObj = {
+      0: {
+        str: '没有歌词哟，好好享受',
+      },
+    });
+  VUE_APP.$store.dispatch('updateSongDetail', { lyric: lyricObj, aId, rawLyric: lyric, rawTrans: trans });
+}
 
 export default request;

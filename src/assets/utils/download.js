@@ -48,7 +48,11 @@ export default function download(data, strFileName, strMimeType = null, songInfo
           ) {
             try {
               var coverAjax = new XMLHttpRequest();
-              coverAjax.open('GET', songInfo.al.picUrl.replace(/http(s|):\/\/y\.gtimg\.cn/, `http://${window.location.host}/qqImg`), true);
+              coverAjax.open(
+                'GET',
+                songInfo.al.picUrl.replace(/http(s|):\/\/y\.gtimg\.cn/, `http://${window.location.host}/qqImg`).replace('300x300', '500x500'),
+                true
+              );
               coverAjax.responseType = 'arraybuffer';
               coverAjax.onload = function (cE) {
                 try {
