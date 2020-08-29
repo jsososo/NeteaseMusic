@@ -79,6 +79,10 @@ export const messageHelp = (id) => {
     {
       content: '会员 & 无版权歌曲替换回来啦！',
       time: '20-08-15',
+    },
+    {
+      content: 'chrome 播放控件支持（可以用系统快捷键 & 耳机切歌啦！）',
+      time: '20-08-30',
     }
   ];
   if (id === 'newInfo') {

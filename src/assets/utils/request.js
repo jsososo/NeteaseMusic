@@ -400,7 +400,7 @@ export const handleSongs = (songs = [], func) => (
     });
     VUE_APP.$store.dispatch('updateAllSongs', obj);
     while (ids.length > 0) {
-      getUrlBatch(ids.splice(-290).join(','), platform || '163');
+      getUrlBatch(ids.splice(-99).join(','), platform || '163');
     }
     resolve(songs.map(s => s.aId));
   })

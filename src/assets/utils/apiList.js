@@ -15,6 +15,7 @@ const apiList = {
   'SONG_RECORD': '/apiMix/song/record',
   'SINGLE_URL': '/apiMix/url',
   'SONG_FIND': '/apiMix/song/find',
+  'GET_HEART_MODE': '/apiMix/playlist/heart', // 心动模式
 
   '163_SEARCH': '/api/search',
   '163_LOGIN_PHONE': '/api/login/cellphone',
@@ -40,7 +41,7 @@ const apiList = {
   'GET_SINGER_DESC': '/api/artist/desc', // 获取歌手描述
   'GET_SINGER_SONGS': '/api/artists', // 获取歌手的热门歌曲
   'GET_SINGER_ALBUMS': '/api/artist/album', // 获取歌手的转接
-  'GET_HEART_MODE': '/api/playmode/intelligence/list', // 心动模式
+  // 'GET_HEART_MODE': '/api/playmode/intelligence/list', // 心动模式
   'GET_ALBUM': '/api/album', // 获取专辑信息
   'COMMENT': '/api/comment', // 发送、删除 评论
   'SIMI_ARTIST': '/api/simi/artist', // 相似歌手

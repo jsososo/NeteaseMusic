@@ -207,13 +207,29 @@
           return;
         }
         const { listId, playingId, playerInfo, isPersonFM, playingList, playingPlatform, isUpdating, pDom } = this;
-        const { id, lyric, name, comments, mid, songid, cId, br, pUrl, aId, platform, qqId, miguId } = v;
+        const { id, lyric, name, comments, mid, songid, cId, br, pUrl, aId, platform, qqId, miguId, al = {}, ar = [] } = v;
         let { url } = v;
         const dispatch = this.$store.dispatch;
         const listenSize = Storage.get('listenSize') || '128';
         if (isUpdating)
           return;
         // 这是刚切歌的时候需要判断下用户选择的播放品质并更新一下，同时如果已经在查询
+
+        if ('mediaSession' in navigator) {
+          navigator.mediaSession.metadata = new MediaMetadata({
+            title: name,
+            artist: ar.map((v) => v.name).join('/'),
+            album: al.name,
+            artwork: [
+              {src: al.picUrl || 'http://p2.music.126.net/ftPcA5oCeIQxhiNmEpmtKw==/109951163926974610.jpg', sizes: '96x96'},
+              {src: al.picUrl || 'http://p2.music.126.net/ftPcA5oCeIQxhiNmEpmtKw==/109951163926974610.jpg', sizes: '128x128'},
+              {src: al.picUrl || 'http://p2.music.126.net/ftPcA5oCeIQxhiNmEpmtKw==/109951163926974610.jpg', sizes: '192x192'},
+              {src: al.picUrl || 'http://p2.music.126.net/ftPcA5oCeIQxhiNmEpmtKw==/109951163926974610.jpg', sizes: '256x256'},
+              {src: al.picUrl || 'http://p2.music.126.net/ftPcA5oCeIQxhiNmEpmtKw==/109951163926974610.jpg', sizes: '384x384'},
+              {src: al.picUrl || 'http://p2.music.126.net/ftPcA5oCeIQxhiNmEpmtKw==/109951163926974610.jpg', sizes: '512x512'},
+            ]
+          });
+        }
         if ((pUrl !== this.playingUrl || !this.playingUrl) && url) {
           dispatch('setLoading', true);
           this.isUpdating = true;
@@ -409,6 +425,12 @@
               });
         }
       };
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.setActionHandler('play', () => this.updatePlayingStatus('play'));
+        navigator.mediaSession.setActionHandler('pause', () => this.updatePlayingStatus('pause'));
+        navigator.mediaSession.setActionHandler('previoustrack', () => this.cutSong('playPrev'));
+        navigator.mediaSession.setActionHandler('nexttrack', () => this.cutSong('playNext'));
+      }
       // audio正在加载音乐
       // pDom.onwaiting = () => console.log('waiting');
       // audio放完了

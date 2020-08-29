@@ -78,15 +78,15 @@
         <span class="list-name">{{item.name}}</span>
         <span class="list-count">{{item.trackCount}}</span>
         <div class="bottom-text">
-<!--          <el-tooltip-->
-<!--            class="item"-->
-<!--            effect="dark"-->
-<!--            content="心动模式"-->
-<!--            placement="top"-->
-<!--            v-if="selected === '163' && user.userId"-->
-<!--          >-->
-<!--            <i @click="toHeartMode(item.id)" :class="`iconfont icon-heart heart-btn ${heartMode && playingListId === item.listId && 'hearting'}`" />-->
-<!--          </el-tooltip>-->
+          <el-tooltip
+            class="item"
+            effect="dark"
+            content="心动模式"
+            placement="top"
+            v-if="selected === '163' && user.userId && userList['163'].favListId === item.listId"
+          >
+            <i @click="toHeartMode(item.listId)" :class="`iconfont icon-heart heart-btn ${heartMode && 'hearting'}`" />
+          </el-tooltip>
           <el-tooltip
             v-if="userList[selected] && !userList[selected].mine[item.listId]"
             class="item"
@@ -221,33 +221,30 @@
       goTo(id, platform = this.selected) {
         window.location = `#/playlist/detail?id=${id}&from=${platform}`;
       },
-      toHeartMode(pid) {
+      async toHeartMode(pid) {
         window.event.stopPropagation();
         const { userList, allList, allSongs, user } = this;
         if (!user.userId) {
           return this.$message.warning('登录后才可以开启心动模式');
         }
-        const favList = allList[userList.favId].length > 0 ? allList[userList.favId] : allList.daily;
-        const randomId = favList[Math.floor(Math.random(favList.length))];
-        request({
+        const { favListId } = userList['163'];
+        const favList = (allList[favListId] || []).length > 0 ? allList[favListId] : allList['163_daily'];
+        const randomId = favList[Math.floor(Math.random(favList.length))].replace('163_', '');
+        const truePid = pid.split('_')[1];
+        const { data } = await request({
           api: 'GET_HEART_MODE',
           data: {
-            pid,
+            pid: truePid,
             id: randomId,
+            _p: '163',
           }
-        }).then(async (res) => {
-          const ids = [];
-          const { dispatch } = this.$store;
-          const songs = res.data.map((item) => {
-            ids.push(item.id);
-            return item.songInfo;
-          });
-          await handleSongs(songs);
-          dispatch('updatePlayNow', allSongs[ids[0]]);
-          dispatch('updatePlayingList', { list: ids, id: pid, heart: true });
-          dispatch('updatePlayingStatus', true);
-          this.$message.success('心动模式启动～');
         })
+        const { dispatch } = this.$store;
+        const ids = await handleSongs(data);
+        dispatch('updatePlayNow', allSongs[ids[0]]);
+        dispatch('updatePlayingList', { list: ids, listId: pid, heart: true });
+        dispatch('updatePlayingStatus', true);
+        this.$message.success('心动模式启动～');
       },
       playPersonFM() {
         const { dispatch } = this.$store;
