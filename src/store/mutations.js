@@ -98,6 +98,9 @@ export default {
     const orderType = Storage.get('orderType');
     if (index > 0) {
       playingList.index -= 1;
+      if (!history[playingList.index] || !allSongs[history[playingList.index]]) {
+        return;
+      }
       return state.playNow = allSongs[history[playingList.index]];
     }
 
@@ -107,6 +110,9 @@ export default {
     i -= 1;
     if (i === -1) {
       i = list.length - 1;
+    }
+    if (!list[i] || !allSongs[list[i]]) {
+      return;
     }
     state.playNow = allSongs[list[i]];
     state.playingList.history.unshift(state.playNow.aId);
@@ -127,6 +133,11 @@ export default {
     }
 
     let i = 0;
+    if (trueList.length === 1) {
+      window.VUE_APP.$message.info('还是这首！');
+      window.pDom.play();
+      return;
+    }
     switch (orderType) {
       case 'suiji':
         i = random.indexOf(aId);
@@ -136,10 +147,6 @@ export default {
         }
         if (i === (trueList.length - 1) || i === 0) {
           window.VUE_APP.$store.dispatch('updateRandomList');
-        }
-        if (trueList.length === 1) {
-          window.VUE_APP.$message.info('还是这首！');
-          window.pDom.play();
         }
         return state.playNow = allSongs[random[i]];
       default:
@@ -189,6 +196,9 @@ export default {
   // 更新正在播放的音乐
   [types.UPDATE_PLAY_NOW](state, data) {
     const { playingList, playNow, isPersonFM } = state;
+    if (!data) {
+      return;
+    }
     if (playNow.aId) {
       playingList.history.push(playNow.aId);
       playingList.index += 1;
@@ -209,12 +219,14 @@ export default {
     state.isPersonFM = false;
     state.playingListId = listId;
     state.heartMode = heart;
+    playingList.raw = ArrHelper.delDuplicate(playingList.raw);
     playingList.trueList = playingList.raw.filter((v) => allSongs[v] && (allSongs[v].pUrl));
     window.VUE_APP.$store.dispatch('updateRandomList');
   },
   [types.UPDATE_RANDOM_LIST](state) {
     const { playingList, playNow } = state;
     const arr = [ ...playingList.trueList ];
+    const map = {};
     let temp;
     // 保证当前歌曲第一个，剩下歌曲随机顺序
     const length = arr.length;
@@ -223,6 +235,7 @@ export default {
       temp = arr[r];
       arr[r] = arr[i];
       arr[i] = temp;
+      map[temp] = true;
     }
     const nowI = arr.indexOf(playNow.aId);
     if (nowI >= 0) {
@@ -231,6 +244,7 @@ export default {
       arr[nowI] = temp;
     }
     playingList.random = [ ...arr ];
+    playingList.map = map;
   },
   [types.UPDATE_SHOW_COVER](state, data) {
     state.showCoverImg = data;

@@ -94,6 +94,9 @@
         showDrawMusic: '1',
         drawMusicType: 1,
         downMusicName: '0',
+        SHOW_SIMPLE_COVER: 1,
+        PLAY_MUSIC_FROM_PLAYLIST: '1', // 歌单详情页，默认点击歌曲为播放这个列表
+        PLAY_MUSIC_FROM_LIST: '0', // 其他歌曲列表也，默认点击歌曲为加入播放列表
       });
 
       // 初始化一下下载记录

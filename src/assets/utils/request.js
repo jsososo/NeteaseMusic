@@ -332,11 +332,13 @@ export const getUrlBatch = async (id, platform) => {
   id.split(',').forEach(v => {
     const aId = `${platform}_${v}`
     const song = allSongs[`${platform}_${v}`];
-    findMap[aId] = {
-      key: `${song.name.replace(/\(|\)|（|）/g, ' ')} ${song.ar.map((a) => a.name).join(' ')}`,
-      id: aId,
-      duration: song.duration,
-    };
+    if (song) {
+      findMap[aId] = {
+        key: `${song.name.replace(/\(|\)|（|）/g, ' ')} ${song.ar.map((a) => a.name).join(' ')}`,
+        id: aId,
+        duration: song.duration,
+      };
+    }
   })
   Object.keys(res.data).forEach((id) => {
     const aId = `${platform}_${id}`;

@@ -23,12 +23,21 @@
       <div>
         <input v-model="search" class="search-input" type="text" placeholder="找呀找呀找歌曲">
         <div class="inline-block mt_15 pt_5">下列歌曲：</div>
-        <div @click="playListShow" v-if="list.length > 0" class="inline-block mt_15 pt_5 pointer play" style="line-height: 20px;">
-          <i class="iconfont icon-play pl_10 pr_10" />
-        </div>
-        <div @click="downShow" v-if="list.length > 0" class="inline-block mt_15 pt_5 pointer play" style="line-height: 20px;">
-          <i class="iconfont icon-download pl_10 pr_10" />
-        </div>
+        <el-tooltip class="item" effect="dark" content="播放" placement="top">
+          <div @click="playListShow(true)" v-if="list.length > 0" class="inline-block mt_15 pt_5 pointer play" style="line-height: 20px;">
+            <i class="iconfont icon-play pl_10 pr_10" />
+          </div>
+        </el-tooltip>
+        <el-tooltip class="item" effect="dark" content="添加到播放列表" placement="top">
+          <div @click="playListShow()" v-if="list.length > 0" class="inline-block mt_15 pt_5 pointer play" style="line-height: 20px;">
+            <i class="iconfont icon-list-add pl_10 pr_10" />
+          </div>
+        </el-tooltip>
+        <el-tooltip class="item" effect="dark" content="下载" placement="top">
+          <div @click="downShow" v-if="list.length > 0" class="inline-block mt_15 pt_5 pointer play" style="line-height: 20px;">
+            <i class="iconfont icon-download pl_10 pr_10" />
+          </div>
+        </el-tooltip>
       </div>
     </div>
     <div class="song-list" v-if="allList[listId] || id === 'playing'">
@@ -37,14 +46,14 @@
         v-for="(s, i) in list"
         v-if="allSongs[s]"
         :key="`${s}-${i}`"
-        @click="playMusic(s)"
+        @click="playMusic(s, list, listId)"
       >
         <div class="playing-bg" v-if="playNow.aId === s" :style="`width: ${playingPercent * 100}%`">
           <div class="wave-bg"></div>
           <div class="wave-bg2"></div>
         </div>
         <span class="song-order">{{i+1}}</span>
-        <img class="song-cover" :src="`${allSongs[s].al && allSongs[s].al.picUrl}?param=50y50`" alt="">
+        <img class="song-cover" :src="`${allSongs[s].al && allSongs[s].al.picUrl}?param=50y50`" alt="" />
         <span class="song-name">{{allSongs[s].name}}</span>
         <span class="song-artist">{{(allSongs[s].ar || []).map((a) => a.name).join('/')}}</span>
         <div class="icon-container">
@@ -59,14 +68,24 @@
             class="operation-icon operation-icon-2 iconfont icon-add"
           />
           <i
+            v-if="playingList.map[s]"
+            @click="removePlaying(s)"
+            class="operation-icon operation-icon-3 iconfont icon-list-reomve"
+          />
+          <i
+            v-if="!playingList.map[s]"
+            @click="addPlaying(s)"
+            class="operation-icon operation-icon-3 iconfont icon-list-add"
+          />
+          <i
             v-if="!!allSongs[s].url"
             @click="download(s)"
-            class="operation-icon operation-icon-3 iconfont icon-download"
+            class="operation-icon operation-icon-4 iconfont icon-download"
           />
           <i
             @click="playlistTracks(s, listId, 'del', 'DEL_SONG')"
             v-if="userList[allSongs[s].platform] && userList[allSongs[s].platform].mine && userList[allSongs[s].platform].mine[listId]"
-            class="operation-icon operation-icon-4 iconfont icon-delete"
+            class="operation-icon operation-icon-5 iconfont icon-delete"
           />
         </div>
       </div>
@@ -87,6 +106,7 @@
   } from "../assets/utils/request";
   import { mapGetters } from 'vuex';
   import Storage from "../assets/utils/Storage";
+  import { handlePlayingList } from "../assets/utils/util";
 
   export default {
     name: "PlayListDetail",
@@ -172,30 +192,21 @@
         this.songs = this.listInfo.songs;
         this.loading = false;
       },
-      playMusic(id) {
-        const { allSongs, allList, listId, platform } = this;
-        const { dispatch } = this.$store;
-        const song = allSongs[id];
-        if (!song.url) {
-          return;
-        }
-        let list = allList[listId];
-
-        (listId.indexOf('playing') > -1) && (list = this.playingList.trueList);
-        dispatch('updatePlayNow', song);
-        dispatch('updatePlayingList', { list, listId });
-        dispatch('updatePlayingStatus', true);
-      },
-      playListShow() {
+      playListShow(playing) {
         const { allSongs, list, listId } = this;
         const { dispatch } = this.$store;
         const song = allSongs[list[0]];
         if (!song.url) {
           return;
         }
-        dispatch('updatePlayNow', song);
-        dispatch('updatePlayingList', { list, listId });
-        dispatch('updatePlayingStatus', true);
+        if (playing) {
+          dispatch('updatePlayNow', song);
+          dispatch('updatePlayingList', { list, listId });
+          dispatch('updatePlayingStatus', true);
+        } else {
+          dispatch('updatePlayingList', { list, more: true });
+          this.$message.success('已添加到正在播放');
+        }
       },
       downShow() {
         const { allSongs, list } = this;
@@ -270,6 +281,7 @@
           document.getElementsByClassName('list-detail-container')[0].scrollTo(0, domP.offsetTop + domL.offsetTop);
         }
       },
+      ...handlePlayingList,
     }
   }
 </script>
@@ -343,7 +355,7 @@
         font-size: 20px;
         outline: none !important;
         border-bottom: 1px solid #0003;
-        width: calc(100% - 170px);
+        width: calc(100% - 200px);
         margin-left: 0;
 
         &::-webkit-input-placeholder {
@@ -518,7 +530,7 @@
           bottom: 5px;
           left: 350px;
 
-          @for $i from 1 through 5 {
+          @for $i from 1 through 7 {
             .operation-icon-#{$i} {
               transform: translate(0, 40px);
               transition: 0.3s #{($i - 1) * 0.1}s;

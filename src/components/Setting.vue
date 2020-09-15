@@ -63,14 +63,14 @@
           v-model="inputCookie"
         />
         <el-button class="mt_10" @click="setCookie">设置</el-button>
-        <span class="input-explain pl_20">Cookie 数据仅存储在本地</span>
+        <span class="input-explain pl_20">Cookie 数据仅存储在本地（不会获取 Cookie 的也可以借助下面的插件手动复制！）</span>
       </div>
     </div>
     <div class="input-row"  v-if="openSetQCookie">
       <div class="input-label">半自动获取：</div>
       <div class="input-content">
         <div>
-          <div>1、下载并解压 <a href="http://music.jsososo.com/download/qqmusic_cookie_porter_0_1.zip" target="_blank" >获取企鹅音乐Cookie的 Chrome 插件</a></div>
+          <div>1、下载并解压 <a href="http://music.jsososo.com/download/qqmusic_cookie_porter_1_0.zip" target="_blank" >获取企鹅音乐Cookie的 Chrome 插件</a></div>
           <div class="mt_5">
             2、打开新标签页输入 <i>chrome://extensions</i>，钩上右上角开发者模式，
             点击左上角加载已解压的插件，选择刚才解压出的文件夹
@@ -95,6 +95,22 @@
           </el-radio-group>
           <div class="input-explain">限定企鹅/咪咕音乐！</div>
         </div>
+      </div>
+      <div class="input-row">
+        <div class="input-label">点击歌曲：</div>
+        歌单详情页点击歌曲时，
+        <el-radio-group v-model="PLAY_MUSIC_FROM_PLAYLIST">
+          <el-radio-button label="0">仅将这首歌曲加入播放列表</el-radio-button>
+          <el-radio-button label="1">将播放列表替换为当前列表</el-radio-button>
+        </el-radio-group>
+      </div>
+      <div class="input-row">
+        <div class="input-label">点击歌曲：</div>
+        歌曲列表（专辑、歌手、搜索等）点击歌曲时，
+        <el-radio-group v-model="PLAY_MUSIC_FROM_LIST">
+          <el-radio-button label="0">仅将这首歌曲加入播放列表</el-radio-button>
+          <el-radio-button label="1">将播放列表替换为当前列表</el-radio-button>
+        </el-radio-group>
       </div>
     </div>
 
@@ -165,46 +181,39 @@
         downName: Storage.get('downMusicName') || '0',
         downLyric: Storage.get('downLyric', false, '0') !== '0',
         downLyricTrans: Storage.get('downLyricTrans', false, '0') !== '0',
+        PLAY_MUSIC_FROM_PLAYLIST: Storage.get('PLAY_MUSIC_FROM_PLAYLIST', '0'),
+        PLAY_MUSIC_FROM_LIST: Storage.get('PLAY_MUSIC_FROM_LIST', '0'),
+
       }
     },
     watch: {
-      downName(v) {
-        Storage.set('downMusicName', v);
-      },
-      downLyric(v) {
-        Storage.set('downLyric', Number(v));
-      },
-      downLyricTrans(v) {
-        Storage.set('downLyricTrans', Number(v));
-      },
-      showDrawMusic(v) {
-        Storage.set('showDrawMusic', Number(v));
-      },
       useAudioContext(v) {
         Storage.set('useAudioContext', Number(v));
         this.showDrawMusic = false;
       },
-      openSetQCookie(v) {
-        Storage.set('openSetQCookie', Number(v));
-      },
-      drawMusicType(v) {
-        Storage.set('drawMusicType', v);
-      },
-      drawMusicNum(v) {
-        Storage.set('drawMusicNum', v);
-      },
-      repeatDown(v) {
-        Storage.set('repeatDown', v);
-      },
-      downSize(v) {
-        Storage.set('downSize', v);
-      },
-      listenSize(v) {
-        Storage.set('listenSize', v);
-      },
-      drawMusicStyle(v) {
-        Storage.set('drawMusicStyle', v);
-      },
+      ...(() => {
+        const result = {};
+        [
+          'downLyric',
+          'downLyricTrans',
+          'showDrawMusic',
+          'openSetQCookie',
+        ].forEach((k) => result[k] = (v) => Storage.set(k, Number(v)))
+      })(),
+      ...(() => {
+        const result = {};
+        [
+          'drawMusicType',
+          'drawMusicNum',
+          'repeatDown',
+          'downSize',
+          'listenSize',
+          'drawMusicStyle',
+          'downMusicName',
+          'PLAY_MUSIC_FROM_PLAYLIST',
+          'PLAY_MUSIC_FROM_LIST',
+        ].forEach((k) => result[k] = (v) => Storage.set(k, v))
+      })(),
     },
     methods: {
       async setCookie() {

@@ -83,10 +83,21 @@ export const messageHelp = (id) => {
     {
       content: 'chrome 播放控件支持（可以用系统快捷键 & 耳机切歌啦！）',
       time: '20-08-30',
+    },
+    {
+      content: '获取 Cookie 的 chrome 插件更新啦，可以去设置页看看',
+      time: '20-09-02',
+    },
+    {
+      content: '支持加入正在播放 & 倍速 & 极简模式支持隐藏专辑封面',
+      time: '20-09-15',
     }
   ];
   if (id === 'newInfo') {
     const newInfoIndex = Number(Storage.get('notify-new-index') || 0);
+    if (newInfoIndex < 10) {
+      setTimeout(() => playingNotify(), 2000);
+    }
     if (newInfoIndex < (newMessage.length - 1)) {
       Storage.set('notify-new-index', newMessage.length - 1);
       window.VUE_APP.$notify({
@@ -104,3 +115,79 @@ export const messageHelp = (id) => {
     Storage.set(`notify-${id}`, '1');
   }
 };
+
+export const handlePlayingList = {
+  playMusic: (id, arr, listId) => {
+    const { allSongs, allList, playingList } = window.VUE_APP.$store.state;
+    const { dispatch } = window.VUE_APP.$store;
+    const song = allSongs[id];
+    if (!song.url) {
+      return;
+    }
+    let list = listId ? allList[listId] : arr;
+
+    if (listId && listId.indexOf('playing') > -1) {
+      list = playingList.trueList;
+    }
+    dispatch('updatePlayNow', song);
+    dispatch('updatePlayingStatus', true);
+    let updateData;
+    if (listId) {
+      // 歌单详情页
+      if (Number(Storage.get('PLAY_MUSIC_FROM_PLAYLIST'))) {
+        updateData = { list, listId };
+      } else {
+        updateData = { list: [id], more: true };
+      }
+    } else {
+      // 其他的列表
+      if (Number(Storage.get('PLAY_MUSIC_FROM_LIST'))) {
+        updateData = { list };
+      } else {
+        updateData = { list: [id], more: true };
+      }
+    }
+
+    dispatch('updatePlayingList', updateData);
+  },
+
+  playList: (arr) => {
+    const { $store, $message } = VUE_APP;
+    const { state, dispatch } = $store;
+    const { allSongs } = $store.state;
+    const list = arr.filter((s) => allSongs[s].url);
+    if (!list.length) {
+      return $message.warning('无可播放歌曲');
+    }
+    dispatch('updatePlayNow', allSongs[list[0]]);
+    dispatch('updatePlayingList', { list });
+    dispatch('updatePlayingStatus', true);
+  },
+
+  addPlaying: (id) => {
+    const { $message, $store } = window.VUE_APP;
+    window.event.stopPropagation();
+    $store.dispatch('updatePlayingList', { list: [id], more: true });
+    $message.success('已加入播放列表！');
+  },
+
+  removePlaying: (id) => {
+    window.event.stopPropagation();
+    const { $store, $message } = window.VUE_APP
+    const { state, dispatch } = $store;
+    const { playingList, playNow } = state;
+    if (id === playNow.aId) {
+      dispatch('playNext');
+    }
+    dispatch('updatePlayingList', { list: playingList.raw.filter((s) => s !== id)});
+    $message.success('移出播放列表！');
+  }
+}
+
+export const playingNotify = () => {
+  window.VUE_APP.$notify({
+    title: '【重要更新】',
+    message: '由于对正在播放列表的逻辑调整，现在点击歌曲可支持 播放当前列表 & 仅将点击歌曲加入播放列表，可前往设置页修改',
+    duration: 1000000,
+  })
+}

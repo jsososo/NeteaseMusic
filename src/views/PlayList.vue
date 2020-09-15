@@ -136,13 +136,13 @@
             color: 'green',
             val: '企鹅'
           },
-          {
-            icon: 'migu',
-            key: 'migu',
-            color: 'yellow',
-            hide: 'playlist',
-            val: '咪咕',
-          },
+          // {
+          //   icon: 'migu',
+          //   key: 'migu',
+          //   color: 'yellow',
+          //   hide: 'playlist',
+          //   val: '咪咕',
+          // },
         ],
         selected: getQueryFromUrl('from') || Storage.get('playlist_from') || '163',
         inputQQ: Storage.get('qqId'),
@@ -241,7 +241,7 @@
         })
         const { dispatch } = this.$store;
         const ids = await handleSongs(data);
-        dispatch('updatePlayNow', allSongs[ids[0]]);
+        dispatch('updatePlayNow', this.allSongs[ids[0]]);
         dispatch('updatePlayingList', { list: ids, listId: pid, heart: true });
         dispatch('updatePlayingStatus', true);
         this.$message.success('心动模式启动～');

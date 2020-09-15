@@ -119,6 +119,15 @@
           <div class="ml_10" @mouseover="showMore = true" >
             <i class="iconfont icon-more" />
           </div>
+          <div class="rate-slider" v-if="showRateSlider" @mouseleave="showRateSlider = false">
+            <el-slider
+              @input="(v) => playerDom.playbackRate = v"
+              v-model="rate"
+              :max="3"
+              :min="0.3"
+              :step="0.1"
+            />
+          </div>
         </div>
 
         <div class="back-container">
@@ -158,10 +167,12 @@
         playerDom: null,
         currentTime: 0,
         volume: 0,
+        rate: 1,
         stopUpdateCurrent: false,
         showVolume: false,
         showOrder: false,
         showMore: false,
+        showRateSlider: false,
         orderList: ['suiji', 'danquxunhuan', 'liebiao'],
         orderType: Storage.get('orderType'),
         showControl: !getQueryFromUrl('hideControl'),
@@ -180,6 +191,7 @@
           { key: 'share', text: '分享' },
           { key: 'down-lyric', text: '歌词' },
           { key: 'home', text: '歌词' },
+          { key: 'adjust', text: '倍速' },
         ]
       }
     },
@@ -426,8 +438,8 @@
         }
       };
       if ('mediaSession' in navigator) {
-        navigator.mediaSession.setActionHandler('play', () => this.updatePlayingStatus('play'));
-        navigator.mediaSession.setActionHandler('pause', () => this.updatePlayingStatus('pause'));
+        navigator.mediaSession.setActionHandler('play', () => this.updatePlayingStatus(true));
+        navigator.mediaSession.setActionHandler('pause', () => this.updatePlayingStatus(false));
         navigator.mediaSession.setActionHandler('previoustrack', () => this.cutSong('playPrev'));
         navigator.mediaSession.setActionHandler('nexttrack', () => this.cutSong('playNext'));
       }
@@ -575,6 +587,10 @@
             break;
           case 'home':
             window.location = '#/';
+            break;
+          case 'adjust':
+            this.showMore = false;
+            this.showRateSlider = true;
             break;
         }
       },
@@ -741,7 +757,7 @@
           padding-bottom: 40px;
           position: absolute;
           width: 60px;
-          top: -102px;
+          top: -127px;
           left: -10px;
           z-index: 10;
         }
@@ -769,6 +785,17 @@
             }
           }
         }
+      }
+
+      .rate-slider {
+        width: 100px;
+        position: absolute;
+        left: -40px;
+        background: rgba(255,255,255,0.4);
+        border: #eaeaea 1px solid;
+        padding: 0 10px;
+        border-radius: 10px;
+        bottom: 30px;
       }
 
       .volume-control {
