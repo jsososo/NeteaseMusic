@@ -1,54 +1,56 @@
 <template>
   <div :class="`list-songs ${className || ''}`">
-    <div
-      v-for="(s, i) in songs"
-      :key="s"
-      :class="`song-item ${!allSongs[s].url ? 'disabled' : 'hasUrl'}`"
-      @click="playMusic(s, songs)"
-    >
-      <div class="song-order" v-if="showIndex">{{i+1}}</div>
-      <div v-if="(favSongMap[allSongs[s].platform] && favSongMap[allSongs[s].platform][s])" class="liked-item" />
-      <div class="playing-bg" v-if="playNow.aId === s" :style="`width: ${playingPercent * 100}%`">
-        <div class="wave-bg"></div>
-        <div class="wave-bg2"></div>
-      </div>
-      <div v-if="countMap && countMap[s]" class="count-bg" :style="`width: ${countMap[s].score}%`"></div>
-      <div class="song-album-img" :style="`background-image: url('${allSongs[s].al && `${allSongs[s].al.picUrl}?param=50y50`}')`"></div>
-      <div class="song-name">{{allSongs[s].name}}</div>
-      <div>
-        <div class="song-ar">{{allSongs[s].ar.map((a) => a.name).join('/')}}</div>
-        <div class="song-operation">
-          <i
-            v-if="favSongMap[allSongs[s].platform]"
-            @click="likeMusic(s)"
-            :class="`operation-icon operation-icon-1 iconfont icon-${Boolean(favSongMap[allSongs[s].platform][s]) ? 'like' : 'unlike'}`"
-          />
-          <i
-            v-if="allSongs[s].platform !== 'migu'"
-            @click="playlistTracks(s, 'add', 'ADD_SONG_2_LIST')"
-            class="operation-icon operation-icon-2 iconfont icon-add"
-          />
-          <i
-            v-if="!!allSongs[s].url && playingList.map[s]"
-            @click="removePlaying(s)"
-            class="operation-icon operation-icon-3 iconfont icon-list-reomve"
-          />
-          <i
-            v-if="!!allSongs[s].url && !playingList.map[s]"
-            @click="addPlaying(s)"
-            class="operation-icon operation-icon-3 iconfont icon-list-add"
-          />
-          <i
-            v-if="!!allSongs[s].url"
-            @click="download(s)"
-            class="operation-icon operation-icon-4 iconfont icon-download"
-          />
-          <span v-if="countMap && countMap[s]" class="played-count-num">{{countMap[s].count}}</span>
+    <div>
+      <div
+        v-for="(s, i) in songs"
+        :key="s"
+        :class="`song-item ${!allSongs[s].url ? 'disabled' : 'hasUrl'}`"
+        @click="playMusic(s, songs)"
+      >
+        <div class="song-order" v-if="showIndex">{{i+1}}</div>
+        <div v-if="(favSongMap[allSongs[s].platform] && favSongMap[allSongs[s].platform][s])" class="liked-item" />
+        <div class="playing-bg" v-if="playNow.aId === s" :style="`width: ${playingPercent * 100}%`">
+          <div class="wave-bg"></div>
+          <div class="wave-bg2"></div>
+        </div>
+        <div v-if="countMap && countMap[s]" class="count-bg" :style="`width: ${countMap[s].score}%`"></div>
+        <div class="song-album-img" :style="`background-image: url('${allSongs[s].al && `${allSongs[s].al.picUrl}?param=50y50`}')`"></div>
+        <div class="song-name">{{allSongs[s].name}}</div>
+        <div>
+          <div class="song-ar">{{allSongs[s].ar.map((a) => a.name).join('/')}}</div>
+          <div class="song-operation">
+            <i
+              v-if="favSongMap[allSongs[s].platform]"
+              @click="likeMusic(s)"
+              :class="`operation-icon operation-icon-1 iconfont icon-${Boolean(favSongMap[allSongs[s].platform][s]) ? 'like' : 'unlike'}`"
+            />
+            <i
+              v-if="allSongs[s].platform !== 'migu'"
+              @click="playlistTracks(s, 'add', 'ADD_SONG_2_LIST')"
+              class="operation-icon operation-icon-2 iconfont icon-add"
+            />
+            <i
+              v-if="!!allSongs[s].url && playingList.map[s]"
+              @click="removePlaying(s)"
+              class="operation-icon operation-icon-3 iconfont icon-list-reomve"
+            />
+            <i
+              v-if="!!allSongs[s].url && !playingList.map[s]"
+              @click="addPlaying(s)"
+              class="operation-icon operation-icon-3 iconfont icon-list-add"
+            />
+            <i
+              v-if="!!allSongs[s].url"
+              @click="download(s)"
+              class="operation-icon operation-icon-4 iconfont icon-download"
+            />
+            <span v-if="countMap && countMap[s]" class="played-count-num">{{countMap[s].count}}</span>
+          </div>
         </div>
       </div>
+      <div v-if="(songs || []).length === 0" class="text-center mt_40">{{emptyText || '没啥歌曲哟'}}</div>
     </div>
-    <div v-if="(songs || []).length === 0" class="text-center mt_40">{{emptyText || '没啥歌曲哟'}}</div>
-    <div class="play-btn" v-else @click="playList(songs)">
+    <div class="fix-play-btn" v-if="(songs || []).length" @click="playList(songs)">
       <i class="iconfont icon-play" />
       <span class="btn-txt">播放列表</span>
     </div>
@@ -316,7 +318,7 @@
       color: #fff8;
     }
 
-    .play-btn {
+    .fix-play-btn {
       position: fixed;
       bottom: 120px;
       right: 40px;

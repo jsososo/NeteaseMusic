@@ -485,12 +485,12 @@
 
         switch (codes.join('-')) {
           case codeMap.VOLUME_DOWN:
-            volume = Math.max(volume - 10, 0);
+            volume = Math.max(volume - 5, 0);
             this.changeVolume(volume);
             this.$message.info(`音量调至${Num(volume, 0)}%`);
             return false;
           case codeMap.VOLUME_UP:
-            volume = Math.min(volume + 10, 100);
+            volume = Math.min(volume + 5, 100);
             this.changeVolume(volume);
             this.$message.info(`音量调至${Num(volume, 0)}%`);
             return false;

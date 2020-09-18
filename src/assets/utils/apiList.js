@@ -16,6 +16,7 @@ const apiList = {
   'SINGLE_URL': '/apiMix/url',
   'SONG_FIND': '/apiMix/song/find',
   'GET_HEART_MODE': '/apiMix/playlist/heart', // 心动模式
+  'MV': '/apiMix/mv',
 
   '163_SEARCH': '/api/search',
   '163_LOGIN_PHONE': '/api/login/cellphone',

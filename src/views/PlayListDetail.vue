@@ -41,10 +41,11 @@
       </div>
     </div>
     <div class="song-list" v-if="allList[listId] || id === 'playing'">
+      <div :style="`height:${smallIndex*71}px;`"></div>
       <div
         :class="`song-item ${playNow.aId === s ? 'played' : ''} ${!allSongs[s].url ? 'disabled' : ''} ${((i < smallIndex) || (i > bigIndex)) ? 'hidden' : ''}`"
         v-for="(s, i) in list"
-        v-if="allSongs[s]"
+        v-if="allSongs[s] && i >= smallIndex && i <= bigIndex"
         :key="`${s}-${i}`"
         @click="playMusic(s, list, listId)"
       >
@@ -62,33 +63,44 @@
             @click="likeMusic(s)"
             :class="`operation-icon operation-icon-1 iconfont icon-${!!favSongMap[allSongs[s].platform][s] ? 'like' : 'unlike'}`"
           />
-          <i
-            v-if="allSongs[s].from !== 'migu'"
-            @click="playlistTracks(s, listId, 'add', 'ADD_SONG_2_LIST', allSongs[s].platform)"
-            class="operation-icon operation-icon-2 iconfont icon-add"
-          />
-          <i
-            v-if="playingList.map[s]"
-            @click="removePlaying(s)"
-            class="operation-icon operation-icon-3 iconfont icon-list-reomve"
-          />
-          <i
-            v-if="!playingList.map[s]"
-            @click="addPlaying(s)"
-            class="operation-icon operation-icon-3 iconfont icon-list-add"
-          />
-          <i
-            v-if="!!allSongs[s].url"
-            @click="download(s)"
-            class="operation-icon operation-icon-4 iconfont icon-download"
-          />
-          <i
-            @click="playlistTracks(s, listId, 'del', 'DEL_SONG')"
-            v-if="userList[allSongs[s].platform] && userList[allSongs[s].platform].mine && userList[allSongs[s].platform].mine[listId]"
-            class="operation-icon operation-icon-5 iconfont icon-delete"
-          />
+          <el-tooltip class="item" effect="dark" content="添加到歌单" placement="top">
+            <i
+              v-if="allSongs[s].from !== 'migu'"
+              @click="playlistTracks(s, listId, 'add', 'ADD_SONG_2_LIST', allSongs[s].platform)"
+              class="operation-icon operation-icon-2 iconfont icon-add"
+            />
+          </el-tooltip>
+          <el-tooltip class="item" effect="dark" content="移出播放列表" placement="top">
+            <i
+              v-if="playingList.map[s]"
+              @click="removePlaying(s)"
+              class="operation-icon operation-icon-3 iconfont icon-list-reomve"
+            />
+          </el-tooltip>
+          <el-tooltip class="item" effect="dark" content="加入播放列表" placement="top">
+            <i
+              v-if="allSongs[s].url && !playingList.map[s]"
+              @click="addPlaying(s)"
+              class="operation-icon operation-icon-3 iconfont icon-list-add"
+            />
+          </el-tooltip>
+          <el-tooltip class="item" effect="dark" content="下载" placement="top">
+            <i
+              v-if="!!allSongs[s].url"
+              @click="download(s)"
+              class="operation-icon operation-icon-4 iconfont icon-download"
+            />
+          </el-tooltip>
+          <el-tooltip class="item" effect="dark" content="从歌单中删除" placement="top">
+            <i
+              @click="playlistTracks(s, listId, 'del', 'DEL_SONG')"
+              v-if="userList[allSongs[s].platform] && userList[allSongs[s].platform].mine && userList[allSongs[s].platform].mine[listId]"
+              class="operation-icon operation-icon-5 iconfont icon-delete"
+            />
+          </el-tooltip>
         </div>
       </div>
+      <div :style="`min-height:0;height:${(list.length - bigIndex)*71}px;`"></div>
       <div class="focus-btn" v-if="list.indexOf(playNow.aId) > -1" @click="scrollToPlayNow">
         <i class="iconfont icon-focus" />
       </div>
@@ -270,15 +282,16 @@
       getShowIndex() {
         const dom = document.getElementsByClassName('list-detail-container')[0];
         const smallHeight = Math.max(dom.scrollTop - 500, 0);
-        this.smallIndex = smallHeight / 71;
+        this.smallIndex = Math.floor(smallHeight / 71);
         const bigHeight = dom.clientHeight + dom.scrollTop + 300;
-        this.bigIndex = bigHeight / 71;
+        this.bigIndex = Math.floor(bigHeight / 71);
       },
       scrollToPlayNow() {
-        const domP = document.getElementsByClassName('song-item played')[0];
+        const { list, playNow } = this;
+        const index = this.list.findIndex((v) => v === playNow.aId);
         const domL = document.getElementsByClassName('song-list')[0];
-        if (domP) {
-          document.getElementsByClassName('list-detail-container')[0].scrollTo(0, domP.offsetTop + domL.offsetTop);
+        if (index > -1) {
+          document.getElementsByClassName('list-detail-container')[0].scrollTo(0, index * 71 + domL.offsetTop);
         }
       },
       ...handlePlayingList,

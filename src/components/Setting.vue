@@ -181,9 +181,8 @@
         downName: Storage.get('downMusicName') || '0',
         downLyric: Storage.get('downLyric', false, '0') !== '0',
         downLyricTrans: Storage.get('downLyricTrans', false, '0') !== '0',
-        PLAY_MUSIC_FROM_PLAYLIST: Storage.get('PLAY_MUSIC_FROM_PLAYLIST', '0'),
-        PLAY_MUSIC_FROM_LIST: Storage.get('PLAY_MUSIC_FROM_LIST', '0'),
-
+        PLAY_MUSIC_FROM_PLAYLIST: Storage.get('PLAY_MUSIC_FROM_PLAYLIST'),
+        PLAY_MUSIC_FROM_LIST: Storage.get('PLAY_MUSIC_FROM_LIST'),
       }
     },
     watch: {
@@ -191,6 +190,7 @@
         Storage.set('useAudioContext', Number(v));
         this.showDrawMusic = false;
       },
+
       ...(() => {
         const result = {};
         [
@@ -198,7 +198,8 @@
           'downLyricTrans',
           'showDrawMusic',
           'openSetQCookie',
-        ].forEach((k) => result[k] = (v) => Storage.set(k, Number(v)))
+        ].forEach((k) => result[k] = (v) => Storage.set(k, Number(v)));
+        return result;
       })(),
       ...(() => {
         const result = {};
@@ -212,7 +213,8 @@
           'downMusicName',
           'PLAY_MUSIC_FROM_PLAYLIST',
           'PLAY_MUSIC_FROM_LIST',
-        ].forEach((k) => result[k] = (v) => Storage.set(k, v))
+        ].forEach((k) => result[k] = (v) => Storage.set(k, v));
+        return result;
       })(),
     },
     methods: {

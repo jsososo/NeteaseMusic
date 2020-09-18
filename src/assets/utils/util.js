@@ -91,6 +91,10 @@ export const messageHelp = (id) => {
     {
       content: '支持加入正在播放 & 倍速 & 极简模式支持隐藏专辑封面',
       time: '20-09-15',
+    },
+    {
+      content: 'MV 回归 & 歌单详情长列表性能优化 & 音量调节改为单次5%',
+      time: '20-09-18',
     }
   ];
   if (id === 'newInfo') {

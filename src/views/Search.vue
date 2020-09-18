@@ -299,9 +299,9 @@
     width: 38%;
     background: #0003;
     transition: 0.3s;
-    right: 20px;
+    right: -100vw;
     top: 20px;
-    transform: rotate(90deg) translate(100%, -20px);
+
     border-radius: 20px;
     overflow-y: auto;
     
@@ -333,7 +333,8 @@
     }
 
     &.show {
-      transform: rotate(0) translate(0, 0);
+      right: 20px;
+      /*transform: rotate(0) translate(0, 0);*/
     }
 
     .search-input {
