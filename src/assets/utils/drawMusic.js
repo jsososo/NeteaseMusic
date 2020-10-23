@@ -108,6 +108,25 @@ export default class DrawMusic {
     })
   }
 
+  // 音柱（包含历史）
+  drawMusicVoice() {
+    const { ctx, pageHeight } = this;
+    let linearGradient;
+    this.nowData.forEach((v, i) => {
+      const { x, y, w, h } = this.getDrawData(i, ['x', 'y', 'w', 'h'])
+      linearGradient = ctx.createLinearGradient(
+        x,
+        pageHeight,
+        x,
+        pageHeight / 2,
+      )
+      linearGradient.addColorStop(0,`rgba(64,158,255,${h / pageHeight / 1.5 + 0.1})`);
+      linearGradient.addColorStop(1,`rgba(92,184,122,${h / pageHeight / 10}`);
+      ctx.fillStyle = linearGradient;
+      ctx.fillRect(x, 0, w / 0.9, pageHeight);
+    })
+  }
+
   // 粒子音频图
   drawMusicParticle() {
     const { otherData, nowData, pageWidth, pageHeight, fftSize, ctx } = this;
@@ -300,6 +319,7 @@ export default class DrawMusic {
       circle2: 'drawMusicCircle2',
       particle: 'drawMusicParticle',
       line2: 'drawMusicLine2',
+      voice: 'drawMusicVoice',
     }[this.drawMusicStyle] || 'drawMusicRect';
 
     this[functionKey]();

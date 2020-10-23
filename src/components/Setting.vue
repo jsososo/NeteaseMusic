@@ -40,6 +40,7 @@
 <!--          <el-radio-button label="particle2">粒子</el-radio-button>-->
           <el-radio-button label="circle">圈圈</el-radio-button>
           <el-radio-button label="circle2">海螺</el-radio-button>
+          <el-radio-button label="voice">音柱</el-radio-button>
 <!--          <el-radio-button label="circle3">圆环</el-radio-button>-->
         </el-radio-group>
       </div>
@@ -130,7 +131,7 @@
     <div class="input-row">
       <div class="input-label">歌曲名：</div>
       <div class="input-content">
-        <el-radio-group v-model="downName">
+        <el-radio-group v-model="downMusicName">
           <el-radio-button label="0">歌手-歌名</el-radio-button>
           <el-radio-button label="1">歌名-歌手</el-radio-button>
           <el-radio-button label="2">歌名</el-radio-button>
@@ -178,7 +179,7 @@
         openSetQCookie: Storage.get('openSetQCookie') !== '0',
         useAudioContext: Storage.get('useAudioContext') !== '0',
         inputCookie: '',
-        downName: Storage.get('downMusicName') || '0',
+        downMusicName: Storage.get('downMusicName') || '0',
         downLyric: Storage.get('downLyric', false, '0') !== '0',
         downLyricTrans: Storage.get('downLyricTrans', false, '0') !== '0',
         PLAY_MUSIC_FROM_PLAYLIST: Storage.get('PLAY_MUSIC_FROM_PLAYLIST'),

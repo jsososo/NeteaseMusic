@@ -5,7 +5,7 @@
         v-for="(s, i) in songs"
         :key="s"
         :class="`song-item ${!allSongs[s].url ? 'disabled' : 'hasUrl'}`"
-        @click="playMusic(s, songs)"
+        @click="playMusic({ id: s, arr: songs })"
       >
         <div class="song-order" v-if="showIndex">{{i+1}}</div>
         <div v-if="(favSongMap[allSongs[s].platform] && favSongMap[allSongs[s].platform][s])" class="liked-item" />
@@ -14,10 +14,26 @@
           <div class="wave-bg2"></div>
         </div>
         <div v-if="countMap && countMap[s]" class="count-bg" :style="`width: ${countMap[s].score}%`"></div>
-        <div class="song-album-img" :style="`background-image: url('${allSongs[s].al && `${allSongs[s].al.picUrl}?param=50y50`}')`"></div>
-        <div class="song-name">{{allSongs[s].name}}</div>
+        <div v-if="showCover" class="song-album-img" :style="`background-image: url('${allSongs[s].al && `${allSongs[s].al.picUrl}?param=50y50`}')`"></div>
+        <div class="song-name">
+          {{allSongs[s].name}}
+
+          <a
+            :href="changeUrlQuery({ id: allSongs[s].mvId, from: allSongs[s].platform }, '#/mv', false)"
+            class="inline-block ml_5 iconfont icon-mv"
+            style="font-size: 14px;font-weight: 100"
+            v-if="showCover && allSongs[s].mvId"
+          />
+        </div>
         <div>
-          <div class="song-ar">{{allSongs[s].ar.map((a) => a.name).join('/')}}</div>
+          <div class="song-ar">
+            <a
+              :href="changeUrlQuery({ id: allSongs[s].mvId, from: allSongs[s].platform }, '#/mv', false)"
+              class="inline-block mr_5 iconfont icon-mv"
+              v-if="!showCover && allSongs[s].mvId"
+            />
+            {{allSongs[s].ar.map((a) => a.name).join('/')}}
+          </div>
           <div class="song-operation">
             <i
               v-if="favSongMap[allSongs[s].platform]"
@@ -61,6 +77,7 @@
   import { mapGetters } from "vuex";
   import { likeMusic, download } from "../../assets/utils/request";
   import { handlePlayingList } from "../../assets/utils/util";
+  import { changeUrlQuery } from "../../assets/utils/stringHelper";
 
   export default {
     name: "song",
@@ -88,6 +105,8 @@
       likeMusic,
 
       download,
+
+      changeUrlQuery,
 
       playlistTracks(tracks, op, type, platform) {
         window.event.stopPropagation();

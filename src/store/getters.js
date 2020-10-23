@@ -77,5 +77,8 @@ export default {
   },
   getFavSongMap(state) {
     return state.favSongMap;
+  },
+  getTopInfo(state) {
+    return state.topInfo;
   }
 }

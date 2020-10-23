@@ -84,5 +84,8 @@ export default {
   },
   updateFavSongMap: ({ commit }, data) => {
     commit(types.UPDATE_FAV_SONG_MAP, data);
+  },
+  updateTopInfo: ({ commit }, data) => {
+    commit(types.UPDATE_TOP_INFO, data);
   }
 }

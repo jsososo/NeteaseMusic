@@ -24,12 +24,12 @@
         <div class="icon-text">推荐</div>
       </a>
     </div>
-    <!--<div class="nav-line">-->
-      <!--<a href="#/radio">-->
-        <!--<i class="iconfont icon-radio"></i>-->
-        <!--<div class="icon-text">电台</div>-->
-      <!--</a>-->
-    <!--</div>-->
+    <div class="nav-line">
+      <a href="#/top">
+        <i class="iconfont icon-top"></i>
+        <div class="icon-text">榜单</div>
+      </a>
+    </div>
     <div class="nav-line">
       <a href="#/download">
         <el-badge :value="downloadInfo.count" :hidden="downloadInfo.count === 0" class="item">

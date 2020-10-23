@@ -121,7 +121,7 @@ export const messageHelp = (id) => {
 };
 
 export const handlePlayingList = {
-  playMusic: (id, arr, listId) => {
+  playMusic: ({id, arr, listId, isDetail = false}) => {
     const { allSongs, allList, playingList } = window.VUE_APP.$store.state;
     const { dispatch } = window.VUE_APP.$store;
     const song = allSongs[id];
@@ -136,7 +136,7 @@ export const handlePlayingList = {
     dispatch('updatePlayNow', song);
     dispatch('updatePlayingStatus', true);
     let updateData;
-    if (listId) {
+    if (isDetail) {
       // 歌单详情页
       if (Number(Storage.get('PLAY_MUSIC_FROM_PLAYLIST'))) {
         updateData = { list, listId };

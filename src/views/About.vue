@@ -14,8 +14,8 @@
           所有的数据内容均来自网易云音乐，本网站不做数据存储处理等信息，所有的配置信息均存在本地
         </p>
         <p>
-          关于那些 vip 歌曲和 网易云 没有版权的歌曲，在这里当然都是能听的啦，实现方法为根据歌名 + 歌手 调用 qq 音乐接口进行搜索，
-          所以可能存在搜索出来的歌曲和世纪显示的歌曲不匹配的情况，欢迎在这里进行评论，我会尽快修复 <a href="https://github.com/jsososo/NeteaseMusic/issues/1" target="_blank">#ISSUE1</a>
+          对于 VIP/无版权 的歌曲，目前采用的方法是根据歌名 + 歌手 + 歌曲时长 去另外一个平台搜索匹配，这当然是存在一定的准确度问题，
+          不过鉴于整体正确度表现ok，个别歌曲暂不考虑优化。
         </p>
         <p>
           音频图于 19-11-29 支持，会更消耗性能和流量，嫌弃可以关闭！另外由于读取音频所以数据相当于完整的播放一次音乐，
@@ -30,7 +30,7 @@
         <p class="mt_20">GitHub: <a href="https://github.com/jsososo/NeteaseMusic" target="_blank">网易云第三方 Web 播放器</a></p>
         <p>后端：「网易云」<a href="https://github.com/Binaryify/NeteaseCloudMusicApi" target="_blank">NeteaseCloudMusicApi</a></p>
         <p>后端：「QQ音乐」<a href="https://github.com/jsososo/QQMusicApi" target="_blank">QQMusicApi</a> (也是我的项目，也欢迎支持一下)</p>
-        <p>后端：「咪咕音乐」<a href="https://github.com/jsososo/MiguMusicApi" target="_blank">MiguMusicApi</a> (还是我的项目，也欢迎支持一下)</p>
+        <p><del>后端：「咪咕音乐」<a href="https://github.com/jsososo/MiguMusicApi" target="_blank">MiguMusicApi</a> (还是我的项目，也欢迎支持一下)</del></p>
         <p>后端：「聚合接口」<a href="https://github.com/jsososo/MixMusicApi" target="_blank">MixMusicApi</a>（我的项目也太多了）</p>
         <p>Chrome插件：「QQ音乐Cookie搬运工」<a href="https://github.com/jsososo/qqmusic-cookie-porter" target="_blank">qqmusic-cookie-porter</a>  (又是我的项目，也欢迎支持一下)</p>
       </div>
@@ -335,6 +335,10 @@
           {
             txt: '📹 MV回归 & 歌单长列表性能优化 & 音量调节改为5%',
             time: '20-09-18',
+          },
+          {
+            txt: '⚾ 排行榜 & 切歌保留倍速 & 看见音乐新增音柱 & 其他一些小优化️',
+            time: '20-10-23',
           }
         ],
       }

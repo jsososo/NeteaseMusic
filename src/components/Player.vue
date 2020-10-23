@@ -306,6 +306,9 @@
 
         dispatch('updatePlayingPercent', 0);
         document.title = name;
+        setTimeout(() => {
+          window.pDom && (window.pDom.playbackRate = this.rate);
+        });
         this.currentTime = 0;
         this.playingId = id;
         this.playingPlatform = v.platform || '163';
@@ -852,7 +855,8 @@
       }
 
       .progress {
-        width: 700px;
+        width: 50vw;
+        max-width: 700px;
         margin-top: -5px;
       }
     }

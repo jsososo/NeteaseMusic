@@ -30,7 +30,7 @@
       <div
         v-if="allList[`${selected}_daily`] && !$route.query.id"
         :class="`playlist-item ${playingListId === `${selected}_daily` && 'playing'}`"
-        @click="goTo(`${selected}_daily`, selected)"
+        @click="goTo('daily', selected)"
       >
         <div class="list-img" style="border: 1px solid #fff5;text-align: center;">
           {{new Date().getDate()}}

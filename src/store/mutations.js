@@ -120,7 +120,7 @@ export default {
   ,
   // 下一首
   [types.PLAY_NEXT](state) {
-    const { playingList, allSongs, playNow } = state;
+    const { playingList, allSongs, playNow = {} } = state;
     const orderType = Storage.get('orderType');
     const { history, index, trueList, random } = playingList;
     const { aId } = playNow;
@@ -128,7 +128,7 @@ export default {
     if (index < history.length - 1) {
       return state.playNow = allSongs[history[playingList.index]];
     }
-    if (playingList.history[playingList.history.length-1] !== aId) {
+    if (aId && playingList.history[playingList.history.length-1] !== aId) {
       playingList.history.push(aId);
     }
 
@@ -235,8 +235,8 @@ export default {
       temp = arr[r];
       arr[r] = arr[i];
       arr[i] = temp;
-      map[temp] = true;
     }
+    arr.forEach((k) => map[k] = true);
     const nowI = arr.indexOf(playNow.aId);
     if (nowI >= 0) {
       temp = arr[0];
@@ -378,6 +378,12 @@ export default {
   [types.UPDATE_FAV_SONG_MAP](state, data) {
     state.favSongMap = {
       ...state.favSongMap,
+      ...data,
+    }
+  },
+  [types.UPDATE_TOP_INFO](state, data) {
+    state.topInfo = {
+      ...state.topInfo,
       ...data,
     }
   }

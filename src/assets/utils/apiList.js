@@ -17,6 +17,8 @@ const apiList = {
   'SONG_FIND': '/apiMix/song/find',
   'GET_HEART_MODE': '/apiMix/playlist/heart', // 心动模式
   'MV': '/apiMix/mv',
+  'TOP_CATEGORY': '/apiMix/top/category',
+  'TOP_SONGS': '/apiMix/top',
 
   '163_SEARCH': '/api/search',
   '163_LOGIN_PHONE': '/api/login/cellphone',
