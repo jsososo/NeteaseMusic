@@ -149,15 +149,14 @@ export const getDaily = async (platform, retry) => {
 // 获取用户歌单
 export const getUserList = async (id, platform) => {
   let myId = '', ownCookie = 0;
-  const { VUE_APP } = window;
+  const { VUE_APP, cookieObj } = window;
   switch (platform) {
     case '163':
       myId = Storage.get('uid');
       break;
     case 'qq':
-      let uin = document.cookie.match(/\suin=([^;]+)(;|$)/);
+      myId = cookieObj.uin || '';
       ownCookie = Storage.get('haveQCookie') || '0';
-      myId = uin ? uin[1] : '';
       break;
   }
   const isMe = String(myId) === String(id);
@@ -210,12 +209,20 @@ export const getUserList = async (id, platform) => {
 // 校验 Cookie 是否过期
 export const checkCookie = async () => {
   Storage.set('haveQCookie', '0');
-  let uin = document.cookie.match(/(\s|^)uin=([^;]+)(;|$)/);
-  if (uin && uin[2]) {
-    uin = uin[2].replace(/\D/g, '');
-  } else {
-    uin = null;
+  const cookieObj = {};
+  document.cookie.split(';').forEach(str => {
+    const [key, val] = str.split('=');
+    cookieObj[key.replace(/\s/g, '')] = val;
+  })
+
+  // 微信
+  if (Number(cookieObj.login_type) === 2) {
+    cookieObj.uin = cookieObj.wxuin;
   }
+  cookieObj.uin = (cookieObj.uin || '').replace(/\D/g, '');
+  window.cookieObj = cookieObj;
+
+  const { uin } = cookieObj;
   if (!uin) {
     return {
       success: false,

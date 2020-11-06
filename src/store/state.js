@@ -64,5 +64,6 @@ export default {
     'qqid': '',
     '163List': [],
     'qqList': [],
-  }
+  },
+  homeType: Storage.get('showHomeType') || 'info',
 };

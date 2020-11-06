@@ -87,5 +87,8 @@ export default {
   },
   updateTopInfo: ({ commit }, data) => {
     commit(types.UPDATE_TOP_INFO, data);
+  },
+  setHomeType: ({ commit }, data) => {
+    commit(types.SET_HOME_TYPE, data);
   }
 }

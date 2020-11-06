@@ -99,3 +99,6 @@ export const UPDATE_FAV_SONG_MAP = 'UPDATE_FAV_SONG_MAP';
 
 // 更新排行榜选择的一些信息
 export const UPDATE_TOP_INFO = 'UPDATE_TOP_INFO';
+
+// 设置主页展示内容
+export const SET_HOME_TYPE = 'SET_HOME_TYPE';

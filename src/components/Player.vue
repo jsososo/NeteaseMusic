@@ -190,7 +190,7 @@
         moreList: [
           { key: 'share', text: '分享' },
           { key: 'down-lyric', text: '歌词' },
-          { key: 'home', text: '歌词' },
+          { key: 'home', text: '主页' },
           { key: 'adjust', text: '倍速' },
         ]
       }

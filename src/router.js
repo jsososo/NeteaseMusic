@@ -7,7 +7,7 @@ const PlayList = () => import('./views/PlayList');
 const PlayListDetail = () => import('./views/PlayListDetailPage');
 const Singer = () => import('./views/Singer');
 const Comment = () => import('./views/Comment');
-const Lyric = () => import('./views/Lyric');
+const Home = () => import('./views/Home');
 const Album = () => import('./views/Album');
 const About = () => import('./views/About');
 const Download = () => import('./views/Download');
@@ -49,8 +49,8 @@ const router = new Router({
     },
     {
       path: '/',
-      name: 'lyric',
-      component: Lyric,
+      name: 'home',
+      component: Home,
     },
     {
       path: '/user',

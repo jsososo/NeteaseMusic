@@ -80,5 +80,8 @@ export default {
   },
   getTopInfo(state) {
     return state.topInfo;
+  },
+  getHomeType(state) {
+    return state.homeType;
   }
 }

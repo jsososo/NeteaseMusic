@@ -386,5 +386,8 @@ export default {
       ...state.topInfo,
       ...data,
     }
+  },
+  [types.SET_HOME_TYPE](state, data) {
+    state.homeType = data;
   }
 }

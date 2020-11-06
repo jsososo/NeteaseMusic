@@ -51,9 +51,9 @@
         <div class="user-info-txt user-info-level">Lv {{uInfo.level}}</div>
         <div class="user-info-txt user-info-logout" @click="logout"><i class="iconfont icon-logout" /> 退出</div>
       </div>
-      <div class="user-setting-container">
-        <Setting />
-      </div>
+<!--      <div class="user-setting-container">-->
+<!--        <Setting />-->
+<!--      </div>-->
 
       <div class="user-right-list">
         <div class="right-select-tab-list">

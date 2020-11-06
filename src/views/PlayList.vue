@@ -19,11 +19,11 @@
         登录后可以查看个人歌单
       </div>
       <div class="input-qq mb_20" v-if="hash === 'playlist' && selected === 'qq'">
-        <input type="text" placeholder="输入QQ号吧" v-model="inputQQ" />
+        <input type="text" placeholder="输入 QQ号/wxuin 吧" v-model="inputQQ" />
         <div class="update-btn" v-if="inputQQ !== qqId" @click="updateQQNum">更新</div>
       </div>
       <div v-if="!qqId && hash === 'playlist' && selected === 'qq'" class="text-center fc_fff ft_20" style="padding-top: 100px;opacity: 0.8;letter-spacing: 2px;">
-        输入 QQ 号可查看个人歌单
+        输入 QQ号/wxuin 可查看个人歌单
       </div>
 
       <!-- 日推-->

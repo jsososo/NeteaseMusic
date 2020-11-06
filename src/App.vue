@@ -4,8 +4,11 @@
     <img id="play-music-bg" alt="">
     <canvas :width="pageWidth" :height="pageHeight" id="music-data-canvas" ></canvas>
     <div class="main-container">
-      <div style="display: inline-block;width: 60%;" v-if="showCover">
-        <Playing />
+      <div class="page-left-container" v-if="showCover">
+        <Playing v-if="homeType === 'info'" />
+        <div v-else>
+          <Lyric />
+        </div>
       </div>
       <router-view />
       <PageLeft />
@@ -21,14 +24,14 @@
   import PageLeft from './components/PageLeft';
   import Playing from './components/Playing';
   import Operation from './components/Operation';
+  import Lyric from "./components/Lyric";
   import { loginStatus, getCookie } from './assets/utils/request';
   import { messageHelp } from "./assets/utils/util";
   import { mapGetters } from 'vuex';
-  import {getQueryFromUrl} from "./assets/utils/stringHelper";
 
   export default {
     name: 'App',
-    components: { Player, PageLeft, Playing, Operation },
+    components: { Player, PageLeft, Playing, Operation, Lyric },
     data() {
       return {
         defaultActive: '/',
@@ -41,6 +44,7 @@
         allSongs: 'getAllSongs',
         showCover: 'isShowCoverImg',
         mode: 'getMode',
+        homeType: 'getHomeType',
       })
     },
     created() {
@@ -75,6 +79,7 @@
         listen_size: 'size320',
         down_size: 'high',
         down_high: 'sizeflac',
+        home_page: 'PLAYING',
         volume: 1,
         download_info: JSON.stringify({
           count: 0,
@@ -200,6 +205,13 @@
       {
         border-radius:10px;
         background-color:rgba(255,255,255,0.5);
+      }
+
+      .page-left-container {
+        position: absolute;
+        width: 60%;
+        height: calc(100% - 50px);
+        overflow: hidden;
       }
     }
 

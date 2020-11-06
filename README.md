@@ -13,7 +13,7 @@ ps: qq音乐那边是需要登录vip用户 cookie 才能获取到一些接口的
 
 [QQMusicApi](https://github.com/jsososo/QQMusicApi)
 
-[MiguMusicApi](https://github.com/jsososo/MiguMusicApi)
+[MixMusicApi](https://github.com/jsososo/MixMusicApi)
 
 
 ## 前端
@@ -27,15 +27,15 @@ server {
     listen      80;
     server_name test.163.jsososo.com;
     location /api/ {
-        proxy_pass http://39.100.111.202:3000;
+        proxy_pass http://127.0.0.1:3000;
         proxy_set_header Host "163.jsososo.com";
     }
     location /apiQ/ {
-        proxy_pass http://39.100.111.202:80;
+        proxy_pass http://127.0.0.1:3300;
         proxy_set_header Host "163.jsososo.com";
     }
-    location /apiM/ {
-        proxy_pass http://39.100.111.202:80;
+    location /apiMix/ {
+        proxy_pass http://127.0.0.1:3600;
         proxy_set_header Host "163.jsososo.com";
     }
     location / {

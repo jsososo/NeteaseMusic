@@ -1,6 +1,17 @@
 <template>
   <div class="setting-container">
-    <div class="setting-title">频谱图设置</div>
+    <div class="setting-title">看得见的</div>
+    <div class="input-row">
+      <div class="input-label">
+        主页显示：
+      </div>
+      <div class="input-content">
+        <el-radio-group v-model="showHomeType">
+          <el-radio-button label="info">歌曲信息</el-radio-button>
+          <el-radio-button label="lyric">歌词</el-radio-button>
+        </el-radio-group>
+      </div>
+    </div>
     <div class="input-row">
       <div class="input-label">
         先进模式：
@@ -71,7 +82,7 @@
       <div class="input-label">半自动获取：</div>
       <div class="input-content">
         <div>
-          <div>1、下载并解压 <a href="http://music.jsososo.com/download/qqmusic_cookie_porter_1_0.zip" target="_blank" >获取企鹅音乐Cookie的 Chrome 插件</a></div>
+          <div>1、下载并解压 <a href="http://music.jsososo.com/download/qqmusic_cookie_porter_1_1.zip" target="_blank" >获取企鹅音乐Cookie的 Chrome 插件</a></div>
           <div class="mt_5">
             2、打开新标签页输入 <i>chrome://extensions</i>，钩上右上角开发者模式，
             点击左上角加载已解压的插件，选择刚才解压出的文件夹
@@ -178,6 +189,7 @@
         listenSize: Storage.get('listenSize') || '128',
         openSetQCookie: Storage.get('openSetQCookie') !== '0',
         useAudioContext: Storage.get('useAudioContext') !== '0',
+        showHomeType: Storage.get('showHomeType') || 'info',
         inputCookie: '',
         downMusicName: Storage.get('downMusicName') || '0',
         downLyric: Storage.get('downLyric', false, '0') !== '0',
@@ -191,30 +203,29 @@
         Storage.set('useAudioContext', Number(v));
         this.showDrawMusic = false;
       },
-
       ...(() => {
         const result = {};
         [
-          'downLyric',
-          'downLyricTrans',
-          'showDrawMusic',
-          'openSetQCookie',
-        ].forEach((k) => result[k] = (v) => Storage.set(k, Number(v)));
-        return result;
-      })(),
-      ...(() => {
-        const result = {};
-        [
-          'drawMusicType',
-          'drawMusicNum',
-          'repeatDown',
-          'downSize',
-          'listenSize',
-          'drawMusicStyle',
-          'downMusicName',
-          'PLAY_MUSIC_FROM_PLAYLIST',
-          'PLAY_MUSIC_FROM_LIST',
-        ].forEach((k) => result[k] = (v) => Storage.set(k, v));
+          { key: 'drawMusicType' },
+          { key: 'drawMusicNum' },
+          { key: 'repeatDown' },
+          { key: 'downSize' },
+          { key: 'listenSize' },
+          { key: 'drawMusicStyle' },
+          { key: 'downMusicName' },
+          { key: 'PLAY_MUSIC_FROM_PLAYLIST' },
+          { key: 'PLAY_MUSIC_FROM_LIST' },
+          { key: 'showHomeType' },
+          { key: 'downLyric', isNum: true },
+          { key: 'downLyricTrans', isNum: true },
+          { key: 'showDrawMusic', isNum: true },
+          { key: 'openSetQCookie', isNum: true },
+        ].forEach(({ key, isNum }) => result[key] = (v) => {
+          if (key === 'showHomeType') {
+            window.VUE_APP.$store.dispatch('setHomeType', v);
+          }
+          Storage.set(key, isNum ? Number(v) : v);
+        });
         return result;
       })(),
     },

@@ -99,7 +99,7 @@
       top(v) {
         const { playNow } = this;
         const domC = document.getElementsByClassName('lyric-content-container')[0];
-        (Object.keys(playNow.lyric || {})).forEach((o, i) => {
+        (Object.keys(playNow.lyric || {})).forEach((o) => {
           const domL = document.getElementsByClassName(`lyric-item-${o}`)[0];
           if (domL) {
             const { offsetHeight, offsetTop } = domL;
@@ -159,33 +159,12 @@
 </script>
 
 <style lang="scss">
-  .mode-mobile .lyric-content-container {
-    width: 100vw !important;
-    height: calc(100vh - 30vw) !important;
-    left: 0 !important;
-    top: 15vh !important;
-
-    .lyric-list {
-      width: calc(100vh - 30vw) !important;
-
-      .lyric-item {
-        font-size: 3.5vw !important;
-        padding: 0.5vw !important;
-        min-height: 0 !important;
-
-        &.lyric-item-now {
-          font-size: 4vw !important;
-        }
-      }
-    }
-  }
-
   .lyric-content-container {
-    height: calc(100% - 50px);
+    height: calc(100vh - 50px);
     overflow: hidden;
-    position: absolute;
-    left: 60%;
-    width: 40%;
+    /*position: absolute;*/
+    /*left: 60%;*/
+    /*width: 40%;*/
     opacity: 0;
     transition: 1s;
 

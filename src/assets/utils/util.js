@@ -95,13 +95,14 @@ export const messageHelp = (id) => {
     {
       content: 'MV 回归 & 歌单详情长列表性能优化 & 音量调节改为单次5%',
       time: '20-09-18',
+    },
+    {
+      content: '支持左侧显示歌词（前往设置） & cookie 支持微信',
+      time: '20-11-06'
     }
   ];
   if (id === 'newInfo') {
     const newInfoIndex = Number(Storage.get('notify-new-index') || 0);
-    if (newInfoIndex < 10) {
-      setTimeout(() => playingNotify(), 2000);
-    }
     if (newInfoIndex < (newMessage.length - 1)) {
       Storage.set('notify-new-index', newMessage.length - 1);
       window.VUE_APP.$notify({
@@ -186,12 +187,4 @@ export const handlePlayingList = {
     dispatch('updatePlayingList', { list: playingList.raw.filter((s) => s !== id)});
     $message.success('移出播放列表！');
   }
-}
-
-export const playingNotify = () => {
-  window.VUE_APP.$notify({
-    title: '【重要更新】',
-    message: '由于对正在播放列表的逻辑调整，现在点击歌曲可支持 播放当前列表 & 仅将点击歌曲加入播放列表，可前往设置页修改',
-    duration: 1000000,
-  })
 }
