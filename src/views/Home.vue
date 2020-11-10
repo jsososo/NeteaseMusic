@@ -30,7 +30,9 @@
     position: absolute;
     left: 60%;
     width: 40%;
+    top: 0;
     height: calc(100% - 50px);
+    min-height: 600px;
     overflow: hidden;
   }
 </style>

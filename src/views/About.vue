@@ -343,6 +343,10 @@
           {
             txt: '🏠 左侧支持显示歌词 & 支持微信登录',
             time: '20-11-06',
+          },
+          {
+            txt: '🍋 样式优化',
+            time: '20-11-10',
           }
         ],
       }
@@ -361,6 +365,7 @@
     width: 60%;
     padding-right: 40%;
     max-height: calc(100vh - 120px);
+    min-height: 600px;
     overflow: auto;
     position: relative;
 

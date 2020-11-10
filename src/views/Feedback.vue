@@ -302,6 +302,7 @@
 
     .feedback-list, .qa-list {
       margin-top: 20px;
+      min-height: 800px;
       .feedback-content-item, .top-qa-content {
         width: 45%;
         background: #0003;
@@ -352,6 +353,10 @@
           opacity: 0.7;
           margin-left: 12px;
           margin-bottom: 10px;
+
+          span {
+            word-break: break-all;
+          }
         }
       }
     }

@@ -80,8 +80,16 @@
 </script>
 
 <style lang="scss" scoped>
-  .mode-mobile .playnow-container {
-    display: none;
+  .home-page-right .playnow-container {
+    left: -120px;
+
+    .song-info {
+      width: 100% !important;
+
+      .info-line {
+        width: 100% !important;
+      }
+    }
   }
   
   .playnow-container {

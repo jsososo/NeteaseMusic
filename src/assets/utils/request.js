@@ -667,6 +667,11 @@ export const handleQQComments = (list) => (list || []).map((obj) => ({
 export const getCookie = async (id) => {
   const { VUE_APP } = window;
   Storage.set('qqId', id);
+
+  const exp = new Date();
+  exp.setTime(exp.getTime() - 1);
+  document.cookie = "login_type=1;expires=" + exp.toGMTString();
+
   const res = await request({
     api: 'QQ_GET_COOKIE',
     data: {

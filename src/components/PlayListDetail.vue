@@ -265,6 +265,7 @@
     position: absolute;
     right: 0;
     height: calc(100% - 20px);
+    min-height: 580px;
     top: 20px;
     overflow-y: auto;
     background: #0001;

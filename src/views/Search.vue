@@ -295,6 +295,7 @@
   .search-page-container {
     position: absolute;
     height: calc(100% - 30px);
+    min-height: 580px;
     width: 38%;
     background: #0003;
     transition: 0.3s;

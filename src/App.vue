@@ -208,10 +208,18 @@
       }
 
       .page-left-container {
-        position: absolute;
+        position: relative;
         width: 60%;
         height: calc(100% - 50px);
+        min-height: 600px;
         overflow: hidden;
+      }
+      .page-right-container {
+        position: absolute;
+        width: 40%;
+        top: 0;
+        height: calc(100% - 50px);
+        min-height: 600px;
       }
     }
 

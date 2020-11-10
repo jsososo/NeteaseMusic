@@ -285,10 +285,12 @@
     display: inline-block;
     vertical-align: top;
     height: (calc(100vh - 100px));
+    min-height: 580px;
     position: absolute;
     left: 60%;
     transform: translate(100%);
     opacity: 0;
+    top: 20px;
     transition: 0.5s;
 
     &.show {
