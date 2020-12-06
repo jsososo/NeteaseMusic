@@ -71,8 +71,8 @@ export default {
     const { allSongs, playNow, playingList } = state;
     const { platform, aId } = playNow;
     state.allSongs = { ...state.allSongs, ...data };
-    if (playNow.aId && JSON.stringify(playNow) !== JSON.stringify(allSongs[aId])) {
-      state.playNow = allSongs[aId];
+    if (playNow.aId && JSON.stringify(playNow) !== JSON.stringify(state.allSongs[aId])) {
+      state.playNow = state.allSongs[aId];
     }
     if (ArrHelper.hasDuplicate(Object.keys(data), playingList.raw.join(',').split(','))) {
       playingList.trueList = playingList.raw.filter((aId) => state.allSongs[aId] && (state.allSongs[aId].pUrl));
@@ -196,7 +196,7 @@ export default {
   // 更新正在播放的音乐
   [types.UPDATE_PLAY_NOW](state, data) {
     const { playingList, playNow, isPersonFM } = state;
-    if (!data) {
+    if (!data || !data.aId) {
       return;
     }
     if (playNow.aId) {
@@ -228,6 +228,9 @@ export default {
     const arr = [ ...playingList.trueList ];
     const map = {};
     let temp;
+    if (!playNow) {
+      return;
+    }
     // 保证当前歌曲第一个，剩下歌曲随机顺序
     const length = arr.length;
     for (let i = length - 1; i > 1; i--) {

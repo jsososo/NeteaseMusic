@@ -18,7 +18,7 @@
       </div>
       <div class="input-content">
         <el-switch v-model="useAudioContext" />
-        <div class="input-explain">刷新生效，关闭后停用AudioContext, 无法展示频谱图，但是能解决大部分无法播放的问题</div>
+        <div class="input-explain">【仅针对网易云音源有效】关闭后停用AudioContext, 无法展示频谱图，但是能解决大部分无法播放的问题</div>
       </div>
     </div>
     <div class="input-row" v-if="useAudioContext">
@@ -29,7 +29,7 @@
         <el-switch v-model="showDrawMusic" />
       </div>
     </div>
-    <div class="input-row" v-if="showDrawMusic">
+    <div class="input-row" v-if="useAudioContext && showDrawMusic">
       <div class="input-label">
         频谱设置：
       </div>
@@ -40,7 +40,7 @@
         </el-radio-group>
       </div>
     </div>
-    <div class="input-row" v-if="showDrawMusic">
+    <div class="input-row" v-if="useAudioContext && showDrawMusic">
       <div class="input-label">音频样式：</div>
       <div class="input-content">
         <el-radio-group v-model="drawMusicStyle">
@@ -199,10 +199,6 @@
       }
     },
     watch: {
-      useAudioContext(v) {
-        Storage.set('useAudioContext', Number(v));
-        this.showDrawMusic = false;
-      },
       ...(() => {
         const result = {};
         [
@@ -220,6 +216,7 @@
           { key: 'downLyricTrans', isNum: true },
           { key: 'showDrawMusic', isNum: true },
           { key: 'openSetQCookie', isNum: true },
+          { key: 'useAudioContext', isNum: true },
         ].forEach(({ key, isNum }) => result[key] = (v) => {
           if (key === 'showHomeType') {
             window.VUE_APP.$store.dispatch('setHomeType', v);

@@ -210,7 +210,7 @@
       .page-left-container {
         position: relative;
         width: 60%;
-        height: calc(100% - 50px);
+        height: calc(100vh - 120px);
         min-height: 600px;
         overflow: hidden;
       }

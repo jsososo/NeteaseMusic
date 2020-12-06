@@ -110,6 +110,9 @@
       <div class="focus-btn" v-if="list.indexOf(playNow.aId) > -1" @click="scrollToPlayNow">
         <i class="iconfont icon-focus" />
       </div>
+      <div class="clear-btn" v-if="id === 'playing' && playNow && list.length > 1" @click="clearPlaying">
+        <i class="iconfont icon-delete" />
+      </div>
     </div>
   </div>
 </template>
@@ -255,6 +258,9 @@
       },
       ...handlePlayingList,
       changeUrlQuery,
+      clearPlaying() {
+        this.$store.dispatch('updatePlayingList', { list: [ this.playNow.aId ]});
+      }
     }
   }
 </script>
@@ -272,9 +278,23 @@
     border-left: 1px solid #fff5;
 
     &::-webkit-scrollbar {
-      width: 0;
+      width: 8px;
       height:8px;
       background-color:rgba(0,0,0,0);
+    }
+    /*定义滚动条轨道
+       内阴影+圆角*/
+    &::-webkit-scrollbar-track
+    {
+      border-radius: 10px;
+      background-color: rgba(255,255,255,0);
+    }
+    /*定义滑块
+     内阴影+圆角*/
+    &::-webkit-scrollbar-thumb
+    {
+      border-radius:10px;
+      background-color:rgba(255,255,255,0.5);
     }
 
     .list-info-detail {
@@ -361,12 +381,12 @@
       padding-right: 20px;
       position: relative;
 
-      .focus-btn {
+      .focus-btn, .clear-btn {
         position: fixed;
-        bottom: 120px;
-        right: 40px;
-        width: 50px;
-        height: 50px;
+        bottom: 90px;
+        right: 20px;
+        width: 40px;
+        height: 40px;
         border-radius: 50%;
         background: #F23C3C;
         border: 2px solid #F23C3C;
@@ -380,15 +400,19 @@
         text-align: center;
 
         .iconfont {
-          font-size: 28px;
+          font-size: 24px;
           color: #fff;
-          line-height: 50px;
+          line-height: 40px;
         }
 
         &:hover {
           opacity: 0.7;
         }
 
+      }
+
+      .clear-btn {
+        bottom: 145px;
       }
 
       .song-item {
@@ -442,12 +466,14 @@
           .song-order {
             color: #fff5;
             transform: translate(0, 10px);
+            user-select: none;
           }
 
           .song-cover {
             filter: blur(5px);
             opacity: 0.4;
             transform: rotate(-30deg) scale(2) translate(0, 10px);
+            user-select: none;
           }
 
           .song-name {
@@ -487,6 +513,7 @@
           filter: blur(0);
           transform: rotate(0) scale(1) translate(65px, 10px);
           transition: 0.4s;
+          user-select: none;
         }
 
         .song-name {

@@ -140,7 +140,11 @@
 
       </div>
     </div>
-    <audio id="m-player" crossOrigin="anonymous" :src="playingUrl || ''" controls></audio>
+    <!--  用来连接 audioContext  -->
+    <audio :class="usingAudioContext && 'played-audio'" id="m-player" crossOrigin="anonymous" :src="usingAudioContext ? (playingUrl || '') : ''" controls />
+
+    <!--  原生的audio 播放，用来兼容 audio 不支持的情况  -->
+    <audio v-if="!usingAudioContext" :class="!usingAudioContext && 'played-audio'" id="v-player" v-bind="vBind" :src="playingUrl || ''" controls />
   </div>
 </template>
 
@@ -187,12 +191,15 @@
         errorId: '',
         playingUrl: '',
         isUpdating: false,
+        openAudioCtx: false,
+        canUseAudioCtx: false,
         moreList: [
           { key: 'share', text: '分享' },
           { key: 'down-lyric', text: '歌词' },
           { key: 'home', text: '主页' },
           { key: 'adjust', text: '倍速' },
-        ]
+        ],
+        vBind: {},
       }
     },
     computed: {
@@ -212,6 +219,9 @@
         mode: 'getMode',
         favSongMap: 'getFavSongMap',
       }),
+      usingAudioContext() {
+        return this.openAudioCtx && this.canUseAudioCtx;
+      }
     },
     watch: {
       async playNow(v) {
@@ -243,6 +253,7 @@
           });
         }
         if ((pUrl !== this.playingUrl || !this.playingUrl) && url) {
+          this.clearOldAudio();
           dispatch('setLoading', true);
           this.isUpdating = true;
           const listenBr = {128: 128000, 320: 320000, flac: 960000}[listenSize];
@@ -250,26 +261,37 @@
           if ((pUrl && Number(br) === listenBr) || listenSize === '128') { // 有 pUrl 且与当前选择的品质相同
             nUrl = pUrl || url;
             nBr = listenBr;
-          } else if (qqId || miguId) { // 如果是qq音乐或者咪咕音乐，获取播放链接
+          } else { // 如果不是，尝试获其他品质链接
             const result = await getHighQualityUrl(aId, listenSize);
             nUrl = result.url || url;
             nBr = result.br;
           }
           this.isUpdating = false;
           this.playingUrl = nUrl;
-          pDom && pDom.pause();
+          // 非企鹅音乐，可以使用audioContext
+          this.canUseAudioCtx = nUrl.indexOf('qq.com') === -1;
+          this.$nextTick(async () => {
+            window.pDom = document.getElementsByClassName('played-audio')[0];
+            this.playerDom = window.pDom;
+            this.audioBind();
 
-          await dispatch('updateSongDetail', {
-            pUrl: nUrl,
-            br: nBr,
-            id,
-            aId,
-          });
-          setTimeout(() => {
+            pDom && pDom.pause();
+
+            await dispatch('updateSongDetail', {
+              pUrl: nUrl,
+              br: nBr,
+              id,
+              aId,
+            });
+
             if (this.playing) {
               this.playerDom.play();
             }
-          }, 1);
+          })
+
+          // setTimeout(() => {
+          //
+          // }, 1);
           return;
         }
         if (!this.playingUrl) {
@@ -306,7 +328,7 @@
 
         dispatch('updatePlayingPercent', 0);
         document.title = name;
-        setTimeout(() => {
+        this.$nextTick(() => {
           window.pDom && (window.pDom.playbackRate = this.rate);
         });
         this.currentTime = 0;
@@ -346,6 +368,16 @@
                   offset: 20,
                 };
                 dispatch('updateSongDetail', { comments, aId });
+              }).catch(() => {
+                dispatch('updateSongDetail', {
+                  comments: {
+                    hot: [],
+                    latest: [],
+                    total: 0,
+                    offset: 20
+                  },
+                  aId,
+                })
               });
               break;
             case 'migu':
@@ -370,10 +402,18 @@
           }
         }
       },
+      openAudioCtx() {
+        this.clearOldAudio();
+        this.$nextTick(() => {
+          window.pDom = document.getElementsByClassName('played-audio')[0];
+          this.playerDom = window.pDom;
+          this.audioBind();
+        })
+      }
     },
     mounted() {
       window.UPDARE_PLAYING_STATUS = this.updatePlayingStatus;
-      this.playerDom = document.getElementById('m-player');
+      this.playerDom = document.getElementsByClassName('played-audio')[0];
       this.playerDom.volume = Storage.get('volume') || 1;
       // 初始化音量
       this.volume = (Storage.get('volume') || 1) * 100;
@@ -386,86 +426,16 @@
       const dispatch = this.$store.dispatch;
       window.onhashchange = () => this.showControl = !getQueryFromUrl('hideControl');
 
-      // 加载音频数据
-      if ((window.AudioContext || window.webkitAudioContext) && Storage.get('useAudioContext') !== '0') {
+      if ((window.AudioContext || window.webkitAudioContext)) {
         this.drawMusic = new DrawMusic();
         const draw = () => {
-          this.drawMusic.draw();
+          this.openAudioCtx = Storage.get('useAudioContext') !== '0';
+          this.drawMusic && this.drawMusic.draw(this.usingAudioContext);
           window.requestAnimationFrame(draw);
         }
         window.requestAnimationFrame(draw);
       }
 
-      // audio加载完成
-      pDom.oncanplaythrough = () => {
-        if (this.playingUrl === this.playNow.pUrl) {
-          dispatch('setLoading', false);
-
-          if (this.playing) {
-            pDom.play();
-          }
-        }
-        this.playerInfo = { duration: pDom.duration, current: 0 };
-        dispatch('updatePlayingPercent', 0);
-      };
-      // 如果不播放了可能是url过期了
-      pDom.onerror = (err) => {
-        const { id, aId } = this.playNow;
-        if (!id) {
-          return;
-        }
-        if (this.errorId === id) {
-          return this.cutSong('playNext');
-        }
-        this.errorId = id;
-        dispatch('setLoading', true);
-        setTimeout(() => {
-          if (pDom.error) {
-            this.cutSong('playNext');
-          }
-        }, 50000);
-        switch (this.playNow.platform) {
-          case 'qq':
-          case 'migu':
-            dispatch('updateSongDetail', { id, purl: '', aId });
-            break;
-          default:
-            request({ api: 'SONG_URL', data: { id }})
-              .then((res) => {
-                const { url, br } = res.data[0];
-                if (!url) {
-                  return this.cutSong('playNext');
-                }
-                dispatch('updateSongDetail', { url, br, id, pUrl: url, aId });
-              });
-        }
-      };
-      if ('mediaSession' in navigator) {
-        navigator.mediaSession.setActionHandler('play', () => this.updatePlayingStatus(true));
-        navigator.mediaSession.setActionHandler('pause', () => this.updatePlayingStatus(false));
-        navigator.mediaSession.setActionHandler('previoustrack', () => this.cutSong('playPrev'));
-        navigator.mediaSession.setActionHandler('nexttrack', () => this.cutSong('playNext'));
-      }
-      // audio正在加载音乐
-      // pDom.onwaiting = () => console.log('waiting');
-      // audio放完了
-      pDom.onended = () => {
-        if (this.orderType !== 'danquxunhuan') {
-          dispatch('playNext');
-        } else {
-          // 单曲循环的话，继续播放这首
-          pDom.play();
-        }
-      };
-      // 音乐播放时进度条
-      pDom.ontimeupdate = () => {
-        !this.stopUpdateCurrent && (this.currentTime = this.playNow.url ? pDom.currentTime : 0);
-        this.playerInfo = {
-          current: this.currentTime,
-          duration: pDom.duration,
-        };
-        dispatch('updatePlayingPercent', this.playerInfo.current / this.playerInfo.duration);
-      };
       // 当点击进度条的滑块时需要停止进度的判断，否则松开鼠标后onchange事件无法返回正确的value
       sDom && (sDom.onmousedown = () => this.stopUpdateCurrent = true);
       // 键盘事件绑定
@@ -522,6 +492,92 @@
       };
     },
     methods: {
+      clearOldAudio() {
+        const { pDom } = window;
+        if (!pDom) {
+          return;
+        }
+        pDom.muted = true;
+        pDom.onended = null;
+        pDom.ontimeupdate = null;
+        pDom.onerror = null;
+        pDom.oncanplaythrough = null;
+      },
+      audioBind() {
+        const dispatch = this.$store.dispatch;
+        const { pDom } = window;
+        pDom.muted = false;
+        // audio加载完成
+        pDom.oncanplaythrough = () => {
+          if (this.playingUrl === this.playNow.pUrl) {
+            dispatch('setLoading', false);
+
+            if (this.playing) {
+              pDom.play();
+            }
+          }
+          this.playerInfo = { duration: pDom.duration, current: 0 };
+          dispatch('updatePlayingPercent', 0);
+        };
+        // 如果不播放了可能是url过期了
+        pDom.onerror = (err) => {
+          const { id, aId } = this.playNow;
+          if (!id) {
+            return;
+          }
+          if (this.errorId === id) {
+            return this.cutSong('playNext');
+          }
+          this.errorId = id;
+          dispatch('setLoading', true);
+          setTimeout(() => {
+            if (pDom.error) {
+              this.cutSong('playNext');
+            }
+          }, 50000);
+          switch (this.playNow.platform) {
+            case 'qq':
+            case 'migu':
+              dispatch('updateSongDetail', { id, purl: '', aId });
+              break;
+            default:
+              request({ api: 'SONG_URL', data: { id }})
+                .then((res) => {
+                  const { url, br } = res.data[0];
+                  if (!url) {
+                    return this.cutSong('playNext');
+                  }
+                  dispatch('updateSongDetail', { url, br, id, pUrl: url, aId });
+                });
+          }
+        };
+        if ('mediaSession' in navigator) {
+          navigator.mediaSession.setActionHandler('play', () => this.updatePlayingStatus(true));
+          navigator.mediaSession.setActionHandler('pause', () => this.updatePlayingStatus(false));
+          navigator.mediaSession.setActionHandler('previoustrack', () => this.cutSong('playPrev'));
+          navigator.mediaSession.setActionHandler('nexttrack', () => this.cutSong('playNext'));
+        }
+        // audio正在加载音乐
+        // pDom.onwaiting = () => console.log('waiting');
+        // audio放完了
+        pDom.onended = () => {
+          if (this.orderType !== 'danquxunhuan') {
+            dispatch('playNext');
+          } else {
+            // 单曲循环的话，继续播放这首
+            pDom.play();
+          }
+        };
+        // 音乐播放时进度条
+        pDom.ontimeupdate = () => {
+          !this.stopUpdateCurrent && (this.currentTime = this.playNow.url ? pDom.currentTime : 0);
+          this.playerInfo = {
+            current: this.currentTime,
+            duration: pDom.duration,
+          };
+          dispatch('updatePlayingPercent', this.playerInfo.current / this.playerInfo.duration);
+        };
+      },
       formatTooltip(v) {
         return `${Num(v / 60, 0, -1)}:${Num(v % 60, 0) < 10 ? `0${Num(v % 60, 0)}` : Num(v % 60, 0)}`;
       },

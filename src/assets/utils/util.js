@@ -99,6 +99,14 @@ export const messageHelp = (id) => {
     {
       content: '支持左侧显示歌词（前往设置） & cookie 支持微信',
       time: '20-11-06'
+    },
+    {
+      content: '受企鹅修改跨域限制影响，取消先进模式 & 音频图',
+      time: '20-11-30'
+    },
+    {
+      content: '优化先进模式（网易云恢复音频图 & 新增清空正在播放列表',
+      time: '20-12-06'
     }
   ];
   if (id === 'newInfo') {
@@ -152,6 +160,9 @@ export const handlePlayingList = {
         updateData = { list: [id], more: true };
       }
     }
+    setTimeout(() => {
+      window.pDom.play();
+    });
 
     dispatch('updatePlayingList', updateData);
   },

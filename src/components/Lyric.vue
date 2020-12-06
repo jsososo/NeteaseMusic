@@ -70,7 +70,7 @@
           return;
         }
         const lyricKeys = Object.keys(lyric);
-        const current = document.getElementById('m-player').currentTime * 1000;
+        const current = document.getElementsByClassName('played-audio')[0].currentTime * 1000;
         const carouselHeight = document.getElementsByClassName('lyric-content-container')[0].clientHeight;
         const key = lyricKeys.findIndex((k) => (k - 300) >= current);
         const nowDom = document.getElementsByClassName('lyric-item-now');
@@ -132,7 +132,7 @@
           //  松开或者鼠标已经移出去
           this.top += this.mouseMove;
           this.mouseMove = 0;
-          this.protect = document.getElementById('m-player').currentTime * 1000;
+          this.protect = document.getElementsByClassName('played-audio')[0].currentTime * 1000;
         }
       },
 
@@ -149,7 +149,7 @@
         return `${Num(v / 60, 0, -1)}:${Num(v % 60, 0) < 10 ? `0${Num(v % 60, 0)}` : Num(v % 60, 0)}`;
       },
       playAtCenter() {
-        const pDom = document.getElementById('m-player');
+        const pDom = document.getElementsByClassName('played-audio')[0];
         pDom.currentTime = this.centerTime;
         this.grab = false;
         setTimeout(() => this.protect = 0, 200);

@@ -94,7 +94,7 @@
           return;
         }
         const lyricKeys = Object.keys(lyric);
-        const current = document.getElementById('m-player').currentTime * 1000;
+        const current = document.getElementsByClassName('played-audio')[0].currentTime * 1000;
         const key = lyricKeys.findIndex((k) => (k - 300) >= current);
         let lyricKey = current;
         let startKey = 0;

@@ -25,7 +25,7 @@ axios.interceptors.response.use(data=> {
   if (url.indexOf('/api/simi/artist') > -1) {
     return window.VUE_APP.$message.warning('登录后可查看相似歌手');
   }
-  return Promise.reject(err.response.data);
+  return Promise.reject(err.response ? err.response.data : err);
 });
 
 const request = (param, platform) => {
@@ -48,7 +48,8 @@ const request = (param, platform) => {
     data,
     headers: {
       'Host-Check': btoa(timer().str('YYYYMMDD')),
-    }
+    },
+    timeout: 10000,
   }).then((res) => {
     res.data = res.data || {};
     if (res.data.code === 200 || res.data.result === 100) {
@@ -93,8 +94,8 @@ export const loginStatus = async () => {
   let func = () => (
     request({
       api: 'RECOMMEND_PLAYLIST',
-      data: { login: 0, _p: 163 },
-    }).then(({ data }) => data[0] && getPlaylist(data[0].id, '163'))
+      data: { login: 0, _p: 'qq' },
+    }).then(({ data }) => data[0] && getPlaylist(data[0].id, 'qq'))
   );
   if (res) {
     dispatch('setUser', res.profile);
@@ -274,7 +275,7 @@ export const getPlaylist = async (id, platform) => {
       id,
       _p: platform,
     }
-  });
+  }).catch(() => ({}));
 
   const songMap = {};
   data.songs = await handleSongs(data.list || [], (s) => songMap[s.aId] = 1);
@@ -495,7 +496,7 @@ export const getHighQualityUrl = async (id, type, updateSong) => {
   if (!song.url) {
     return '';
   }
-  const idStr = (song.bId || id).replace(`${song.platform}_`, '');
+  const idStr = (song.bId || id || '').replace(`${song.platform}_`, '');
 
   let url = song.url, br = song.br || 128000, songEndType = 'mp3';
   try {
@@ -573,7 +574,11 @@ export const download = async (id, songName, forceReq, defaultSong) => {
 
   downReq(url, name, null, song, {
     init: (ajax) => {
-      VUE_APP.$message.success('加入下载中');
+      if (url.indexOf('qq.com') > -1) {
+        VUE_APP.$message.warning('企鹅音乐受官方新增的跨域限制可能存在无法下载');
+      } else {
+        VUE_APP.$message.success('加入下载中');
+      }
       dispatch('updateDownload', { status: 'init', from: (song.from || '163'), id: downId, ajax, name, songId: id, br, songCid, song, });
     },
     success: () => {

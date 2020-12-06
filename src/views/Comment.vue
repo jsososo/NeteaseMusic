@@ -1,9 +1,8 @@
 <template>
-  <div>
+  <block>
     <CommentComponent :platform="playNow.platform || '163'" :comment-type="0" :id="playNow.id" :comments="comments" />
-
     <SendComment :type="0" :platform="playNow.platform || '163'" :success-cb="initComments" />
-  </div>
+  </block>
 </template>
 
 <script>

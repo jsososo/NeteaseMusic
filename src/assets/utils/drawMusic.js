@@ -7,18 +7,25 @@ export default class DrawMusic {
 
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     const ctx = new AudioContext();
+    this.actx = ctx;
     window.actx = ctx;
     const analyser = ctx.createAnalyser();
+    this.playerAnalyser = analyser;
     analyser.fftSize = this.fftSize;
+    const mPlayer = document.getElementById('m-player');
     // 通过<audio>节点创建音频源
-    const source = ctx.createMediaElementSource(window.pDom);
+    const source = ctx.createMediaElementSource(mPlayer);
+    if (!mPlayer) {
+      return;
+    }
+
     // 将音频源关联到分析器
     source.connect(analyser);
     // 将分析器关联到输出设备（耳机、扬声器）
     analyser.connect(ctx.destination);
-    setTimeout(() => window.actx.resume(), 5000);
+    setTimeout(() => this.actx.resume(), 100);
     this.playerAnalyser = analyser;
-    window.playerAnalyser = analyser;
+    this.source = source;
     const bufferLength = analyser.frequencyBinCount;
     this.musicDataArray = new Uint8Array(bufferLength);
     this.drawType = Storage.get('drawMusicStyle');
@@ -284,11 +291,11 @@ export default class DrawMusic {
     return result;
   }
 
-  draw() {
+  draw(useActx) {
     this.pageWidth = window.innerWidth;
     this.pageHeight = window.innerHeight;
     const { ctx, pageWidth, pageHeight } = this;
-    if (Storage.get('showDrawMusic') === '0') {
+    if (!useActx || Storage.get('showDrawMusic') === '0') {
       ctx.clearRect(0, 0, pageWidth, pageHeight);
       return;
     }

@@ -93,6 +93,7 @@
       padding: 0;
       top: -40px;
       left: -40px;
+      min-height: 0;
 
       .avatar {
         margin-top: 0;

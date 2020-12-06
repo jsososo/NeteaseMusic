@@ -83,7 +83,7 @@
             effect="dark"
             content="心动模式"
             placement="top"
-            v-if="selected === '163' && user.userId && userList['163'].favListId === item.listId"
+            v-if="selected === '163' && user.userId && userList['163'] && userList['163'].favListId === item.listId"
           >
             <i @click="toHeartMode(item.listId)" :class="`iconfont icon-heart heart-btn ${heartMode && 'hearting'}`" />
           </el-tooltip>
