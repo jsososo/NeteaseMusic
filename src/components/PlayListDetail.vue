@@ -99,8 +99,8 @@
           </el-tooltip>
           <el-tooltip class="item" effect="dark" content="从歌单中删除" placement="top">
             <i
-              @click="playlistTracks(s, listId, 'del', 'DEL_SONG')"
-              v-if="userList[allSongs[s].platform] && userList[allSongs[s].platform].mine && userList[allSongs[s].platform].mine[listId]"
+              @click="playlistTracks(s, aId, 'del', 'DEL_SONG')"
+              v-if="isMineList"
               class="operation-icon operation-icon-5 iconfont icon-delete"
             />
           </el-tooltip>
@@ -119,7 +119,6 @@
 
 <script>
   import {
-    getPlaylist,
     likeMusic,
     download,
     collectPlaylist,
@@ -158,10 +157,18 @@
         user: 'getUser',
         playingPercent: 'getPlayingPercent',
         favSongMap: 'getFavSongMap',
-      })
+      }),
+      aId() {
+        return `${this.platform}_${this.id}`;
+      },
+      isMineList() {
+        const { platform, userList, aId } = this;
+        return !!(userList[platform] && userList[platform].mine && userList[platform].mine[aId]);
+
+      }
     },
     watch: {
-      trueList(v) {
+      trueList() {
         this.searchList();
       },
       list() {
@@ -250,7 +257,7 @@
       },
       scrollToPlayNow() {
         const { list, playNow } = this;
-        const index = this.list.findIndex((v) => v === playNow.aId);
+        const index = list.findIndex((v) => v === playNow.aId);
         const domL = document.getElementsByClassName('song-list')[0];
         if (index > -1) {
           document.getElementsByClassName('list-detail-container')[0].scrollTo(0, index * 71 + domL.offsetTop);

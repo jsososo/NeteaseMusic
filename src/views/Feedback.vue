@@ -44,7 +44,7 @@
     <div class="top-qa">
       <h2>一些可能你会问的</h2>
       <div class="qa-list">
-        <div v-for="({q, a}) in topQa" class="top-qa-content">
+        <div v-for="({q, a}) in topQa" class="top-qa-content" :key="`q_${q}`">
           <div class="question nick">{{q}}</div>
           <div class="answer content">{{a}}</div>
         </div>
@@ -73,6 +73,7 @@
         replyId: '',
         replyContent: '',
         replyNick: '',
+        sending: false,
         topQa: [
           {
             q: '无法播放？',
@@ -165,10 +166,14 @@
       },
 
       addFeedback() {
-        const { content, nick, email, replyId, replyNick, replyContent } = this;
+        const { content, nick, email, replyId, replyNick, replyContent, sending } = this;
         if (!content) {
           return this.$message.warning('说点啥呀');
         }
+        if (sending) {
+          return this.$message.warning('还在发，别催');
+        }
+        this.sending = true;
         request({
           api: 'COMMON_ADD_FEEDBACK',
           data: {
@@ -182,6 +187,7 @@
           },
           method: 'post',
         }).then(() => {
+          this.sending = false;
           this.pageNo = 1;
           this.content = '';
           this.showReply();

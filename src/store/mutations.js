@@ -2,7 +2,6 @@ import * as types from './mutationsTypes';
 import Storage from "../assets/utils/Storage";
 import ArrHelper from '../assets/utils/arrayHelper';
 import Num from '../assets/utils/num';
-import de from "element-ui/src/locale/lang/de";
 
 export default {
   [types.SET_OPERATION](state, data) {
@@ -68,10 +67,10 @@ export default {
     data.dissid && (state.sysSongs[data.dissid] = state.showList);
   },
   [types.UPDATE_ALL_SONGS](state, data) {
-    const { allSongs, playNow, playingList } = state;
-    const { platform, aId } = playNow;
+    const { playNow = {}, playingList } = state;
+    const { aId } = playNow;
     state.allSongs = { ...state.allSongs, ...data };
-    if (playNow.aId && JSON.stringify(playNow) !== JSON.stringify(state.allSongs[aId])) {
+    if (aId && JSON.stringify(playNow) !== JSON.stringify(state.allSongs[aId])) {
       state.playNow = state.allSongs[aId];
     }
     if (ArrHelper.hasDuplicate(Object.keys(data), playingList.raw.join(',').split(','))) {
@@ -148,12 +147,18 @@ export default {
         if (i === (trueList.length - 1) || i === 0) {
           window.VUE_APP.$store.dispatch('updateRandomList');
         }
+        if (!allSongs[random[i]]) {
+          return;
+        }
         return state.playNow = allSongs[random[i]];
       default:
         i = trueList.indexOf(aId);
         i += 1;
         if (i === trueList.length) {
           i = 0;
+        }
+        if (!allSongs[trueList[i]]) {
+          return;
         }
         return state.playNow = allSongs[trueList[i]];
     }
@@ -195,7 +200,7 @@ export default {
   },
   // 更新正在播放的音乐
   [types.UPDATE_PLAY_NOW](state, data) {
-    const { playingList, playNow, isPersonFM } = state;
+    const { playingList, playNow } = state;
     if (!data || !data.aId) {
       return;
     }

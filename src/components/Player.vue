@@ -110,7 +110,7 @@
         <div class="more-control"  @mouseleave="showMore = false">
           <div v-if="showMore" class="more-list-container" @mouseleave="showMore = false" @mouseover="showMore = true">
             <div class="more-list">
-              <div v-for="more in moreList" @click="handleClickMore(more.key)">
+              <div v-for="more in moreList" @click="handleClickMore(more.key)" :key="`more-key-${more.key}`">
                 <i :class="`iconfont icon-${more.key}`" />
                 <span style="padding-left: 5px;">{{more.text}}</span>
               </div>
@@ -151,18 +151,19 @@
 <script>
   import Num from '../assets/utils/num';
   import Storage from '../assets/utils/Storage';
-  import { mapGetters } from 'vuex';
+  import {mapGetters} from 'vuex';
   import request, {
-    likeMusic,
     download,
+    downLyricFunc,
+    getHighQualityUrl,
     getPersonFM,
     handleQQComments,
-    getHighQualityUrl, getDownName, queryLyric, downLyricFunc
+    likeMusic,
+    queryLyric
   } from '../assets/utils/request';
-  import { handleLyric, getQueryFromUrl, changeUrlQuery } from "../assets/utils/stringHelper";
+  import {changeUrlQuery, getQueryFromUrl} from "../assets/utils/stringHelper";
   import ArrayHelper from '../assets/utils/arrayHelper';
   import DrawMusic from "../assets/utils/drawMusic";
-  import downReq from '../assets/utils/download';
 
   export default {
     name: "PlayerPage",
@@ -229,7 +230,7 @@
           return;
         }
         const { listId, playingId, playerInfo, isPersonFM, playingList, playingPlatform, isUpdating, pDom } = this;
-        const { id, lyric, name, comments, mid, songid, cId, br, pUrl, aId, platform, qqId, miguId, al = {}, ar = [] } = v;
+        const { id, lyric, name, comments, songid, br, pUrl, aId, al = {}, ar = [] } = v;
         let { url } = v;
         const dispatch = this.$store.dispatch;
         const listenSize = Storage.get('listenSize') || '128';
@@ -237,8 +238,8 @@
           return;
         // 这是刚切歌的时候需要判断下用户选择的播放品质并更新一下，同时如果已经在查询
 
-        if ('mediaSession' in navigator) {
-          navigator.mediaSession.metadata = new MediaMetadata({
+        if ('mediaSession' in navigator && window.MediaMetadata) {
+          navigator.mediaSession.metadata = new window.MediaMetadata({
             title: name,
             artist: ar.map((v) => v.name).join('/'),
             album: al.name,
@@ -289,9 +290,6 @@
             }
           })
 
-          // setTimeout(() => {
-          //
-          // }, 1);
           return;
         }
         if (!this.playingUrl) {
@@ -419,11 +417,9 @@
       this.volume = (Storage.get('volume') || 1) * 100;
 
       // audio标签
-      const pDom = this.playerDom;
-      window.pDom = pDom;
+      window.pDom = this.playerDom;
       // slider，进度条
       const sDom = document.getElementsByClassName('el-slider__button el-tooltip')[0];
-      const dispatch = this.$store.dispatch;
       window.onhashchange = () => this.showControl = !getQueryFromUrl('hideControl');
 
       if ((window.AudioContext || window.webkitAudioContext)) {
@@ -520,7 +516,7 @@
           dispatch('updatePlayingPercent', 0);
         };
         // 如果不播放了可能是url过期了
-        pDom.onerror = (err) => {
+        pDom.onerror = () => {
           const { id, aId } = this.playNow;
           if (!id) {
             return;
@@ -531,10 +527,10 @@
           this.errorId = id;
           dispatch('setLoading', true);
           setTimeout(() => {
-            if (pDom.error) {
+            if (window.pDom.error) {
               this.cutSong('playNext');
             }
-          }, 50000);
+          }, 5000);
           switch (this.playNow.platform) {
             case 'qq':
             case 'migu':

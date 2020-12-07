@@ -49,7 +49,7 @@ const request = (param, platform) => {
     headers: {
       'Host-Check': btoa(timer().str('YYYYMMDD')),
     },
-    timeout: 10000,
+    timeout: 30000,
   }).then((res) => {
     res.data = res.data || {};
     if (res.data.code === 200 || res.data.result === 100) {
@@ -150,7 +150,7 @@ export const getDaily = async (platform, retry) => {
 // 获取用户歌单
 export const getUserList = async (id, platform) => {
   let myId = '', ownCookie = 0;
-  const { VUE_APP, cookieObj } = window;
+  const { VUE_APP, cookieObj = {} } = window;
   switch (platform) {
     case '163':
       myId = Storage.get('uid');
