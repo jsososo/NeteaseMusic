@@ -520,7 +520,6 @@ export const getHighQualityUrl = async (id, type, updateSong) => {
     console.log('获取url失败了 =.=', song.id, song.platform);
   }
 
-  url = url.replace(/^(.+)qq.com/, 'http://122.226.161.16/amobile.music.tc.qq.com');
   url = url.replace('freetyst.nf.migu.cn', `${window.location.host}/miguSongs`);
 
   if (updateSong) {

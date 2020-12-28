@@ -107,6 +107,10 @@ export const messageHelp = (id) => {
     {
       content: '优化先进模式（网易云恢复音频图 & 新增清空正在播放列表',
       time: '20-12-06'
+    },
+    {
+      content: '估计服务器IP被网易云封禁（换过一次了，很快又被封了），登录/收藏等接口失效，兼容方案为，歌单页支持用户输入id获取用户歌单',
+      time: '20-12-28'
     }
   ];
   if (id === 'newInfo') {
@@ -114,7 +118,7 @@ export const messageHelp = (id) => {
     if (newInfoIndex < (newMessage.length - 1)) {
       Storage.set('notify-new-index', newMessage.length - 1);
       window.VUE_APP.$notify({
-        title: '有更新呀！',
+        title: '更新记录！',
         message: newMessage.slice(newInfoIndex + 1).map((v) => `${v.content} (${v.time})`).slice(-3).join('<br/>'),
         duration: (newMessage.length - newInfoIndex) * 20000,
         dangerouslyUseHTMLString: true,

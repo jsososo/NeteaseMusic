@@ -15,8 +15,12 @@
     </div>
 
     <div class="playlist-list hide-scroll">
-      <div v-if="!user.userId && hash === 'playlist' && !$route.query.id && selected === '163'" class="text-center fc_fff ft_20" style="padding-top: 100px;opacity: 0.8;letter-spacing: 2px;">
-        登录后可以查看个人歌单
+      <div class="input-qq mb_20" v-if="hash === 'playlist' && selected === '163'">
+        <input type="text" placeholder="官网个人主页链接中可获取id" v-model="inputNEId" />
+        <div class="update-btn" v-if="inputNEId !== neId" @click="updateNEId">更新</div>
+      </div>
+      <div v-if="!user.userId && hash === 'playlist' && !$route.query.id && !neId && selected === '163'" class="text-center fc_fff ft_20" style="padding-top: 100px;opacity: 0.8;letter-spacing: 2px;">
+        登录/输入id 后可以查看个人歌单
       </div>
       <div class="input-qq mb_20" v-if="hash === 'playlist' && selected === 'qq'">
         <input type="text" placeholder="输入 QQ号/wxuin 吧" v-model="inputQQ" />
@@ -147,6 +151,8 @@
         selected: getQueryFromUrl('from') || Storage.get('playlist_from') || '163',
         inputQQ: Storage.get('qqId'),
         qqId: Storage.get('qqId'),
+        inputNEId: Storage.get('neId'),
+        neId: Storage.get('neId'),
       };
     },
     computed: {
@@ -196,9 +202,9 @@
       async hashChange() {
         const hashs = ['playlist', 'recommend'];
         this.hash = hashs.find((h) => document.location.hash.indexOf(h) > -1);
-        const { selected, hash, user, inputQQ } = this;
+        const { selected, hash, user, inputQQ, neId } = this;
         this.pagePlayList = [];
-        let res, id = getQueryFromUrl('id') || { 163: user.userId, qq: inputQQ }[selected];
+        let res, id = getQueryFromUrl('id') || { 163: user.userId || neId, qq: inputQQ }[selected];
         switch (hash) {
           case 'recommend':
             res = await request({
@@ -269,6 +275,12 @@
         const { inputQQ } = this;
         this.qqId = inputQQ;
         Storage.set('qqId', inputQQ);
+        this.hashChange();
+      },
+      updateNEId() {
+        const { inputNEId } = this;
+        this.neId = inputNEId;
+        Storage.set('neId', inputNEId);
         this.hashChange();
       },
 

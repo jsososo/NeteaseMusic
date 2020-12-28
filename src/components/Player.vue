@@ -328,6 +328,7 @@
         document.title = name;
         this.$nextTick(() => {
           window.pDom && (window.pDom.playbackRate = this.rate);
+          window.pDom && (window.pDom.volume = Storage.get('volume') || 1);
         });
         this.currentTime = 0;
         this.playingId = id;
