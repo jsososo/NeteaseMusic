@@ -24,6 +24,7 @@ export default {
     random: [], // 随机列表
     history: [], // 播放历史
     index: 0, // 当前播放对应播放历史的位置
+    map: {}, // key: id, value: true
   },
   playNow: { // 正在播放的歌曲信息
     al: {},
@@ -57,4 +58,12 @@ export default {
     163: {},
     qq: {},
   },
+  topInfo: {
+    platform: Storage.get('playlist_from') || '163',
+    '163id': '',
+    'qqid': '',
+    '163List': [],
+    'qqList': [],
+  },
+  homeType: Storage.get('showHomeType') || 'info',
 };

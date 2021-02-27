@@ -1,5 +1,5 @@
 <template>
-  <div style="padding-left: 100px; max-height: calc(100vh - 120px);" class="hide-scroll">
+  <div style="padding-left: 100px; max-height: calc(100vh - 120px); min-height: 600px;" class="hide-scroll">
     <SettingComponent />
   </div>
 </template>

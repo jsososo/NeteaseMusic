@@ -10,6 +10,9 @@
         <!--</div>-->
       <!--</div>-->
       <div class="login-input-container mt_25 pt_30">
+        <div class="text-center">
+          ️由于服务器 ip 被网易云官方封禁，登录和收藏歌曲等操作暂时无效
+        </div>
         <div class="input-line">
           <div class="input-label">
             {{type === 'password' ? '手机/邮箱' : '手机'}}
@@ -51,9 +54,9 @@
         <div class="user-info-txt user-info-level">Lv {{uInfo.level}}</div>
         <div class="user-info-txt user-info-logout" @click="logout"><i class="iconfont icon-logout" /> 退出</div>
       </div>
-      <div class="user-setting-container">
-        <Setting />
-      </div>
+<!--      <div class="user-setting-container">-->
+<!--        <Setting />-->
+<!--      </div>-->
 
       <div class="user-right-list">
         <div class="right-select-tab-list">
@@ -94,7 +97,7 @@
 <script>
   import { mapGetters } from 'vuex';
   import Setting from '../components/Setting';
-  import request, { loginStatus, likeMusic, handleSongs, download } from '../assets/utils/request';
+  import request, { loginStatus, likeMusic, handleSongs } from '../assets/utils/request';
   import Num from '../assets/utils/num';
   import $ from 'jquery';
   import SongList from '../components/list/song';
@@ -147,6 +150,7 @@
         },
         uInfo: {},
         selected: 'week',
+        uid: undefined,
       }
     },
     computed: {
@@ -262,9 +266,9 @@
               if (res) {
                 loginStatus();
               } else {
-                this.$message.error('账号密码错误');
+                this.$message.error('登录失败');
               }
-            }, () => this.$message.error('账号密码错误'))
+            }, () => this.$message.error('登录失败'))
 
         } else {
           const res = await request({ api: 'CAPTCH_VERIFY', data: { phone: username, captcha: code }});
@@ -390,7 +394,6 @@
         dispatch('updatePlayingList', { list: info[selected] });
         dispatch('updatePlayingStatus', true);
       },
-      download,
     },
   }
 </script>

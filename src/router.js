@@ -4,10 +4,10 @@ import Router from 'vue-router'
 const User = () => import('./views/User');
 const Search = () => import('./views/Search');
 const PlayList = () => import('./views/PlayList');
-const PlayListDetail = () => import('./views/PlayListDetail');
+const PlayListDetail = () => import('./views/PlayListDetailPage');
 const Singer = () => import('./views/Singer');
 const Comment = () => import('./views/Comment');
-const Lyric = () => import('./views/Lyric');
+const Home = () => import('./views/Home');
 const Album = () => import('./views/Album');
 const About = () => import('./views/About');
 const Download = () => import('./views/Download');
@@ -16,6 +16,7 @@ const Simple = () => import('./views/Simple');
 const Mv = () => import('./views/Mv');
 const Setting = () => import('./views/Setting');
 const Feedback = () => import('./views/Feedback');
+const Top = () => import('./views/Top');
 
 Vue.use(Router);
 
@@ -48,8 +49,8 @@ const router = new Router({
     },
     {
       path: '/',
-      name: 'lyric',
-      component: Lyric,
+      name: 'home',
+      component: Home,
     },
     {
       path: '/user',
@@ -109,6 +110,11 @@ const router = new Router({
       path: '/feedback',
       name: 'Feedback',
       component: Feedback,
+    },
+    {
+      path: '/top',
+      name: 'Top',
+      component: Top,
     }
   ]
 });
@@ -131,6 +137,7 @@ router.beforeEach((to, from, next) => {
     case 'About':
     case 'Mv':
     case 'Feedback':
+    case 'Top':
       dispatch('updateShowCover', false);
       break;
     default:

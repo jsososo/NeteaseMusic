@@ -7,18 +7,25 @@ export default class DrawMusic {
 
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     const ctx = new AudioContext();
+    this.actx = ctx;
     window.actx = ctx;
     const analyser = ctx.createAnalyser();
+    this.playerAnalyser = analyser;
     analyser.fftSize = this.fftSize;
+    const mPlayer = document.getElementById('m-player');
     // 通过<audio>节点创建音频源
-    const source = ctx.createMediaElementSource(window.pDom);
+    const source = ctx.createMediaElementSource(mPlayer);
+    if (!mPlayer) {
+      return;
+    }
+
     // 将音频源关联到分析器
     source.connect(analyser);
     // 将分析器关联到输出设备（耳机、扬声器）
     analyser.connect(ctx.destination);
-    setTimeout(() => window.actx.resume(), 5000);
+    setTimeout(() => this.actx.resume(), 100);
     this.playerAnalyser = analyser;
-    window.playerAnalyser = analyser;
+    this.source = source;
     const bufferLength = analyser.frequencyBinCount;
     this.musicDataArray = new Uint8Array(bufferLength);
     this.drawType = Storage.get('drawMusicStyle');
@@ -105,6 +112,25 @@ export default class DrawMusic {
         ctx.fillStyle = linearGradient;
       }
       ctx.fillRect(x, y, w, h);
+    })
+  }
+
+  // 音柱（包含历史）
+  drawMusicVoice() {
+    const { ctx, pageHeight } = this;
+    let linearGradient;
+    this.nowData.forEach((v, i) => {
+      const { x, y, w, h } = this.getDrawData(i, ['x', 'y', 'w', 'h'])
+      linearGradient = ctx.createLinearGradient(
+        x,
+        pageHeight,
+        x,
+        pageHeight / 2,
+      )
+      linearGradient.addColorStop(0,`rgba(64,158,255,${h / pageHeight / 1.5 + 0.1})`);
+      linearGradient.addColorStop(1,`rgba(92,184,122,${h / pageHeight / 10}`);
+      ctx.fillStyle = linearGradient;
+      ctx.fillRect(x, 0, w / 0.9, pageHeight);
     })
   }
 
@@ -265,11 +291,11 @@ export default class DrawMusic {
     return result;
   }
 
-  draw() {
+  draw(useActx) {
     this.pageWidth = window.innerWidth;
     this.pageHeight = window.innerHeight;
     const { ctx, pageWidth, pageHeight } = this;
-    if (Storage.get('showDrawMusic') === '0') {
+    if (!useActx || Storage.get('showDrawMusic') === '0') {
       ctx.clearRect(0, 0, pageWidth, pageHeight);
       return;
     }
@@ -300,6 +326,7 @@ export default class DrawMusic {
       circle2: 'drawMusicCircle2',
       particle: 'drawMusicParticle',
       line2: 'drawMusicLine2',
+      voice: 'drawMusicVoice',
     }[this.drawMusicStyle] || 'drawMusicRect';
 
     this[functionKey]();

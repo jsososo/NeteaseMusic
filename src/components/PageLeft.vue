@@ -24,12 +24,12 @@
         <div class="icon-text">推荐</div>
       </a>
     </div>
-    <!--<div class="nav-line">-->
-      <!--<a href="#/radio">-->
-        <!--<i class="iconfont icon-radio"></i>-->
-        <!--<div class="icon-text">电台</div>-->
-      <!--</a>-->
-    <!--</div>-->
+    <div class="nav-line">
+      <a href="#/top">
+        <i class="iconfont icon-top"></i>
+        <div class="icon-text">榜单</div>
+      </a>
+    </div>
     <div class="nav-line">
       <a href="#/download">
         <el-badge :value="downloadInfo.count" :hidden="downloadInfo.count === 0" class="item">
@@ -93,6 +93,7 @@
       padding: 0;
       top: -40px;
       left: -40px;
+      min-height: 0;
 
       .avatar {
         margin-top: 0;
@@ -177,6 +178,7 @@
     border-radius: 0;
     opacity: 0.4;
     z-index: 100;
+    min-height: 600px;
 
     .left-nav-bg {
       background: -webkit-linear-gradient(top, #fff8, #fff6, #fff0, #fff0);

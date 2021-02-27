@@ -77,5 +77,11 @@ export default {
   },
   getFavSongMap(state) {
     return state.favSongMap;
+  },
+  getTopInfo(state) {
+    return state.topInfo;
+  },
+  getHomeType(state) {
+    return state.homeType;
   }
 }

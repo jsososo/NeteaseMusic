@@ -219,12 +219,14 @@
     width: 40%;
     position: absolute;
     height: calc(100% - 50px);
+    min-height: 550px;
     left: 110%;
     overflow: auto;
     background: #0001;
     border-left: 1px solid #fff8;
     transition: 0.3s;
     opacity: 0;
+    top: 40px;
 
 
     &.show {

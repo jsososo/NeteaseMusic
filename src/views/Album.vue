@@ -169,6 +169,7 @@
         color: #fff8;
         width: calc(100% - 150px);
         height: calc(100vh - 370px);
+        min-height: 300px;
         overflow: auto;
         text-indent: 2em;
         margin-top: 20px;
@@ -189,9 +190,10 @@
       vertical-align: top;
       position: relative;
       height: calc(100vh - 120px);
+      min-height: 550px;
 
       .list-songs {
-        height: calc(100vh - 120px);
+        height: 100%;
         box-sizing: border-box;
         overflow-y: auto;
 

@@ -2,7 +2,7 @@
   <div :class="`search-page-container ${show && 'show'}`" @scroll="onScroll">
     <input type="text" class="search-input mt_15" placeholder="Search..." v-model="keywords">
     <div class="platform-select">
-      <i v-for="p in ['163', 'qq', 'migu']" @click="search('platform', p)" :class="`iconfont icon-${p} ${platform === p && 'active'}`" />
+      <i v-for="p in ['163', 'qq']" @click="search('platform', p)" :class="`iconfont icon-${p} ${platform === p && 'active'}`" />
     </div>
     <div class="ml_10 mt_10 mb_20">
       <div
@@ -18,54 +18,56 @@
     </div>
 
     <!-- 歌曲 -->
-    <div v-if="searchQuery.type === 0">
-      <div class="empty-status" v-if="!searchQuery.songs || searchQuery.songs.length === 0">
-        空空如也！
-      </div>
-      <div class="song-list result-list" v-if="searchQuery.songs && searchQuery.songs.length > 0">
-        <div
-          :class="`song-item ${(allSongs[s].url) ? 'hasurl' : 'disabled'}`"
-          v-for="(s, i) in searchQuery.songs"
-          :key="`${s}-${i}`"
-          @click="playMusic(s)"
-        >
-          <div class="playing-bg" v-if="playNow.aId === s" :style="`width: ${playingPercent * 100}%`">
-            <div class="wave-bg"></div>
-            <div class="wave-bg2"></div>
-          </div>
-          <div v-if="playNow.id !== s" class="play-icon-container">
-            <span class="play-icon">
-            <i class="iconfont icon-play" />
-          </span>
-          </div>
-          <span class="song-order">{{i+1}}</span>
-          <div class="song-album-img" :style="`background-image: url('${allSongs[s].al && `${allSongs[s].al.picUrl}?param=50y50`}')`"></div>
-          <span class="song-name">{{allSongs[s].name}}</span>
-          <span class="artist-name">{{allSongs[s].ar.map((a) => a.name).join('/')}}</span>
-          <span class="operation-btns">
-            <i
-              v-show="platform !== 'migu'"
-              v-if="favSongMap[platform]"
-              @click="likeMusic(s)"
-              :class="`operation-icon operation-icon-1 iconfont icon-${(favSongMap[platform][s]) ? 'like' : 'unlike'}`"
-            />
-            <i
-              v-show="platform !== 'migu'"
-              @click="playlistTracks(s, 'add', 'ADD_SONG_2_LIST', platform)"
-              class="operation-icon operation-icon-2 iconfont icon-add"
-            />
-            <i
-              @click="download(s)"
-              class="operation-icon operation-icon-2 iconfont icon-download"
-            />
-          </span>
-          <div
-            v-if="(favSongMap[platform] && favSongMap[platform][s])"
-            class="liked-item"
-          />
-        </div>
-      </div>
-    </div>
+<!--    <div v-if="searchQuery.type === 0">-->
+<!--      <div class="empty-status" v-if="!searchQuery.songs || searchQuery.songs.length === 0">-->
+<!--        空空如也！-->
+<!--      </div>-->
+<!--      <div class="song-list result-list" v-if="searchQuery.songs && searchQuery.songs.length > 0">-->
+<!--        <div-->
+<!--          :class="`song-item ${(allSongs[s].url) ? 'hasurl' : 'disabled'}`"-->
+<!--          v-for="(s, i) in searchQuery.songs"-->
+<!--          :key="`${s}-${i}`"-->
+<!--          @click="playMusic(s)"-->
+<!--        >-->
+<!--          <div class="playing-bg" v-if="playNow.aId === s" :style="`width: ${playingPercent * 100}%`">-->
+<!--            <div class="wave-bg"></div>-->
+<!--            <div class="wave-bg2"></div>-->
+<!--          </div>-->
+<!--          <div v-if="playNow.id !== s" class="play-icon-container">-->
+<!--            <span class="play-icon">-->
+<!--            <i class="iconfont icon-play" />-->
+<!--          </span>-->
+<!--          </div>-->
+<!--          <span class="song-order">{{i+1}}</span>-->
+<!--          <div class="song-album-img" :style="`background-image: url('${allSongs[s].al && `${allSongs[s].al.picUrl}?param=50y50`}')`"></div>-->
+<!--          <span class="song-name">{{allSongs[s].name}}</span>-->
+<!--          <span class="artist-name">{{allSongs[s].ar.map((a) => a.name).join('/')}}</span>-->
+<!--          <span class="operation-btns">-->
+<!--            <i-->
+<!--              v-show="platform !== 'migu'"-->
+<!--              v-if="favSongMap[platform]"-->
+<!--              @click="likeMusic(s)"-->
+<!--              :class="`operation-icon operation-icon-1 iconfont icon-${(favSongMap[platform][s]) ? 'like' : 'unlike'}`"-->
+<!--            />-->
+<!--            <i-->
+<!--              v-show="platform !== 'migu'"-->
+<!--              @click="playlistTracks(s, 'add', 'ADD_SONG_2_LIST', platform)"-->
+<!--              class="operation-icon operation-icon-2 iconfont icon-add"-->
+<!--            />-->
+<!--            <i-->
+<!--              @click="download(s)"-->
+<!--              class="operation-icon operation-icon-2 iconfont icon-download"-->
+<!--            />-->
+<!--          </span>-->
+<!--          <div-->
+<!--            v-if="(favSongMap[platform] && favSongMap[platform][s])"-->
+<!--            class="liked-item"-->
+<!--          />-->
+<!--        </div>-->
+<!--      </div>-->
+<!--    </div>-->
+
+    <SongList class-name="search-page" showIndex showCover empty-text="空空如也！" v-if="searchQuery.type === 0" :songs="searchQuery.songs || []" />
 
     <!-- 专辑 -->
     <AlbumList empty-text="空空如也！" v-if="searchQuery.type === 2" :albums="searchQuery.albums" />
@@ -111,10 +113,11 @@
   import Storage from "../assets/utils/Storage";
   import AlbumList from '../components/list/album';
   import SingerList from '../components/list/singer';
+  import SongList from '../components/list/song';
 
   export default {
     name: "Search",
-    components: { AlbumList, SingerList },
+    components: { AlbumList, SingerList, SongList },
     data() {
       return {
         show: false,
@@ -292,12 +295,13 @@
   .search-page-container {
     position: absolute;
     height: calc(100% - 30px);
+    min-height: 580px;
     width: 38%;
     background: #0003;
     transition: 0.3s;
-    right: 20px;
+    right: -100vw;
     top: 20px;
-    transform: rotate(90deg) translate(100%, -20px);
+
     border-radius: 20px;
     overflow-y: auto;
     
@@ -329,7 +333,8 @@
     }
 
     &.show {
-      transform: rotate(0) translate(0, 0);
+      right: 20px;
+      /*transform: rotate(0) translate(0, 0);*/
     }
 
     .search-input {

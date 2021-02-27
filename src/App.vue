@@ -4,8 +4,11 @@
     <img id="play-music-bg" alt="">
     <canvas :width="pageWidth" :height="pageHeight" id="music-data-canvas" ></canvas>
     <div class="main-container">
-      <div style="display: inline-block;width: 60%;" v-if="showCover">
-        <Playing />
+      <div class="page-left-container" v-if="showCover">
+        <Playing v-if="homeType === 'info'" />
+        <div v-else>
+          <Lyric />
+        </div>
       </div>
       <router-view />
       <PageLeft />
@@ -21,14 +24,14 @@
   import PageLeft from './components/PageLeft';
   import Playing from './components/Playing';
   import Operation from './components/Operation';
+  import Lyric from "./components/Lyric";
   import { loginStatus, getCookie } from './assets/utils/request';
   import { messageHelp } from "./assets/utils/util";
   import { mapGetters } from 'vuex';
-  import {getQueryFromUrl} from "./assets/utils/stringHelper";
 
   export default {
     name: 'App',
-    components: { Player, PageLeft, Playing, Operation },
+    components: { Player, PageLeft, Playing, Operation, Lyric },
     data() {
       return {
         defaultActive: '/',
@@ -41,6 +44,7 @@
         allSongs: 'getAllSongs',
         showCover: 'isShowCoverImg',
         mode: 'getMode',
+        homeType: 'getHomeType',
       })
     },
     created() {
@@ -51,7 +55,12 @@
       // 看一下是否有 cookie，以及设置项是否开启
       let uin = document.cookie.match(/\suin=([^;]+)(;|$)/);
       uin = uin ? uin[1] : '';
-      uin = getQueryFromUrl('q') || uin;
+      let urlUin = window.location.href.match(/q=(\d+)/);
+      uin = urlUin ? urlUin[1] : uin;
+      if (window.location.href.indexOf('q=') > -1) {
+        document.cookie = `uin=${uin}`;
+        window.location = `http://${window.location.host}/#/`;
+      }
       if (uin && (Storage.get('openSetQCookie') || '0') !== '0') {
         getCookie(uin);
       }
@@ -70,6 +79,7 @@
         listen_size: 'size320',
         down_size: 'high',
         down_high: 'sizeflac',
+        home_page: 'PLAYING',
         volume: 1,
         download_info: JSON.stringify({
           count: 0,
@@ -88,6 +98,10 @@
         openSetQCookie: 0,
         showDrawMusic: '1',
         drawMusicType: 1,
+        downMusicName: '0',
+        SHOW_SIMPLE_COVER: 1,
+        PLAY_MUSIC_FROM_PLAYLIST: '1', // 歌单详情页，默认点击歌曲为播放这个列表
+        PLAY_MUSIC_FROM_LIST: '0', // 其他歌曲列表也，默认点击歌曲为加入播放列表
       });
 
       // 初始化一下下载记录
@@ -191,6 +205,21 @@
       {
         border-radius:10px;
         background-color:rgba(255,255,255,0.5);
+      }
+
+      .page-left-container {
+        position: relative;
+        width: 60%;
+        height: calc(100vh - 120px);
+        min-height: 600px;
+        overflow: hidden;
+      }
+      .page-right-container {
+        position: absolute;
+        width: 40%;
+        top: 0;
+        height: calc(100% - 50px);
+        min-height: 600px;
       }
     }
 

@@ -14,8 +14,8 @@
           所有的数据内容均来自网易云音乐，本网站不做数据存储处理等信息，所有的配置信息均存在本地
         </p>
         <p>
-          关于那些 vip 歌曲和 网易云 没有版权的歌曲，在这里当然都是能听的啦，实现方法为根据歌名 + 歌手 调用 qq 音乐接口进行搜索，
-          所以可能存在搜索出来的歌曲和世纪显示的歌曲不匹配的情况，欢迎在这里进行评论，我会尽快修复 <a href="https://github.com/jsososo/NeteaseMusic/issues/1" target="_blank">#ISSUE1</a>
+          对于 VIP/无版权 的歌曲，目前采用的方法是根据歌名 + 歌手 + 歌曲时长 去另外一个平台搜索匹配，这当然是存在一定的准确度问题，
+          不过鉴于整体正确度表现ok，个别歌曲暂不考虑优化。
         </p>
         <p>
           音频图于 19-11-29 支持，会更消耗性能和流量，嫌弃可以关闭！另外由于读取音频所以数据相当于完整的播放一次音乐，
@@ -30,7 +30,7 @@
         <p class="mt_20">GitHub: <a href="https://github.com/jsososo/NeteaseMusic" target="_blank">网易云第三方 Web 播放器</a></p>
         <p>后端：「网易云」<a href="https://github.com/Binaryify/NeteaseCloudMusicApi" target="_blank">NeteaseCloudMusicApi</a></p>
         <p>后端：「QQ音乐」<a href="https://github.com/jsososo/QQMusicApi" target="_blank">QQMusicApi</a> (也是我的项目，也欢迎支持一下)</p>
-        <p>后端：「咪咕音乐」<a href="https://github.com/jsososo/MiguMusicApi" target="_blank">MiguMusicApi</a> (还是我的项目，也欢迎支持一下)</p>
+        <p><del>后端：「咪咕音乐」<a href="https://github.com/jsososo/MiguMusicApi" target="_blank">MiguMusicApi</a> (还是我的项目，也欢迎支持一下)</del></p>
         <p>后端：「聚合接口」<a href="https://github.com/jsososo/MixMusicApi" target="_blank">MixMusicApi</a>（我的项目也太多了）</p>
         <p>Chrome插件：「QQ音乐Cookie搬运工」<a href="https://github.com/jsososo/qqmusic-cookie-porter" target="_blank">qqmusic-cookie-porter</a>  (又是我的项目，也欢迎支持一下)</p>
       </div>
@@ -311,6 +311,58 @@
           {
             txt: '😺 一些杂七杂八的优化',
             time: '20-07-07',
+          },
+          {
+            txt: '🤔 下载歌词 & 支持下载歌名格式修改',
+            time: '20-08-02',
+          },
+          {
+            txt: '🥰 会员 & 无版权歌曲替换',
+            time: '20-08-15',
+          },
+          {
+            txt: '🦷 下载翻译 & 极简翻译 & id3标签 & fix 下载bug 歌单操作bug',
+            time: '20-08-23',
+          },
+          {
+            txt: '🚛 心动模式回归 & chrome 播放控件支持',
+            time: '20-08-30',
+          },
+          {
+            txt: '🐤 播放列表逻辑调整，支持加入正在播放 & 倍速 & 极简模式支持隐藏专辑封面',
+            time: '20-09-15',
+          },
+          {
+            txt: '📹 MV回归 & 歌单长列表性能优化 & 音量调节改为5%',
+            time: '20-09-18',
+          },
+          {
+            txt: '⚾ 排行榜 & 切歌保留倍速 & 看见音乐新增音柱 & 其他一些小优化️',
+            time: '20-10-23',
+          },
+          {
+            txt: '🏠 左侧支持显示歌词 & 支持微信登录',
+            time: '20-11-06',
+          },
+          {
+            txt: '🍋 样式优化',
+            time: '20-11-10',
+          },
+          {
+            txt: '💔 受企鹅修改跨域营销，下架先进模式 & 音频图',
+            time: '20-11-30',
+          },
+          {
+            txt: '🍌 优化先进模式（网易云恢复音频图） & 修复部分bug & 新增清空正在播放列表',
+            time: '20-12-06',
+          },
+          {
+            txt: '🍄 修复一些报错问题 & 歌单删除歌曲操作',
+            time: '20-12-07',
+          },
+          {
+            txt: '☹️ 网易云支持使用用户id获取歌单',
+            time: '20-12-28',
           }
         ],
       }
@@ -329,6 +381,7 @@
     width: 60%;
     padding-right: 40%;
     max-height: calc(100vh - 120px);
+    min-height: 600px;
     overflow: auto;
     position: relative;
 

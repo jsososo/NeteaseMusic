@@ -44,7 +44,7 @@
     <div class="top-qa">
       <h2>一些可能你会问的</h2>
       <div class="qa-list">
-        <div v-for="({q, a}) in topQa" class="top-qa-content">
+        <div v-for="({q, a}) in topQa" class="top-qa-content" :key="`q_${q}`">
           <div class="question nick">{{q}}</div>
           <div class="answer content">{{a}}</div>
         </div>
@@ -73,6 +73,7 @@
         replyId: '',
         replyContent: '',
         replyNick: '',
+        sending: false,
         topQa: [
           {
             q: '无法播放？',
@@ -80,8 +81,25 @@
               '3、还是无法播放的同学可以去设置里关闭先进模式刷新尝试（就无法显示频谱图）'
           },
           {
-            q: '临时公告一下',
-            a: '咪咕音乐播放出现了跨域问题，还是因为服务器带宽有限，目前不想考虑走服务器代理，暂时不解决',
+            q: '桌面歌词？',
+            a: '基于浏览器的网站是无法实现桌面歌词的',
+          },
+          {
+            q: '快捷键？',
+            a: '快捷键现在是有的，目前为方向键、空格键、ctrl s、esc (极简模式)',
+          },
+          {
+            q: '下载地址？',
+            a: '下载地址为浏览器默认下载地址，一般会在下载文件夹中'
+          },
+          {
+            q: '播放的歌曲与歌名对应不上？',
+            a: '因为对于无法获取到音频的歌曲（vip / 版权原因），会根据歌名、歌手和歌曲时长去另一个平台匹配信息，这一步当然是存在匹配错误的可能性的，' +
+              '不过目前看来整体的精确度还是ok的，所以后续也不太会在这方面进一步优化了'
+          },
+          {
+            q: '好多会员歌曲不能听了！',
+            a: '因为我忘了更新服务器 Cookie 信息了，等我记起来就好了'
           },
           {
             q: '移动端适配？',
@@ -94,10 +112,6 @@
           {
             q: '桌面版应用？',
             a: '1、github上已经有很多不错的开源的第三方音乐播放器；2、我更喜欢即开即用的网页；3、在真实体验上来说，网页和应用端还是存在一些交互不同的',
-          },
-          {
-            q: '下载歌词',
-            a: '排期中。。。',
           },
           {
             q: '登陆',
@@ -152,10 +166,14 @@
       },
 
       addFeedback() {
-        const { content, nick, email, replyId, replyNick, replyContent } = this;
+        const { content, nick, email, replyId, replyNick, replyContent, sending } = this;
         if (!content) {
           return this.$message.warning('说点啥呀');
         }
+        if (sending) {
+          return this.$message.warning('还在发，别催');
+        }
+        this.sending = true;
         request({
           api: 'COMMON_ADD_FEEDBACK',
           data: {
@@ -169,6 +187,7 @@
           },
           method: 'post',
         }).then(() => {
+          this.sending = false;
           this.pageNo = 1;
           this.content = '';
           this.showReply();
@@ -289,6 +308,7 @@
 
     .feedback-list, .qa-list {
       margin-top: 20px;
+      min-height: 800px;
       .feedback-content-item, .top-qa-content {
         width: 45%;
         background: #0003;
@@ -339,6 +359,10 @@
           opacity: 0.7;
           margin-left: 12px;
           margin-bottom: 10px;
+
+          span {
+            word-break: break-all;
+          }
         }
       }
     }

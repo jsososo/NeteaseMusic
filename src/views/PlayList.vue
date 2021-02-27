@@ -15,22 +15,26 @@
     </div>
 
     <div class="playlist-list hide-scroll">
-      <div v-if="!user.userId && hash === 'playlist' && !$route.query.id && selected === '163'" class="text-center fc_fff ft_20" style="padding-top: 100px;opacity: 0.8;letter-spacing: 2px;">
-        登录后可以查看个人歌单
+      <div class="input-qq mb_20" v-if="hash === 'playlist' && selected === '163'">
+        <input type="text" placeholder="官网个人主页链接中可获取id" v-model="inputNEId" />
+        <div class="update-btn" v-if="inputNEId !== neId" @click="updateNEId">更新</div>
+      </div>
+      <div v-if="!user.userId && hash === 'playlist' && !$route.query.id && !neId && selected === '163'" class="text-center fc_fff ft_20" style="padding-top: 100px;opacity: 0.8;letter-spacing: 2px;">
+        登录/输入id 后可以查看个人歌单
       </div>
       <div class="input-qq mb_20" v-if="hash === 'playlist' && selected === 'qq'">
-        <input type="text" placeholder="输入QQ号吧" v-model="inputQQ" />
+        <input type="text" placeholder="输入 QQ号/wxuin 吧" v-model="inputQQ" />
         <div class="update-btn" v-if="inputQQ !== qqId" @click="updateQQNum">更新</div>
       </div>
       <div v-if="!qqId && hash === 'playlist' && selected === 'qq'" class="text-center fc_fff ft_20" style="padding-top: 100px;opacity: 0.8;letter-spacing: 2px;">
-        输入 QQ 号可查看个人歌单
+        输入 QQ号/wxuin 可查看个人歌单
       </div>
 
       <!-- 日推-->
       <div
         v-if="allList[`${selected}_daily`] && !$route.query.id"
         :class="`playlist-item ${playingListId === `${selected}_daily` && 'playing'}`"
-        @click="goTo(`${selected}_daily`, selected)"
+        @click="goTo('daily', selected)"
       >
         <div class="list-img" style="border: 1px solid #fff5;text-align: center;">
           {{new Date().getDate()}}
@@ -78,15 +82,15 @@
         <span class="list-name">{{item.name}}</span>
         <span class="list-count">{{item.trackCount}}</span>
         <div class="bottom-text">
-<!--          <el-tooltip-->
-<!--            class="item"-->
-<!--            effect="dark"-->
-<!--            content="心动模式"-->
-<!--            placement="top"-->
-<!--            v-if="selected === '163' && user.userId"-->
-<!--          >-->
-<!--            <i @click="toHeartMode(item.id)" :class="`iconfont icon-heart heart-btn ${heartMode && playingListId === item.listId && 'hearting'}`" />-->
-<!--          </el-tooltip>-->
+          <el-tooltip
+            class="item"
+            effect="dark"
+            content="心动模式"
+            placement="top"
+            v-if="selected === '163' && user.userId && userList['163'] && userList['163'].favListId === item.listId"
+          >
+            <i @click="toHeartMode(item.listId)" :class="`iconfont icon-heart heart-btn ${heartMode && 'hearting'}`" />
+          </el-tooltip>
           <el-tooltip
             v-if="userList[selected] && !userList[selected].mine[item.listId]"
             class="item"
@@ -136,17 +140,19 @@
             color: 'green',
             val: '企鹅'
           },
-          {
-            icon: 'migu',
-            key: 'migu',
-            color: 'yellow',
-            hide: 'playlist',
-            val: '咪咕',
-          },
+          // {
+          //   icon: 'migu',
+          //   key: 'migu',
+          //   color: 'yellow',
+          //   hide: 'playlist',
+          //   val: '咪咕',
+          // },
         ],
         selected: getQueryFromUrl('from') || Storage.get('playlist_from') || '163',
         inputQQ: Storage.get('qqId'),
         qqId: Storage.get('qqId'),
+        inputNEId: Storage.get('neId'),
+        neId: Storage.get('neId'),
       };
     },
     computed: {
@@ -196,9 +202,9 @@
       async hashChange() {
         const hashs = ['playlist', 'recommend'];
         this.hash = hashs.find((h) => document.location.hash.indexOf(h) > -1);
-        const { selected, hash, user, inputQQ } = this;
+        const { selected, hash, user, inputQQ, neId } = this;
         this.pagePlayList = [];
-        let res, id = getQueryFromUrl('id') || { 163: user.userId, qq: inputQQ }[selected];
+        let res, id = getQueryFromUrl('id') || { 163: user.userId || neId, qq: inputQQ }[selected];
         switch (hash) {
           case 'recommend':
             res = await request({
@@ -221,33 +227,30 @@
       goTo(id, platform = this.selected) {
         window.location = `#/playlist/detail?id=${id}&from=${platform}`;
       },
-      toHeartMode(pid) {
+      async toHeartMode(pid) {
         window.event.stopPropagation();
         const { userList, allList, allSongs, user } = this;
         if (!user.userId) {
           return this.$message.warning('登录后才可以开启心动模式');
         }
-        const favList = allList[userList.favId].length > 0 ? allList[userList.favId] : allList.daily;
-        const randomId = favList[Math.floor(Math.random(favList.length))];
-        request({
+        const { favListId } = userList['163'];
+        const favList = (allList[favListId] || []).length > 0 ? allList[favListId] : allList['163_daily'];
+        const randomId = favList[Math.floor(Math.random(favList.length))].replace('163_', '');
+        const truePid = pid.split('_')[1];
+        const { data } = await request({
           api: 'GET_HEART_MODE',
           data: {
-            pid,
+            pid: truePid,
             id: randomId,
+            _p: '163',
           }
-        }).then(async (res) => {
-          const ids = [];
-          const { dispatch } = this.$store;
-          const songs = res.data.map((item) => {
-            ids.push(item.id);
-            return item.songInfo;
-          });
-          await handleSongs(songs);
-          dispatch('updatePlayNow', allSongs[ids[0]]);
-          dispatch('updatePlayingList', { list: ids, id: pid, heart: true });
-          dispatch('updatePlayingStatus', true);
-          this.$message.success('心动模式启动～');
         })
+        const { dispatch } = this.$store;
+        const ids = await handleSongs(data);
+        dispatch('updatePlayNow', this.allSongs[ids[0]]);
+        dispatch('updatePlayingList', { list: ids, listId: pid, heart: true });
+        dispatch('updatePlayingStatus', true);
+        this.$message.success('心动模式启动～');
       },
       playPersonFM() {
         const { dispatch } = this.$store;
@@ -274,6 +277,12 @@
         Storage.set('qqId', inputQQ);
         this.hashChange();
       },
+      updateNEId() {
+        const { inputNEId } = this;
+        this.neId = inputNEId;
+        Storage.set('neId', inputNEId);
+        this.hashChange();
+      },
 
       numToStr,
 
@@ -288,10 +297,12 @@
     display: inline-block;
     vertical-align: top;
     height: (calc(100vh - 100px));
+    min-height: 580px;
     position: absolute;
     left: 60%;
     transform: translate(100%);
     opacity: 0;
+    top: 20px;
     transition: 0.5s;
 
     &.show {

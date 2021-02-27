@@ -123,25 +123,31 @@
             qq: '操作失败',
             163: '操作失败：可能是歌曲下架了'
           }[platform];
+          let successFunc = () => {
+            this.$message.success('操作成功！');
+            let songs = allList[add2ListId] || [];
+
+            if (operation.type === 'ADD_SONG_2_LIST') {
+              songs.unshift(operation.data.tracks);
+            } else if (operation.type === 'DEL_SONG') {
+              songs = songs.filter((id) => id !== operation.data.tracks);
+            }
+            this.$store.dispatch('updateList', { songs, listId: add2ListId });
+          }
           request({
             api,
             data: reqData,
-          }).then((res) => {
-            if (res) {
-              this.$message.success('操作成功！');
-              let songs = allList[add2ListId] || [];
-
-              if (operation.type === 'ADD_SONG_2_LIST') {
-                songs.unshift(operation.data.tracks);
-              } else if (operation.type === 'DEL_SONG') {
-                songs = songs.filter((id) => id !== operation.data.tracks);
+          }).then(
+            (res) => successFunc(),
+            (err) => {
+              let message = errTxt;
+              if (platform === '163') {
+                if (err.data.body && err.data.body.code === 200) {
+                  return successFunc();
+                }
+                message = err.data.message || (err.data.body && err.data.body.message) || message;
               }
-              this.$store.dispatch('updateList', { songs, listId: add2ListId });
-            } else {
-              this.$message.error(errTxt);
-            }
-          }, (err) => {
-            this.$message.error(errTxt);
+              this.$message.error(message);
           });
         }
         this.clearOperation();
